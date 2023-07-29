@@ -34,12 +34,12 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(discovery_info.address)
         self._abort_if_unique_id_configured()
         self._discovery_info = discovery_info
-        self.context["title_placeholders"] = {
-            "name": discovery_info.name
-        }
+        self.context["title_placeholders"] = {"name": discovery_info.name}
         return await self.async_step_user()
 
-    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle user input."""
 
         if user_input is not None:
@@ -59,6 +59,7 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         else:
             current_addresses = self._async_current_ids()
             for discovery in async_discovered_service_info(self.hass):
+                address = discovery.address
                 if address in current_addresses or address in self._discovered_devices:
                     continue
                 self._discovered_devices[discovery.address] = discovery
