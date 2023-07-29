@@ -1,5 +1,5 @@
 {
-    "domain": "bluetti-bt",
+    "domain": "bluetti_bt",
     "name": "Bluetti BT",
     "codeowners": ["@Patrick762"],
     "config_flow": true,
