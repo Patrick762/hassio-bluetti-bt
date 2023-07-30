@@ -36,7 +36,7 @@ async def async_setup_entry(
     # Generate device info
     _LOGGER.error("Creating sensors for device %s", entry.data.get(CONF_ADDRESS))
     device_info = dev_info(entry)
-    async_add_entities(Battery(coordinator, device_info))
+    async_add_entities([Battery(coordinator, device_info)])
 
 
 class PollingCoordinator(DataUpdateCoordinator):
