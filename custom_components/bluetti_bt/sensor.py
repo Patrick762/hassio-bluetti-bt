@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import timedelta
 import logging
+from bleak import BleakClient
 
 from homeassistant.components import bluetooth
 from homeassistant.components.sensor import SensorEntity
@@ -16,6 +18,8 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
+
+from bluetti_mqtt.bluetooth.client import BluetoothClient
 
 from . import device_info as dev_info, get_unique_id
 
@@ -32,7 +36,7 @@ async def async_setup_entry(
         _LOGGER.error("Device has no address")
 
     # Create coordinator for polling
-    coordinator = PollingCoordinator(hass)
+    coordinator = PollingCoordinator(hass, address)
     await coordinator.async_config_entry_first_refresh()
 
     # Generate device info
@@ -44,7 +48,7 @@ async def async_setup_entry(
 class PollingCoordinator(DataUpdateCoordinator):
     """Polling coordinator."""
 
-    def __init__(self, hass):
+    def __init__(self, hass: HomeAssistant, address):
         """Initialize coordinator."""
         super().__init__(
             hass,
@@ -52,6 +56,10 @@ class PollingCoordinator(DataUpdateCoordinator):
             name="Bluetti polling coordinator",
             update_interval=timedelta(seconds=10),
         )
+        self._address = address
+        self.notify_future = None
+        self.command_queue = asyncio.Queue()
+        self.notify_response = bytearray()
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.
@@ -60,6 +68,53 @@ class PollingCoordinator(DataUpdateCoordinator):
         so entities can quickly look up their data.
         """
         self.logger.error("Polling data")
+
+        device = bluetooth.async_ble_device_from_address(self.hass, self._address)
+        if device is None:
+            self.logger.error("Device not available")
+            return
+
+        self.logger.error("BT RSSI to device %s: %s", self._address, device.rssi)
+
+        # Proceed with bluetti_mqtt parts
+
+        # TODO: Fill command_queue
+
+        client = BleakClient(device)
+
+        try:
+            client.connect()
+            await client.start_notify(
+                BluetoothClient.NOTIFY_UUID, self._notification_handler
+            )
+
+            while not self.command_queue.empty():
+                try:
+                    # Prepare to make request
+                    current_command, cmd_future = self.command_queue.get()
+                    self.notify_future = self.hass.loop.create_future()
+                    self.notify_response = bytearray()
+
+                    # Make request
+                    await client.write_gatt_char(
+                        BluetoothClient.WRITE_UUID, bytes(current_command)
+                    )
+
+                    # Wait for response
+                    res = await asyncio.wait_for(
+                        self.notify_future, timeout=BluetoothClient.RESPONSE_TIMEOUT
+                    )
+                    if cmd_future:
+                        cmd_future.set_result(res)
+                except:
+                    self.logger.error("Error polling data")
+
+        finally:
+            client.disconnect()
+
+    def _notification_handler(self, _sender: int, data: bytearray):
+        """Handle bt data."""
+        self.logger.error("Data received: ", data.decode())
 
 
 class Battery(CoordinatorEntity, SensorEntity):
