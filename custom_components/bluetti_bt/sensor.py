@@ -5,8 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 import logging
 
-import async_timeout
-
+from homeassistant.components import bluetooth
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -16,7 +15,6 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
-    UpdateFailed,
 )
 
 from . import device_info as dev_info, get_unique_id
@@ -29,14 +27,18 @@ async def async_setup_entry(
 ) -> None:
     """Setup sensor entities."""
 
+    address = entry.data.get(CONF_ADDRESS)
+    if address is None:
+        _LOGGER.error("Device has no address")
+
     # Create coordinator for polling
     coordinator = PollingCoordinator(hass)
     await coordinator.async_config_entry_first_refresh()
 
     # Generate device info
-    _LOGGER.error("Creating sensors for device %s", entry.data.get(CONF_ADDRESS))
+    _LOGGER.info("Creating sensors for device with address %s", address)
     device_info = dev_info(entry)
-    async_add_entities([Battery(coordinator, device_info)])
+    async_add_entities([Battery(coordinator, device_info, address)])
 
 
 class PollingCoordinator(DataUpdateCoordinator):
@@ -63,15 +65,23 @@ class PollingCoordinator(DataUpdateCoordinator):
 class Battery(CoordinatorEntity, SensorEntity):
     """Bluetti battery."""
 
-    def __init__(self, coordinator: PollingCoordinator, device_info: DeviceInfo):
+    def __init__(
+        self, coordinator: PollingCoordinator, device_info: DeviceInfo, address
+    ):
         """Init battery entity."""
         super().__init__(coordinator)
-
         self._attr_device_info = device_info
         self._attr_name = f"{device_info.get('name')} Battery level"
         self._attr_unique_id = get_unique_id(f"{device_info.get('name')} Battery level")
         self._attr_unit_of_measurement = "%"
         self._attr_device_class = "battery"
+        self._address = address
+
+    @property
+    def available(self) -> bool:
+        if self._address is None:
+            return False
+        return bluetooth.async_address_present(self.hass, self._address)
 
     @callback
     def _handle_coordinator_update(self) -> None:
