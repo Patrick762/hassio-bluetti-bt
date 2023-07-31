@@ -11,10 +11,16 @@ import async_timeout
 from bleak import BleakClient, BleakError
 
 from homeassistant.components import bluetooth
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, CONF_STATE_CLASS
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.const import CONF_ADDRESS, CONF_NAME, EntityCategory
+from homeassistant.const import (
+    CONF_ADDRESS,
+    CONF_NAME,
+    CONF_UNIT_OF_MEASUREMENT,
+    CONF_DEVICE_CLASS,
+    EntityCategory,
+)
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
@@ -29,6 +35,7 @@ from bluetti_mqtt.bluetooth import (
     ParseError,
     build_device,
 )
+from bluetti_mqtt.mqtt_client import NORMAL_DEVICE_FIELDS
 
 from . import device_info as dev_info, get_unique_id
 from .const import (
@@ -57,13 +64,36 @@ async def async_setup_entry(
     # Generate device info
     _LOGGER.info("Creating sensors for device with address %s", address)
     device_info = dev_info(entry)
-    async_add_entities(
-        [
-            Battery(coordinator, device_info, address),
-            BatteryRangeStart(coordinator, device_info, address),
-            BatteryRangeEnd(coordinator, device_info, address),
-        ]
-    )
+
+    # Add sensors according to device_info
+    bluetti_device = build_device(address, device_name)
+
+    sensors_to_add = []
+    for field_key, field_config in NORMAL_DEVICE_FIELDS.items():
+        if bluetti_device.has_field(field_key):
+            category = None
+
+            if field_key in (
+                API_RESPONSE_BATTERY_RANGE_START,
+                API_RESPONSE_BATTERY_RANGE_END,
+            ):
+                category = EntityCategory.DIAGNOSTIC
+
+            sensors_to_add.append(
+                BluettiSensor(
+                    coordinator,
+                    device_info,
+                    address,
+                    field_key,
+                    field_config.home_assistant_extra.get(CONF_NAME, ""),
+                    field_config.home_assistant_extra.get(CONF_UNIT_OF_MEASUREMENT, ""),
+                    field_config.home_assistant_extra.get(CONF_DEVICE_CLASS, ""),
+                    field_config.home_assistant_extra.get(CONF_STATE_CLASS, ""),
+                    category,
+                )
+            )
+
+    async_add_entities(sensors_to_add)
 
 
 class PollingCoordinator(DataUpdateCoordinator):
@@ -138,7 +168,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                             command.starting_address, body
                         )
 
-                        self.logger.info("Parsed data: %s", parsed)
+                        self.logger.warning("Parsed data: %s", parsed)
                         parsed_data.update(parsed)
 
                     except TimeoutError:
@@ -192,20 +222,35 @@ class PollingCoordinator(DataUpdateCoordinator):
             self.notify_future.set_exception(ModbusError(msg))
 
 
-class Battery(CoordinatorEntity, SensorEntity):
-    """Bluetti battery."""
+class BluettiSensor(CoordinatorEntity, SensorEntity):
+    """Bluetti universal sensor."""
 
     def __init__(
-        self, coordinator: PollingCoordinator, device_info: DeviceInfo, address
+        self,
+        coordinator: PollingCoordinator,
+        device_info: DeviceInfo,
+        address,
+        response_key: str,
+        name: str,
+        unit_of_measurement: str,
+        device_class: str,
+        state_class: str,
+        category: EntityCategory | None = None,
     ):
         """Init battery entity."""
         super().__init__(coordinator)
-        self._attr_device_info = device_info
-        self._attr_name = f"{device_info.get('name')} Battery level"
-        self._attr_unique_id = get_unique_id(f"{device_info.get('name')} Battery level")
-        self._attr_native_unit_of_measurement = "%"
-        self._attr_device_class = "battery"
+
+        e_name = f"{device_info.get('name')} {name}"
         self._address = address
+        self._response_key = response_key
+
+        self._attr_device_info = device_info
+        self._attr_name = e_name
+        self._attr_unique_id = get_unique_id(e_name)
+        self._attr_native_unit_of_measurement = unit_of_measurement
+        self._attr_device_class = device_class
+        self._attr_state_class = state_class
+        self._attr_entity_category = category
 
     @property
     def available(self) -> bool:
@@ -220,75 +265,5 @@ class Battery(CoordinatorEntity, SensorEntity):
         if not isinstance(self.coordinator.data, dict):
             _LOGGER.error("Invalid data from coordinator")
             return
-        self._attr_native_value = self.coordinator.data[API_RESPONSE_BATTERY]
-        self.async_write_ha_state()
-
-
-class BatteryRangeStart(CoordinatorEntity, SensorEntity):
-    """Battery range start."""
-
-    def __init__(
-        self, coordinator: PollingCoordinator, device_info: DeviceInfo, address
-    ):
-        """Init battery entity."""
-        super().__init__(coordinator)
-        self._attr_device_info = device_info
-        self._attr_name = f"{device_info.get('name')} Battery range start"
-        self._attr_unique_id = get_unique_id(
-            f"{device_info.get('name')} Battery range start"
-        )
-        self._attr_native_unit_of_measurement = "%"
-        self._attr_entity_category = EntityCategory.DIAGNOSTIC
-        self._address = address
-
-    @property
-    def available(self) -> bool:
-        if self._address is None:
-            return False
-        return bluetooth.async_address_present(self.hass, self._address)
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        _LOGGER.debug("Updating state of %s", self._attr_unique_id)
-        if not isinstance(self.coordinator.data, dict):
-            _LOGGER.error("Invalid data from coordinator")
-            return
-        self._attr_native_value = self.coordinator.data[
-            API_RESPONSE_BATTERY_RANGE_START
-        ]
-        self.async_write_ha_state()
-
-
-class BatteryRangeEnd(CoordinatorEntity, SensorEntity):
-    """Battery range start."""
-
-    def __init__(
-        self, coordinator: PollingCoordinator, device_info: DeviceInfo, address
-    ):
-        """Init battery entity."""
-        super().__init__(coordinator)
-        self._attr_device_info = device_info
-        self._attr_name = f"{device_info.get('name')} Battery range end"
-        self._attr_unique_id = get_unique_id(
-            f"{device_info.get('name')} Battery range end"
-        )
-        self._attr_native_unit_of_measurement = "%"
-        self._attr_entity_category = EntityCategory.DIAGNOSTIC
-        self._address = address
-
-    @property
-    def available(self) -> bool:
-        if self._address is None:
-            return False
-        return bluetooth.async_address_present(self.hass, self._address)
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        _LOGGER.debug("Updating state of %s", self._attr_unique_id)
-        if not isinstance(self.coordinator.data, dict):
-            _LOGGER.error("Invalid data from coordinator")
-            return
-        self._attr_native_value = self.coordinator.data[API_RESPONSE_BATTERY_RANGE_END]
+        self._attr_native_value = self.coordinator.data[self._response_key]
         self.async_write_ha_state()

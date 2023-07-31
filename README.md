@@ -8,7 +8,8 @@ Bluetti Integration for Home Assistant
 
 Based on [bluetti_mqtt](https://github.com/warhammerkid/bluetti_mqtt).
 
-Supported devices (based on supported devices of bluetti_mqtt):
+### Supported devices:
+(based on [supported devices of bluetti_mqtt](https://github.com/warhammerkid/bluetti_mqtt/tree/main/bluetti_mqtt/core/devices))
 
 - AC60
 - AC200M
@@ -18,3 +19,6 @@ Supported devices (based on supported devices of bluetti_mqtt):
 - EP500
 - EP500P
 - EP600 (tested)
+
+### Available sensors:
+All sensors which are available in bluetti_mqtt (Based on [this file](https://github.com/warhammerkid/bluetti_mqtt/blob/main/bluetti_mqtt/mqtt_client.py))
