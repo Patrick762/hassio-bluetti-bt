@@ -7,7 +7,7 @@ import logging
 
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ADDRESS, Platform
+from homeassistant.const import CONF_ADDRESS, CONF_TYPE, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -42,7 +42,7 @@ def device_info(entry: ConfigEntry) -> DeviceInfo:
         identifiers={(DOMAIN, entry.data.get(CONF_ADDRESS))},
         name=entry.title,
         manufacturer=MANUFACTURER,
-        model=get_type_by_bt_name(entry.title),
+        model=entry.data.get(CONF_TYPE),
     )
 
 

@@ -5,13 +5,14 @@ from __future__ import annotations
 import asyncio
 from datetime import timedelta
 import logging
-from bleak import BleakClient
+from typing import cast
+from bleak import BleakClient, BleakError
 
 from homeassistant.components import bluetooth
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.const import CONF_ADDRESS
+from homeassistant.const import CONF_ADDRESS, CONF_NAME
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
@@ -20,6 +21,12 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from bluetti_mqtt.bluetooth.client import BluetoothClient
+from bluetti_mqtt.bluetooth import (
+    BadConnectionError,
+    ModbusError,
+    ParseError,
+    build_device,
+)
 
 from . import device_info as dev_info, get_unique_id
 
@@ -31,12 +38,13 @@ async def async_setup_entry(
 ) -> None:
     """Setup sensor entities."""
 
+    device_name = entry.data.get(CONF_NAME)
     address = entry.data.get(CONF_ADDRESS)
     if address is None:
         _LOGGER.error("Device has no address")
 
     # Create coordinator for polling
-    coordinator = PollingCoordinator(hass, address)
+    coordinator = PollingCoordinator(hass, address, device_name)
     await coordinator.async_config_entry_first_refresh()
 
     # Generate device info
@@ -48,7 +56,7 @@ async def async_setup_entry(
 class PollingCoordinator(DataUpdateCoordinator):
     """Polling coordinator."""
 
-    def __init__(self, hass: HomeAssistant, address):
+    def __init__(self, hass: HomeAssistant, address, device_name: str):
         """Initialize coordinator."""
         super().__init__(
             hass,
@@ -59,7 +67,9 @@ class PollingCoordinator(DataUpdateCoordinator):
         self._address = address
         self.notify_future = None
         self.command_queue = asyncio.Queue()
+        self.current_command = None
         self.notify_response = bytearray()
+        self.bluetti_device = build_device(address, device_name)
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.
@@ -67,23 +77,27 @@ class PollingCoordinator(DataUpdateCoordinator):
         This is the place to pre-process the data to lookup tables
         so entities can quickly look up their data.
         """
-        self.logger.error("Polling data")
+        self.logger.debug("Polling data")
 
         device = bluetooth.async_ble_device_from_address(self.hass, self._address)
         if device is None:
             self.logger.error("Device not available")
             return
 
-        self.logger.error("BT RSSI to device %s: %s", self._address, device.rssi)
+        if self.bluetti_device is None:
+            self.logger.error("Device type not found")
+            return
 
-        # Proceed with bluetti_mqtt parts
+        # Fill command_queue
+        for command in self.bluetti_device.polling_commands:
+            await self.command_queue.put(command)
 
-        # TODO: Fill command_queue
-
+        # Polling
         client = BleakClient(device)
 
         try:
-            client.connect()
+            await client.connect()
+
             await client.start_notify(
                 BluetoothClient.NOTIFY_UUID, self._notification_handler
             )
@@ -91,7 +105,8 @@ class PollingCoordinator(DataUpdateCoordinator):
             while not self.command_queue.empty():
                 try:
                     # Prepare to make request
-                    current_command, cmd_future = self.command_queue.get()
+                    current_command = await self.command_queue.get()
+                    self.current_command = current_command
                     self.notify_future = self.hass.loop.create_future()
                     self.notify_response = bytearray()
 
@@ -104,17 +119,56 @@ class PollingCoordinator(DataUpdateCoordinator):
                     res = await asyncio.wait_for(
                         self.notify_future, timeout=BluetoothClient.RESPONSE_TIMEOUT
                     )
-                    if cmd_future:
-                        cmd_future.set_result(res)
-                except:
-                    self.logger.error("Error polling data")
 
+                    # Process data
+                    response = cast(bytes, res)
+                    body = current_command.parse_response(response)
+                    parsed = self.bluetti_device.parse(command.starting_address, body)
+
+                    # TODO: Use parsed data
+                    self.logger.error("Processing parsed data")
+
+                    self.command_queue.task_done()
+                except ParseError:
+                    self.logger.debug("Got a parse exception...")
+                except ModbusError as err:
+                    self.logger.debug(
+                        "Got an invalid request error for %s: %s",
+                        current_command,
+                        err,
+                    )
+                except (BadConnectionError, BleakError) as err:
+                    self.logger.debug("Needed to disconnect due to error: %s", err)
+        except BleakError as err:
+            self.logger.error("Bleak error: %s", err)
         finally:
-            client.disconnect()
+            await client.disconnect()
 
     def _notification_handler(self, _sender: int, data: bytearray):
         """Handle bt data."""
-        self.logger.error("Data received: ", data.decode())
+
+        # Ignore notifications we don't expect
+        if not self.notify_future or self.notify_future.done():
+            return
+
+        # If something went wrong, we might get weird data.
+        if data == b"AT+NAME?\r" or data == b"AT+ADV?\r":
+            err = BadConnectionError("Got AT+ notification")
+            self.notify_future.set_exception(err)
+            return
+
+        # Save data
+        self.notify_response.extend(data)
+
+        if len(self.notify_response) == self.current_command.response_size():
+            if self.current_command.is_valid_response(self.notify_response):
+                self.notify_future.set_result(self.notify_response)
+            else:
+                self.notify_future.set_exception(ParseError("Failed checksum"))
+        elif self.current_command.is_exception_response(self.notify_response):
+            # We got a MODBUS command exception
+            msg = f"MODBUS Exception {self.current_command}: {self.notify_response[2]}"
+            self.notify_future.set_exception(ModbusError(msg))
 
 
 class Battery(CoordinatorEntity, SensorEntity):

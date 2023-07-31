@@ -11,9 +11,10 @@ from homeassistant.components.bluetooth import (
     BluetoothServiceInfoBleak,
     async_discovered_service_info,
 )
-from homeassistant.const import CONF_ADDRESS
+from homeassistant.const import CONF_ADDRESS, CONF_TYPE, CONF_NAME
 from homeassistant.data_entry_flow import FlowResult
 
+from . import get_type_by_bt_name
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,10 +48,13 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             discovery_info = self._discovered_devices[address]
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
+            dev_type = get_type_by_bt_name(discovery_info.name)
             return self.async_create_entry(
                 title=discovery_info.name,
                 data={
                     CONF_ADDRESS: discovery_info.address,
+                    CONF_TYPE: dev_type,
+                    CONF_NAME: discovery_info.name,
                 },
             )
 
