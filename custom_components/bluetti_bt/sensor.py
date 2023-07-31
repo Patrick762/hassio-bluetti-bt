@@ -39,7 +39,6 @@ from bluetti_mqtt.mqtt_client import NORMAL_DEVICE_FIELDS
 
 from . import device_info as dev_info, get_unique_id
 from .const import (
-    API_RESPONSE_BATTERY,
     API_RESPONSE_BATTERY_RANGE_START,
     API_RESPONSE_BATTERY_RANGE_END,
 )

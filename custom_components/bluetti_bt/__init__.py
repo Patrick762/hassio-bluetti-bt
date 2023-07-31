@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import logging
 
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
@@ -14,7 +13,6 @@ from homeassistant.exceptions import ConfigEntryNotReady
 
 from .const import DOMAIN, MANUFACTURER
 
-_LOGGER = logging.getLogger(__name__)
 PLATFORMS: [Platform] = [Platform.SENSOR]
 
 
