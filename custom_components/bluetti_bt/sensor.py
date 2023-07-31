@@ -14,7 +14,7 @@ from homeassistant.components import bluetooth
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.const import CONF_ADDRESS, CONF_NAME
+from homeassistant.const import CONF_ADDRESS, CONF_NAME, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
@@ -31,7 +31,11 @@ from bluetti_mqtt.bluetooth import (
 )
 
 from . import device_info as dev_info, get_unique_id
-from .const import API_RESPONSE_BATTERY
+from .const import (
+    API_RESPONSE_BATTERY,
+    API_RESPONSE_BATTERY_RANGE_START,
+    API_RESPONSE_BATTERY_RANGE_END,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +57,13 @@ async def async_setup_entry(
     # Generate device info
     _LOGGER.info("Creating sensors for device with address %s", address)
     device_info = dev_info(entry)
-    async_add_entities([Battery(coordinator, device_info, address)])
+    async_add_entities(
+        [
+            Battery(coordinator, device_info, address),
+            BatteryRangeStart(coordinator, device_info, address),
+            BatteryRangeEnd(coordinator, device_info, address),
+        ]
+    )
 
 
 class PollingCoordinator(DataUpdateCoordinator):
@@ -211,4 +221,74 @@ class Battery(CoordinatorEntity, SensorEntity):
             _LOGGER.error("Invalid data from coordinator")
             return
         self._attr_native_value = self.coordinator.data[API_RESPONSE_BATTERY]
+        self.async_write_ha_state()
+
+
+class BatteryRangeStart(CoordinatorEntity, SensorEntity):
+    """Battery range start."""
+
+    def __init__(
+        self, coordinator: PollingCoordinator, device_info: DeviceInfo, address
+    ):
+        """Init battery entity."""
+        super().__init__(coordinator)
+        self._attr_device_info = device_info
+        self._attr_name = f"{device_info.get('name')} Battery range start"
+        self._attr_unique_id = get_unique_id(
+            f"{device_info.get('name')} Battery range start"
+        )
+        self._attr_native_unit_of_measurement = "%"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        self._address = address
+
+    @property
+    def available(self) -> bool:
+        if self._address is None:
+            return False
+        return bluetooth.async_address_present(self.hass, self._address)
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        _LOGGER.debug("Updating state of %s", self._attr_unique_id)
+        if not isinstance(self.coordinator.data, dict):
+            _LOGGER.error("Invalid data from coordinator")
+            return
+        self._attr_native_value = self.coordinator.data[
+            API_RESPONSE_BATTERY_RANGE_START
+        ]
+        self.async_write_ha_state()
+
+
+class BatteryRangeEnd(CoordinatorEntity, SensorEntity):
+    """Battery range start."""
+
+    def __init__(
+        self, coordinator: PollingCoordinator, device_info: DeviceInfo, address
+    ):
+        """Init battery entity."""
+        super().__init__(coordinator)
+        self._attr_device_info = device_info
+        self._attr_name = f"{device_info.get('name')} Battery range end"
+        self._attr_unique_id = get_unique_id(
+            f"{device_info.get('name')} Battery range end"
+        )
+        self._attr_native_unit_of_measurement = "%"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        self._address = address
+
+    @property
+    def available(self) -> bool:
+        if self._address is None:
+            return False
+        return bluetooth.async_address_present(self.hass, self._address)
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        _LOGGER.debug("Updating state of %s", self._attr_unique_id)
+        if not isinstance(self.coordinator.data, dict):
+            _LOGGER.error("Invalid data from coordinator")
+            return
+        self._attr_native_value = self.coordinator.data[API_RESPONSE_BATTERY_RANGE_END]
         self.async_write_ha_state()
