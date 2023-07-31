@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import logging
 
 import voluptuous as vol
@@ -54,7 +55,7 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data={
                     CONF_ADDRESS: discovery_info.address,
                     CONF_TYPE: dev_type,
-                    CONF_NAME: discovery_info.name,
+                    CONF_NAME: re.sub("[^A-Z0-9]+", "", discovery_info.name),
                 },
             )
 
