@@ -6,12 +6,13 @@ import re
 
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ADDRESS, CONF_TYPE, Platform
+from homeassistant.const import CONF_ADDRESS, CONF_TYPE, CONF_NAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.exceptions import ConfigEntryNotReady
 
 from .const import DOMAIN, MANUFACTURER
+from .coordinator import PollingCoordinator
 
 PLATFORMS: [Platform] = [Platform.SENSOR]
 
@@ -20,12 +21,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bluetti Powerstation from a config entry."""
 
     address = entry.data.get(CONF_ADDRESS)
+    device_name = entry.data.get(CONF_NAME)
 
     if address is None:
         return False
 
     if not bluetooth.async_address_present(hass, address):
         raise ConfigEntryNotReady("Bluetti device not present")
+
+    # Create coordinator for polling
+    coordinator = PollingCoordinator(hass, address, device_name)
+    await coordinator.async_config_entry_first_refresh()
+
+    # Create data structure
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN].setdefault(entry.entry_id, coordinator)
 
     # Setup platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
