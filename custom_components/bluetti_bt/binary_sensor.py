@@ -5,14 +5,13 @@ from __future__ import annotations
 import logging
 
 from homeassistant.components import bluetooth
-from homeassistant.components.sensor import SensorEntity, CONF_STATE_CLASS
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import (
     CONF_ADDRESS,
     CONF_NAME,
     CONF_UNIT_OF_MEASUREMENT,
-    CONF_DEVICE_CLASS,
     EntityCategory,
 )
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -56,8 +55,7 @@ async def async_setup_entry(
     for field_key, field_config in NORMAL_DEVICE_FIELDS.items():
         if bluetti_device.has_field(field_key):
             if (
-                field_config.home_assistant_extra.get(CONF_UNIT_OF_MEASUREMENT)
-                is not None
+                field_config.home_assistant_extra.get(CONF_UNIT_OF_MEASUREMENT) is None
                 and not field_config.setter
             ):
                 category = None
@@ -68,17 +66,12 @@ async def async_setup_entry(
                     category = EntityCategory.DIAGNOSTIC
 
                 sensors_to_add.append(
-                    BluettiSensor(
+                    BluettiBinarySensor(
                         hass.data[DOMAIN][entry.entry_id],
                         device_info,
                         address,
                         field_key,
                         field_config.home_assistant_extra.get(CONF_NAME, ""),
-                        field_config.home_assistant_extra.get(
-                            CONF_UNIT_OF_MEASUREMENT, ""
-                        ),
-                        field_config.home_assistant_extra.get(CONF_DEVICE_CLASS, ""),
-                        field_config.home_assistant_extra.get(CONF_STATE_CLASS, ""),
                         category,
                     )
                 )
@@ -86,8 +79,8 @@ async def async_setup_entry(
     async_add_entities(sensors_to_add)
 
 
-class BluettiSensor(CoordinatorEntity, SensorEntity):
-    """Bluetti universal sensor."""
+class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
+    """Bluetti universal binary sensor."""
 
     def __init__(
         self,
@@ -96,9 +89,6 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         address,
         response_key: str,
         name: str,
-        unit_of_measurement: str,
-        device_class: str,
-        state_class: str,
         category: EntityCategory | None = None,
     ):
         """Init battery entity."""
@@ -111,9 +101,6 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         self._attr_device_info = device_info
         self._attr_name = e_name
         self._attr_unique_id = get_unique_id(e_name)
-        self._attr_native_unit_of_measurement = unit_of_measurement
-        self._attr_device_class = device_class
-        self._attr_state_class = state_class
         self._attr_entity_category = category
 
     @property
@@ -129,5 +116,5 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         if not isinstance(self.coordinator.data, dict):
             _LOGGER.error("Invalid data from coordinator")
             return
-        self._attr_native_value = self.coordinator.data[self._response_key]
+        self._attr_is_on = self.coordinator.data[self._response_key] is True
         self.async_write_ha_state()

@@ -14,7 +14,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from .const import DOMAIN, MANUFACTURER
 from .coordinator import PollingCoordinator
 
-PLATFORMS: [Platform] = [Platform.SENSOR]
+PLATFORMS: [Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
