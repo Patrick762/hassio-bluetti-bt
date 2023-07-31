@@ -6,6 +6,8 @@ import asyncio
 from datetime import timedelta
 import logging
 from typing import cast
+import async_timeout
+
 from bleak import BleakClient, BleakError
 
 from homeassistant.components import bluetooth
@@ -29,6 +31,7 @@ from bluetti_mqtt.bluetooth import (
 )
 
 from . import device_info as dev_info, get_unique_id
+from .const import API_RESPONSE_BATTERY
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -81,65 +84,76 @@ class PollingCoordinator(DataUpdateCoordinator):
         device = bluetooth.async_ble_device_from_address(self.hass, self._address)
         if device is None:
             self.logger.error("Device not available")
-            return
+            return None
 
         if self.bluetti_device is None:
             self.logger.error("Device type not found")
-            return
+            return None
 
         # Polling
         client = BleakClient(device)
+        parsed_data: dict = {}
 
         try:
-            await client.connect()
+            async with async_timeout.timeout(15):
+                await client.connect()
 
-            await client.start_notify(
-                BluetoothClient.NOTIFY_UUID, self._notification_handler
-            )
+                await client.start_notify(
+                    BluetoothClient.NOTIFY_UUID, self._notification_handler
+                )
 
-            for command in self.bluetti_device.polling_commands:
-                try:
-                    # Prepare to make request
-                    self.current_command = command
-                    self.notify_future = self.hass.loop.create_future()
-                    self.notify_response = bytearray()
+                for command in self.bluetti_device.polling_commands:
+                    try:
+                        # Prepare to make request
+                        self.current_command = command
+                        self.notify_future = self.hass.loop.create_future()
+                        self.notify_response = bytearray()
 
-                    # Make request
-                    self.logger.debug("Requesting %s", command)
-                    await client.write_gatt_char(
-                        BluetoothClient.WRITE_UUID, bytes(command)
-                    )
+                        # Make request
+                        self.logger.debug("Requesting %s", command)
+                        await client.write_gatt_char(
+                            BluetoothClient.WRITE_UUID, bytes(command)
+                        )
 
-                    # Wait for response
-                    res = await asyncio.wait_for(
-                        self.notify_future, timeout=BluetoothClient.RESPONSE_TIMEOUT
-                    )
+                        # Wait for response
+                        res = await asyncio.wait_for(
+                            self.notify_future, timeout=BluetoothClient.RESPONSE_TIMEOUT
+                        )
 
-                    # Process data
-                    self.logger.error("Got %s bytes", len(res))
-                    response = cast(bytes, res)
-                    body = command.parse_response(response)
-                    parsed = self.bluetti_device.parse(command.starting_address, body)
+                        # Process data
+                        self.logger.debug("Got %s bytes", len(res))
+                        response = cast(bytes, res)
+                        body = command.parse_response(response)
+                        parsed = self.bluetti_device.parse(
+                            command.starting_address, body
+                        )
 
-                    self.logger.info("Parsed data: %s", parsed)
-                    # Pass data back to sensors
+                        self.logger.info("Parsed data: %s", parsed)
+                        parsed_data.update(parsed)
 
-                except TimeoutError:
-                    self.logger.error("Polling timed out")
-                except ParseError:
-                    self.logger.debug("Got a parse exception...")
-                except ModbusError as err:
-                    self.logger.debug(
-                        "Got an invalid request error for %s: %s",
-                        command,
-                        err,
-                    )
-                except (BadConnectionError, BleakError) as err:
-                    self.logger.debug("Needed to disconnect due to error: %s", err)
+                    except TimeoutError:
+                        self.logger.error("Polling timed out")
+                    except ParseError:
+                        self.logger.debug("Got a parse exception...")
+                    except ModbusError as err:
+                        self.logger.debug(
+                            "Got an invalid request error for %s: %s",
+                            command,
+                            err,
+                        )
+                    except (BadConnectionError, BleakError) as err:
+                        self.logger.debug("Needed to disconnect due to error: %s", err)
+        except TimeoutError:
+            self.logger.error("Polling timed out")
+            return None
         except BleakError as err:
             self.logger.error("Bleak error: %s", err)
+            return None
         finally:
             await client.disconnect()
+
+        # Pass data back to sensors
+        return parsed_data
 
     def _notification_handler(self, _sender: int, data: bytearray):
         """Handle bt data."""
@@ -179,7 +193,7 @@ class Battery(CoordinatorEntity, SensorEntity):
         self._attr_device_info = device_info
         self._attr_name = f"{device_info.get('name')} Battery level"
         self._attr_unique_id = get_unique_id(f"{device_info.get('name')} Battery level")
-        self._attr_unit_of_measurement = "%"
+        self._attr_native_unit_of_measurement = "%"
         self._attr_device_class = "battery"
         self._address = address
 
@@ -193,4 +207,8 @@ class Battery(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         _LOGGER.debug("Updating state of %s", self._attr_unique_id)
+        if not isinstance(self.coordinator.data, dict):
+            _LOGGER.error("Invalid data from coordinator")
+            return
+        self._attr_native_value = self.coordinator.data[API_RESPONSE_BATTERY]
         self.async_write_ha_state()
