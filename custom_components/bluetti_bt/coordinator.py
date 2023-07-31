@@ -54,11 +54,11 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         device = bluetooth.async_ble_device_from_address(self.hass, self._address)
         if device is None:
-            self.logger.error("Device not available")
+            self.logger.error("Device %s not available", self._address)
             return None
 
         if self.bluetti_device is None:
-            self.logger.error("Device type not found")
+            self.logger.error("Device type for %s not found", self._address)
             return None
 
         # Polling
@@ -99,11 +99,13 @@ class PollingCoordinator(DataUpdateCoordinator):
                             command.starting_address, body
                         )
 
-                        self.logger.warning("Parsed data: %s", parsed)
+                        self.logger.debug("Parsed data: %s", parsed)
                         parsed_data.update(parsed)
 
                     except TimeoutError:
-                        self.logger.error("Polling timed out (address: %s)", self._address)
+                        self.logger.error(
+                            "Polling timed out (address: %s)", self._address
+                        )
                     except ParseError:
                         self.logger.debug("Got a parse exception...")
                     except ModbusError as err:
@@ -115,7 +117,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                     except (BadConnectionError, BleakError) as err:
                         self.logger.debug("Needed to disconnect due to error: %s", err)
         except TimeoutError:
-            self.logger.error("Polling timed out")
+            self.logger.error("Polling timed out for device %s", self._address)
             return None
         except BleakError as err:
             self.logger.error("Bleak error: %s", err)

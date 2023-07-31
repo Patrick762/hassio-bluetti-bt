@@ -11,7 +11,6 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import (
     CONF_ADDRESS,
     CONF_NAME,
-    CONF_UNIT_OF_MEASUREMENT,
     EntityCategory,
 )
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -21,14 +20,10 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from bluetti_mqtt.bluetooth import build_device
-from bluetti_mqtt.mqtt_client import NORMAL_DEVICE_FIELDS
+from bluetti_mqtt.mqtt_client import NORMAL_DEVICE_FIELDS, MqttFieldType
 
 from . import device_info as dev_info, get_unique_id
-from .const import (
-    DOMAIN,
-    API_RESPONSE_BATTERY_RANGE_START,
-    API_RESPONSE_BATTERY_RANGE_END,
-)
+from .const import DOMAIN
 from .coordinator import PollingCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,15 +49,9 @@ async def async_setup_entry(
     sensors_to_add = []
     for field_key, field_config in NORMAL_DEVICE_FIELDS.items():
         if bluetti_device.has_field(field_key):
-            if (
-                field_config.home_assistant_extra.get(CONF_UNIT_OF_MEASUREMENT) is None
-                and not field_config.setter
-            ):
+            if field_config.type == MqttFieldType.BOOL:
                 category = None
-                if field_key in (
-                    API_RESPONSE_BATTERY_RANGE_START,
-                    API_RESPONSE_BATTERY_RANGE_END,
-                ):
+                if field_config.setter is True:
                     category = EntityCategory.DIAGNOSTIC
 
                 sensors_to_add.append(
@@ -72,7 +61,7 @@ async def async_setup_entry(
                         address,
                         field_key,
                         field_config.home_assistant_extra.get(CONF_NAME, ""),
-                        category,
+                        category=category,
                     )
                 )
 
@@ -114,7 +103,22 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         """Handle updated data from the coordinator."""
         _LOGGER.debug("Updating state of %s", self._attr_unique_id)
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.error("Invalid data from coordinator")
+            _LOGGER.error(
+                "Invalid data from coordinator (sensor.%s)", self._attr_unique_id
+            )
             return
+
+        response_data = self.coordinator.data.get(self._response_key)
+        if response_data is None:
+            return
+
+        if not isinstance(response_data, bool):
+            _LOGGER.warning(
+                "Invalid response data type from coordinator (sensor.%s): %s",
+                self._attr_unique_id,
+                response_data,
+            )
+            return
+
         self._attr_is_on = self.coordinator.data[self._response_key] is True
         self.async_write_ha_state()

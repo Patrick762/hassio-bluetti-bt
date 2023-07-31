@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from decimal import *
 
 from homeassistant.components import bluetooth
 from homeassistant.components.sensor import SensorEntity, CONF_STATE_CLASS
@@ -22,14 +23,10 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from bluetti_mqtt.bluetooth import build_device
-from bluetti_mqtt.mqtt_client import NORMAL_DEVICE_FIELDS
+from bluetti_mqtt.mqtt_client import NORMAL_DEVICE_FIELDS, MqttFieldType
 
 from . import device_info as dev_info, get_unique_id
-from .const import (
-    DOMAIN,
-    API_RESPONSE_BATTERY_RANGE_START,
-    API_RESPONSE_BATTERY_RANGE_END,
-)
+from .const import DOMAIN, CONF_OPTIONS
 from .coordinator import PollingCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -55,18 +52,10 @@ async def async_setup_entry(
     sensors_to_add = []
     for field_key, field_config in NORMAL_DEVICE_FIELDS.items():
         if bluetti_device.has_field(field_key):
-            if (
-                field_config.home_assistant_extra.get(CONF_UNIT_OF_MEASUREMENT)
-                is not None
-                and not field_config.setter
-            ):
-                category = None
-                if field_key in (
-                    API_RESPONSE_BATTERY_RANGE_START,
-                    API_RESPONSE_BATTERY_RANGE_END,
-                ):
-                    category = EntityCategory.DIAGNOSTIC
-
+            category = None
+            if field_config.setter is True:
+                category = EntityCategory.DIAGNOSTIC
+            if field_config.type == MqttFieldType.NUMERIC:
                 sensors_to_add.append(
                     BluettiSensor(
                         hass.data[DOMAIN][entry.entry_id],
@@ -79,7 +68,19 @@ async def async_setup_entry(
                         ),
                         field_config.home_assistant_extra.get(CONF_DEVICE_CLASS, ""),
                         field_config.home_assistant_extra.get(CONF_STATE_CLASS, ""),
-                        category,
+                        category=category,
+                    )
+                )
+            elif field_config.type == MqttFieldType.ENUM:
+                sensors_to_add.append(
+                    BluettiSensor(
+                        hass.data[DOMAIN][entry.entry_id],
+                        device_info,
+                        address,
+                        field_key,
+                        field_config.home_assistant_extra.get(CONF_NAME, ""),
+                        options=field_config.home_assistant_extra.get(CONF_OPTIONS),
+                        category=category,
                     )
                 )
 
@@ -96,10 +97,11 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         address,
         response_key: str,
         name: str,
-        unit_of_measurement: str,
-        device_class: str,
-        state_class: str,
+        unit_of_measurement: str | None = None,
+        device_class: str | None = None,
+        state_class: str | None = None,
         category: EntityCategory | None = None,
+        options: list[str] | None = None,
     ):
         """Init battery entity."""
         super().__init__(coordinator)
@@ -115,6 +117,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         self._attr_device_class = device_class
         self._attr_state_class = state_class
         self._attr_entity_category = category
+        self._options = options
 
     @property
     def available(self) -> bool:
@@ -127,7 +130,38 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         """Handle updated data from the coordinator."""
         _LOGGER.debug("Updating state of %s", self._attr_unique_id)
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.error("Invalid data from coordinator")
+            _LOGGER.error(
+                "Invalid data from coordinator (sensor.%s)", self._attr_unique_id
+            )
             return
-        self._attr_native_value = self.coordinator.data[self._response_key]
+
+        response_data = self.coordinator.data.get(self._response_key)
+        if response_data is None:
+            return
+
+        if (
+            not isinstance(response_data, int)
+            and not isinstance(response_data, float)
+            and not isinstance(response_data, complex)
+            and not isinstance(response_data, Decimal)
+        ):
+            _LOGGER.warning(
+                "Invalid response data type from coordinator (sensor.%s): %s has type %s",
+                self._attr_unique_id,
+                response_data,
+                type(response_data),
+            )
+            return
+
+        # Different for enum and numeric
+        if (
+            self._options is not None
+            and isinstance(response_data, int)
+            and response_data < len(self._options)
+        ):
+            # Enum
+            self._attr_native_value = self._options[response_data]
+        else:
+            # Numeric
+            self._attr_native_value = response_data
         self.async_write_ha_state()
