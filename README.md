@@ -13,7 +13,7 @@ Based on [bluetti_mqtt](https://github.com/warhammerkid/bluetti_mqtt).
 
 - AC60
 - AC200M
-- AC300
+- AC300 (tested)
 - AC500
 - EB3A
 - EP500
