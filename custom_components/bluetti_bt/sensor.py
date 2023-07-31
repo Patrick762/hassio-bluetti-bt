@@ -62,11 +62,10 @@ class PollingCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name="Bluetti polling coordinator",
-            update_interval=timedelta(seconds=10),
+            update_interval=timedelta(seconds=20),
         )
         self._address = address
         self.notify_future = None
-        self.command_queue = asyncio.Queue()
         self.current_command = None
         self.notify_response = bytearray()
         self.bluetti_device = build_device(address, device_name)
@@ -88,10 +87,6 @@ class PollingCoordinator(DataUpdateCoordinator):
             self.logger.error("Device type not found")
             return
 
-        # Fill command_queue
-        for command in self.bluetti_device.polling_commands:
-            await self.command_queue.put(command)
-
         # Polling
         client = BleakClient(device)
 
@@ -102,17 +97,17 @@ class PollingCoordinator(DataUpdateCoordinator):
                 BluetoothClient.NOTIFY_UUID, self._notification_handler
             )
 
-            while not self.command_queue.empty():
+            for command in self.bluetti_device.polling_commands:
                 try:
                     # Prepare to make request
-                    current_command = await self.command_queue.get()
-                    self.current_command = current_command
+                    self.current_command = command
                     self.notify_future = self.hass.loop.create_future()
                     self.notify_response = bytearray()
 
                     # Make request
+                    self.logger.debug("Requesting %s", command)
                     await client.write_gatt_char(
-                        BluetoothClient.WRITE_UUID, bytes(current_command)
+                        BluetoothClient.WRITE_UUID, bytes(command)
                     )
 
                     # Wait for response
@@ -121,20 +116,22 @@ class PollingCoordinator(DataUpdateCoordinator):
                     )
 
                     # Process data
+                    self.logger.error("Got %s bytes", len(res))
                     response = cast(bytes, res)
-                    body = current_command.parse_response(response)
+                    body = command.parse_response(response)
                     parsed = self.bluetti_device.parse(command.starting_address, body)
 
-                    # TODO: Use parsed data
-                    self.logger.error("Processing parsed data")
+                    self.logger.info("Parsed data: %s", parsed)
+                    # Pass data back to sensors
 
-                    self.command_queue.task_done()
+                except TimeoutError:
+                    self.logger.error("Polling timed out")
                 except ParseError:
                     self.logger.debug("Got a parse exception...")
                 except ModbusError as err:
                     self.logger.debug(
                         "Got an invalid request error for %s: %s",
-                        current_command,
+                        command,
                         err,
                     )
                 except (BadConnectionError, BleakError) as err:
@@ -195,5 +192,5 @@ class Battery(CoordinatorEntity, SensorEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        _LOGGER.error("Updating state of %s", self._attr_unique_id)
+        _LOGGER.debug("Updating state of %s", self._attr_unique_id)
         self.async_write_ha_state()
