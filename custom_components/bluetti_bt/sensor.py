@@ -23,10 +23,14 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from bluetti_mqtt.bluetooth import build_device
-from bluetti_mqtt.mqtt_client import NORMAL_DEVICE_FIELDS, MqttFieldType
+from bluetti_mqtt.mqtt_client import (
+    NORMAL_DEVICE_FIELDS,
+    DC_INPUT_FIELDS,
+    MqttFieldType,
+)
 
 from . import device_info as dev_info, get_unique_id
-from .const import DOMAIN, CONF_OPTIONS
+from .const import DOMAIN, CONF_OPTIONS, DIAGNOSTIC_FIELDS, ADDITIONAL_DEVICE_FIELDS
 from .coordinator import PollingCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,10 +54,13 @@ async def async_setup_entry(
     bluetti_device = build_device(address, device_name)
 
     sensors_to_add = []
-    for field_key, field_config in NORMAL_DEVICE_FIELDS.items():
+    all_fields = NORMAL_DEVICE_FIELDS
+    all_fields.update(DC_INPUT_FIELDS)
+    all_fields.update(ADDITIONAL_DEVICE_FIELDS)
+    for field_key, field_config in all_fields.items():
         if bluetti_device.has_field(field_key):
             category = None
-            if field_config.setter is True:
+            if field_config.setter is True or field_key in DIAGNOSTIC_FIELDS:
                 category = EntityCategory.DIAGNOSTIC
             if field_config.type == MqttFieldType.NUMERIC:
                 sensors_to_add.append(
@@ -63,11 +70,9 @@ async def async_setup_entry(
                         address,
                         field_key,
                         field_config.home_assistant_extra.get(CONF_NAME, ""),
-                        field_config.home_assistant_extra.get(
-                            CONF_UNIT_OF_MEASUREMENT, ""
-                        ),
-                        field_config.home_assistant_extra.get(CONF_DEVICE_CLASS, ""),
-                        field_config.home_assistant_extra.get(CONF_STATE_CLASS, ""),
+                        field_config.home_assistant_extra.get(CONF_UNIT_OF_MEASUREMENT),
+                        field_config.home_assistant_extra.get(CONF_DEVICE_CLASS),
+                        field_config.home_assistant_extra.get(CONF_STATE_CLASS),
                         category=category,
                     )
                 )

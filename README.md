@@ -22,3 +22,4 @@ Based on [bluetti_mqtt](https://github.com/warhammerkid/bluetti_mqtt).
 
 ### Available sensors:
 All sensors which are available in bluetti_mqtt (Based on [this file](https://github.com/warhammerkid/bluetti_mqtt/blob/main/bluetti_mqtt/mqtt_client.py))
+excluding battery pack fields.
