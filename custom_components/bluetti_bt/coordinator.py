@@ -1,6 +1,7 @@
 """Coordinator for Bluetti integration."""
 
 from __future__ import annotations
+from typing import List
 
 import asyncio
 from datetime import timedelta
@@ -23,8 +24,44 @@ from bluetti_mqtt.bluetooth import (
     ParseError,
     build_device,
 )
+from bluetti_mqtt.core.devices.bluetti_device import BluettiDevice
+from bluetti_mqtt.core.commands import ReadHoldingRegisters
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class DummyDevice(BluettiDevice):
+    """Dummy device.
+
+    Changes made here are only temporary and should also be
+    contributed to https://github.com/warhammerkid/bluetti_mqtt
+    """
+
+    def __init__(self, device: BluettiDevice):
+        """Init dummy device with real device."""
+        self.struct = device.struct
+        super().__init__(device.address, device.type, device.sn)
+        self._parent = device
+
+    @property
+    def polling_commands(self) -> List[ReadHoldingRegisters]:
+        return self._parent.polling_commands
+
+    @property
+    def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
+        return self._parent.pack_logging_commands
+
+    @property
+    def logging_commands(self) -> List[ReadHoldingRegisters]:
+        return self._parent.logging_commands
+
+    @property
+    def pack_logging_commands(self) -> List[ReadHoldingRegisters]:
+        return self._parent.pack_logging_commands
+
+    @property
+    def writable_ranges(self) -> List[range]:
+        return self._parent.writable_ranges
 
 
 class PollingCoordinator(DataUpdateCoordinator):
@@ -42,7 +79,10 @@ class PollingCoordinator(DataUpdateCoordinator):
         self.notify_future = None
         self.current_command = None
         self.notify_response = bytearray()
-        self.bluetti_device = build_device(address, device_name)
+        bluetti_device = build_device(address, device_name)
+
+        # Add or modify device fields
+        self.bluetti_device = DummyDevice(bluetti_device)
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.
@@ -99,7 +139,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                             command.starting_address, body
                         )
 
-                        self.logger.debug("Parsed data: %s", parsed)
+                        self.logger.error("Parsed data: %s", parsed)
                         parsed_data.update(parsed)
 
                     except TimeoutError:
