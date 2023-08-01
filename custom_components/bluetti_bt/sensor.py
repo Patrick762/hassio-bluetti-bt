@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import logging
-from decimal import *
+from decimal import Decimal
 
-from homeassistant.components import bluetooth
 from homeassistant.components.sensor import SensorEntity, CONF_STATE_CLASS
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -112,18 +111,13 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
 
         self._attr_device_info = device_info
         self._attr_name = e_name
+        self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
         self._attr_native_unit_of_measurement = unit_of_measurement
         self._attr_device_class = device_class
         self._attr_state_class = state_class
         self._attr_entity_category = category
         self._options = options
-
-    @property
-    def available(self) -> bool:
-        if self._address is None:
-            return False
-        return bluetooth.async_address_present(self.hass, self._address)
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -133,10 +127,12 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             _LOGGER.error(
                 "Invalid data from coordinator (sensor.%s)", self._attr_unique_id
             )
+            self._attr_available = False
             return
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
+            self._attr_available = False
             return
 
         if (
@@ -151,7 +147,10 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
                 response_data,
                 type(response_data),
             )
+            self._attr_available = False
             return
+
+        self._attr_available = True
 
         # Different for enum and numeric
         if (

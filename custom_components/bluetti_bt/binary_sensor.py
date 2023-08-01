@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components import bluetooth
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -89,14 +88,9 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
 
         self._attr_device_info = device_info
         self._attr_name = e_name
+        self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
         self._attr_entity_category = category
-
-    @property
-    def available(self) -> bool:
-        if self._address is None:
-            return False
-        return bluetooth.async_address_present(self.hass, self._address)
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -106,10 +100,12 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
             _LOGGER.error(
                 "Invalid data from coordinator (sensor.%s)", self._attr_unique_id
             )
+            self._attr_available = False
             return
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
+            self._attr_available = False
             return
 
         if not isinstance(response_data, bool):
@@ -118,7 +114,9 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
                 self._attr_unique_id,
                 response_data,
             )
+            self._attr_available = False
             return
 
+        self._attr_available = True
         self._attr_is_on = self.coordinator.data[self._response_key] is True
         self.async_write_ha_state()
