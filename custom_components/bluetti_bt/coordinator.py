@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class DummyDevice(BluettiDevice):
-    """Dummy device.
+    """Dummy device used to add more fields to existing devices.
 
     Changes made here are only temporary and should also be
     contributed to https://github.com/warhammerkid/bluetti_mqtt
@@ -45,6 +45,15 @@ class DummyDevice(BluettiDevice):
 
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
+        if self.type == "EP600":
+            return [
+                ReadHoldingRegisters(100, 62),
+                ReadHoldingRegisters(2022, 6),
+                ReadHoldingRegisters(6101, 7),
+                ReadHoldingRegisters(6175, 2),
+                ReadHoldingRegisters(6181, 2),
+            ]
+
         return self._parent.polling_commands
 
     @property
