@@ -49,9 +49,10 @@ class DummyDevice(BluettiDevice):
             return [
                 ReadHoldingRegisters(100, 62),
                 ReadHoldingRegisters(2022, 6),
+                ReadHoldingRegisters(2213, 4),
+                # Battery
                 ReadHoldingRegisters(6101, 7),
-                ReadHoldingRegisters(6175, 2),
-                ReadHoldingRegisters(6181, 2),
+                ReadHoldingRegisters(6175, 11),
             ]
 
         return self._parent.polling_commands
@@ -148,7 +149,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                             command.starting_address, body
                         )
 
-                        self.logger.error("Parsed data: %s", parsed)
+                        self.logger.error("[NO ERROR] Parsed data: %s", parsed)
                         parsed_data.update(parsed)
 
                     except TimeoutError:
@@ -156,15 +157,17 @@ class PollingCoordinator(DataUpdateCoordinator):
                             "Polling timed out (address: %s)", self._address
                         )
                     except ParseError:
-                        self.logger.debug("Got a parse exception...")
+                        self.logger.warning("Got a parse exception...")
                     except ModbusError as err:
-                        self.logger.debug(
+                        self.logger.warning(
                             "Got an invalid request error for %s: %s",
                             command,
                             err,
                         )
                     except (BadConnectionError, BleakError) as err:
-                        self.logger.debug("Needed to disconnect due to error: %s", err)
+                        self.logger.warning(
+                            "Needed to disconnect due to error: %s", err
+                        )
         except TimeoutError:
             self.logger.error("Polling timed out for device %s", self._address)
             return None
