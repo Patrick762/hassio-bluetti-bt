@@ -157,7 +157,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                             command.starting_address, body
                         )
 
-                        self.logger.error("[NO ERROR] Parsed data: %s", parsed)
+                        self.logger.debug("Parsed data: %s", parsed)
                         parsed_data.update(parsed)
 
                     except TimeoutError:
