@@ -31,7 +31,7 @@ from bluetti_mqtt.mqtt_client import (
 
 from . import device_info as dev_info, get_unique_id
 from .const import DOMAIN, CONF_OPTIONS, DIAGNOSTIC_FIELDS, ADDITIONAL_DEVICE_FIELDS
-from .coordinator import PollingCoordinator
+from .coordinator import PollingCoordinator, DummyDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +52,7 @@ async def async_setup_entry(
 
     # Add sensors according to device_info
     bluetti_device = build_device(address, device_name)
+    bluetti_device = DummyDevice(bluetti_device)
 
     sensors_to_add = []
     all_fields = NORMAL_DEVICE_FIELDS
