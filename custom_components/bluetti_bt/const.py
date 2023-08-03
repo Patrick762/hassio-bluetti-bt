@@ -68,4 +68,40 @@ ADDITIONAL_DEVICE_FIELDS = {
         advanced=False,
         home_assistant_extra={"name": "High Voltage Safety Module Version"},
     ),
+    "adl400_ac_input_voltage_phase1": MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "ADL400 AC Input Voltage Phase 1",
+            "unit_of_measurement": "V",
+            "device_class": "voltage",
+            "state_class": "measurement",
+            "force_update": True,
+        },
+    ),
+    "adl400_ac_input_voltage_phase2": MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "ADL400 AC Input Voltage Phase 2",
+            "unit_of_measurement": "V",
+            "device_class": "voltage",
+            "state_class": "measurement",
+            "force_update": True,
+        },
+    ),
+    "adl400_ac_input_voltage_phase3": MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "ADL400 AC Input Voltage Phase 3",
+            "unit_of_measurement": "V",
+            "device_class": "voltage",
+            "state_class": "measurement",
+            "force_update": True,
+        },
+    ),
 }

@@ -40,6 +40,12 @@ class DummyDevice(BluettiDevice):
     def __init__(self, device: BluettiDevice):
         """Init dummy device with real device."""
         self.struct = device.struct
+
+        if device.type == "EP600":
+            self.struct.add_decimal_field("adl400_ac_input_voltage_phase1", 1229, 1)
+            self.struct.add_decimal_field("adl400_ac_input_voltage_phase2", 1237, 1)
+            self.struct.add_decimal_field("adl400_ac_input_voltage_phase3", 1245, 1)
+
         super().__init__(device.address, device.type, device.sn)
         self._parent = device
 
@@ -48,11 +54,13 @@ class DummyDevice(BluettiDevice):
         if self.type == "EP600":
             return [
                 ReadHoldingRegisters(100, 62),
+                ReadHoldingRegisters(1229, 19),
                 ReadHoldingRegisters(2022, 6),
                 ReadHoldingRegisters(2213, 4),
                 # Battery
                 ReadHoldingRegisters(6101, 7),
                 ReadHoldingRegisters(6175, 11),
+                # current limit for reading ReadHoldingRegisters(0x2F2F, 1),
             ]
 
         return self._parent.polling_commands
