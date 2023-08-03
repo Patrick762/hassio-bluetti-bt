@@ -176,4 +176,16 @@ ADDITIONAL_DEVICE_FIELDS = {
             "force_update": True,
         },
     ),
+    "ac_output_frequency": MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "AC Output Frequency",
+            "unit_of_measurement": "Hz",
+            "device_class": "frequency",
+            "state_class": "measurement",
+            "force_update": True,
+        },
+    ),
 }
