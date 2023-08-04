@@ -49,7 +49,7 @@ class DummyDevice(BluettiDevice):
             self.struct.add_decimal_field("adl400_ac_input_voltage_phase1", 1229, 1)
             self.struct.add_decimal_field("adl400_ac_input_voltage_phase2", 1237, 1)
             self.struct.add_decimal_field("adl400_ac_input_voltage_phase3", 1245, 1)
-            # EP600 AC Input
+            # Grid Input
             self.struct.add_decimal_field("grid_input_frequency", 1300, 1)
             self.struct.add_uint_field("grid_input_power_phase1", 1313)
             self.struct.add_uint_field("grid_input_power_phase2", 1319)
