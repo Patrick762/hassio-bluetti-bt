@@ -42,17 +42,35 @@ class DummyDevice(BluettiDevice):
         self.struct = device.struct
 
         if device.type == "EP600":
+            # ADL400 Smart Meter for AC Solar
+            self.struct.add_uint_field("adl400_ac_input_power_phase1", 1228)
+            self.struct.add_uint_field("adl400_ac_input_power_phase2", 1236)
+            self.struct.add_uint_field("adl400_ac_input_power_phase3", 1244)
             self.struct.add_decimal_field("adl400_ac_input_voltage_phase1", 1229, 1)
             self.struct.add_decimal_field("adl400_ac_input_voltage_phase2", 1237, 1)
             self.struct.add_decimal_field("adl400_ac_input_voltage_phase3", 1245, 1)
+            # EP600 AC Input
             self.struct.add_decimal_field("ac_input_frequency", 1300, 1)
             self.struct.add_decimal_field("ac_input_voltage_phase1", 1314, 1)
             self.struct.add_decimal_field("ac_input_voltage_phase2", 1320, 1)
             self.struct.add_decimal_field("ac_input_voltage_phase3", 1326, 1)
+            self.struct.add_decimal_field("ac_input_current_phase1", 1315, 1)
+            self.struct.add_decimal_field("ac_input_current_phase2", 1321, 1)
+            self.struct.add_decimal_field("ac_input_current_phase3", 1327, 1)
+            # EP600 AC Output
             self.struct.add_decimal_field("ac_output_frequency", 1500, 1)
             self.struct.add_decimal_field("ac_output_voltage_phase1", 1511, 1)
             self.struct.add_decimal_field("ac_output_voltage_phase2", 1518, 1)
             self.struct.add_decimal_field("ac_output_voltage_phase3", 1525, 1)
+            self.struct.add_uint_field("ac_output_power_phase1", 1510)
+            self.struct.add_uint_field("ac_output_power_phase2", 1517)
+            self.struct.add_uint_field("ac_output_power_phase3", 1524)
+            self.struct.add_decimal_field("ac_output_current_phase1", 1512, 1)
+            self.struct.add_decimal_field("ac_output_current_phase2", 1519, 1)
+            self.struct.add_decimal_field("ac_output_current_phase3", 1526, 1)
+            # Testing
+            # for i in range(0, 10):
+            #      self.struct.add_decimal_field("testing"+str(i), 1520+i, 1)
 
         super().__init__(device.address, device.type, device.sn)
         self._parent = device
@@ -62,16 +80,27 @@ class DummyDevice(BluettiDevice):
         if self.type == "EP600":
             return [
                 ReadHoldingRegisters(100, 62),
-                ReadHoldingRegisters(1229, 19),
-                ReadHoldingRegisters(1300, 1),
-                ReadHoldingRegisters(1314, 13),
-                ReadHoldingRegisters(1500, 1),
-                ReadHoldingRegisters(1511, 15),
+                ReadHoldingRegisters(1228, 19),
+                ReadHoldingRegisters(1300, 28),
+                ReadHoldingRegisters(1500, 27),
                 ReadHoldingRegisters(2022, 6),
                 ReadHoldingRegisters(2213, 4),
                 # Battery
                 ReadHoldingRegisters(6101, 7),
                 ReadHoldingRegisters(6175, 11),
+                # Testing
+                # ReadHoldingRegisters(100, 62),
+                # ReadHoldingRegisters(1100, 51),
+                # ReadHoldingRegisters(1200, 80),
+                # ReadHoldingRegisters(1300, 31),
+                # ReadHoldingRegisters(1400, 48),
+                # ReadHoldingRegisters(1500, 30),
+                # ReadHoldingRegisters(2000, 89),
+                # ReadHoldingRegisters(2200, 41),
+                # ReadHoldingRegisters(2300, 36),
+                # ReadHoldingRegisters(6000, 32),
+                # ReadHoldingRegisters(6100, 100),
+                # ReadHoldingRegisters(6300, 100),
             ]
 
         return self._parent.polling_commands
