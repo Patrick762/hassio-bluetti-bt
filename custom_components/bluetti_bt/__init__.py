@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import DOMAIN, MANUFACTURER, CONF_USE_CONTROLS
+from .const import DATA_COORDINATOR, DOMAIN, MANUFACTURER, CONF_USE_CONTROLS, DATA_POLLING_RUNNING
 from .coordinator import PollingCoordinator
 
 PLATFORMS: [Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
@@ -32,13 +32,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not bluetooth.async_address_present(hass, address):
         raise ConfigEntryNotReady("Bluetti device not present")
 
+    # Create data structure
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN].setdefault(entry.entry_id, {})
+    hass.data[DOMAIN][entry.entry_id].setdefault(DATA_POLLING_RUNNING, False)
+
     # Create coordinator for polling
     coordinator = PollingCoordinator(hass, address, device_name)
     await coordinator.async_config_entry_first_refresh()
-
-    # Create data structure
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN].setdefault(entry.entry_id, coordinator)
+    hass.data[DOMAIN][entry.entry_id].setdefault(DATA_COORDINATOR, coordinator)
 
     platforms: list = PLATFORMS
     if use_controls is True:

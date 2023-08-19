@@ -8,6 +8,9 @@ MANUFACTURER = "Bluetti"
 CONF_OPTIONS = "options"
 CONF_USE_CONTROLS = "use_controls"
 
+DATA_COORDINATOR = "coordinator"
+DATA_POLLING_RUNNING = "polling_running"
+
 CONTROL_FIELDS = [
     "ac_output_on",
     "dc_output_on",

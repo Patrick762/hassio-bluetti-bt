@@ -26,7 +26,7 @@ from bluetti_mqtt.mqtt_client import (
 )
 
 from . import device_info as dev_info, get_unique_id
-from .const import DOMAIN, ADDITIONAL_DEVICE_FIELDS
+from .const import DATA_COORDINATOR, DOMAIN, ADDITIONAL_DEVICE_FIELDS
 from .coordinator import PollingCoordinator, DummyDevice
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ async def async_setup_entry(
 
                 sensors_to_add.append(
                     BluettiBinarySensor(
-                        hass.data[DOMAIN][entry.entry_id],
+                        hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR],
                         device_info,
                         address,
                         field_key,
