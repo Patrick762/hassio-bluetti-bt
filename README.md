@@ -26,4 +26,5 @@ All sensors which are available in bluetti_mqtt (Based on [this file](https://gi
 excluding battery pack fields.
 
 ### Available controls:
-AC and DC outputs (for now)
+If enabled in the Integration options (you need to reload the integration if you change this option):
+AC and DC outputs

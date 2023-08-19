@@ -1,6 +1,7 @@
 """Bluetti BT sensors."""
 
 from __future__ import annotations
+from enum import Enum
 
 import logging
 from decimal import Decimal
@@ -146,6 +147,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             and not isinstance(response_data, float)
             and not isinstance(response_data, complex)
             and not isinstance(response_data, Decimal)
+            and not isinstance(response_data, Enum)
         ):
             _LOGGER.warning(
                 "Invalid response data type from coordinator (sensor.%s): %s has type %s",
@@ -161,11 +163,11 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         # Different for enum and numeric
         if (
             self._options is not None
-            and isinstance(response_data, int)
-            and response_data < len(self._options)
+            and isinstance(response_data, Enum)
+            and response_data.value < len(self._options)
         ):
             # Enum
-            self._attr_native_value = self._options[response_data]
+            self._attr_native_value = self._options[response_data.value]
         else:
             # Numeric
             self._attr_native_value = response_data
