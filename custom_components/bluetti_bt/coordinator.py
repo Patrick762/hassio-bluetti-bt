@@ -1,12 +1,11 @@
 """Coordinator for Bluetti integration."""
 
 from __future__ import annotations
-from typing import List
+from typing import List, cast
 
 import asyncio
 from datetime import timedelta
 import logging
-from typing import cast
 import async_timeout
 
 from bleak import BleakClient, BleakError

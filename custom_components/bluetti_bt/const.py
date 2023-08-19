@@ -6,6 +6,7 @@ DOMAIN = "bluetti_bt"
 MANUFACTURER = "Bluetti"
 
 CONF_OPTIONS = "options"
+CONF_USE_CONTROLS = "use_controls"
 
 DIAGNOSTIC_FIELDS = [
     "max_ac_input_power",
