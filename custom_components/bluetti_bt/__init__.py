@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import logging
 
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
@@ -11,10 +12,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import DOMAIN, MANUFACTURER
+from .const import DOMAIN, MANUFACTURER, CONF_USE_CONTROLS
 from .coordinator import PollingCoordinator
 
 PLATFORMS: [Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -22,6 +24,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     address = entry.data.get(CONF_ADDRESS)
     device_name = entry.data.get(CONF_NAME)
+    use_controls = entry.data.get(CONF_USE_CONTROLS)
 
     if address is None:
         return False
@@ -37,8 +40,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN].setdefault(entry.entry_id, coordinator)
 
+    platforms: list = PLATFORMS
+    if use_controls is True:
+        _LOGGER.warning("You are using controls with this integration at your own risk!")
+        platforms.append(Platform.SWITCH)
+
     # Setup platforms
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry, platforms)
 
     return True
 
