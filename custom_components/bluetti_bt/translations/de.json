@@ -1,0 +1,11 @@
+{
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "use_controls": "Steuerung aktivieren (auf eigenes Risiko)"
+        }
+      }
+    }
+  }
+}

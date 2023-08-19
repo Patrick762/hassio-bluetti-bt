@@ -1,10 +1,15 @@
-"""Bluetti BT sensors."""
+"""Bluetti BT switches."""
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import async_timeout
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from bleak import BleakClient, BleakError
+
+from homeassistant.components import bluetooth
+from homeassistant.components.switch import SwitchEntity, SwitchDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import (
@@ -19,6 +24,8 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from bluetti_mqtt.bluetooth import build_device
+from bluetti_mqtt.bluetooth.client import BluetoothClient
+from bluetti_mqtt.core.devices.bluetti_device import BluettiDevice
 from bluetti_mqtt.mqtt_client import (
     NORMAL_DEVICE_FIELDS,
     DC_INPUT_FIELDS,
@@ -26,7 +33,7 @@ from bluetti_mqtt.mqtt_client import (
 )
 
 from . import device_info as dev_info, get_unique_id
-from .const import DATA_COORDINATOR, DOMAIN, ADDITIONAL_DEVICE_FIELDS
+from .const import CONTROL_FIELDS, DATA_COORDINATOR, DATA_POLLING_RUNNING, DOMAIN, ADDITIONAL_DEVICE_FIELDS
 from .coordinator import PollingCoordinator, DummyDevice
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +42,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Setup sensor entities."""
+    """Setup switch entities."""
 
     device_name = entry.data.get(CONF_NAME)
     address = entry.data.get(CONF_ADDRESS)
@@ -57,48 +64,51 @@ async def async_setup_entry(
     for field_key, field_config in all_fields.items():
         if bluetti_device.has_field(field_key):
             if field_config.type == MqttFieldType.BOOL:
-                category = None
-                if field_config.setter is True:
-                    category = EntityCategory.DIAGNOSTIC
-
-                sensors_to_add.append(
-                    BluettiBinarySensor(
-                        hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR],
-                        device_info,
-                        address,
-                        field_key,
-                        field_config.home_assistant_extra.get(CONF_NAME, ""),
-                        category=category,
+                if field_config.setter is True and field_key in CONTROL_FIELDS:
+                    sensors_to_add.append(
+                        BluettiSwitch(
+                            bluetti_device,
+                            hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR],
+                            device_info,
+                            address,
+                            field_key,
+                            field_config.home_assistant_extra.get(CONF_NAME, ""),
+                            entry.entry_id
+                        )
                     )
-                )
 
     async_add_entities(sensors_to_add)
 
 
-class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
-    """Bluetti universal binary sensor."""
+class BluettiSwitch(CoordinatorEntity, SwitchEntity):
+    """Bluetti universal switch."""
 
     def __init__(
         self,
+        bluetti_device: BluettiDevice,
         coordinator: PollingCoordinator,
         device_info: DeviceInfo,
         address,
         response_key: str,
         name: str,
+        entry_id: str,
         category: EntityCategory | None = None,
     ):
-        """Init battery entity."""
+        """Init entity."""
         super().__init__(coordinator)
 
+        self._bluetti_device = bluetti_device
         e_name = f"{device_info.get('name')} {name}"
         self._address = address
         self._response_key = response_key
+        self._entry_id = entry_id
 
         self._attr_device_info = device_info
         self._attr_name = e_name
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
         self._attr_entity_category = category
+        self._attr_device_class = SwitchDeviceClass.OUTLET
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -128,3 +138,51 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._attr_available = True
         self._attr_is_on = self.coordinator.data[self._response_key] is True
         self.async_write_ha_state()
+
+    async def async_turn_on(self, **kwargs):
+        """Turn the entity on."""
+        _LOGGER.debug("Turn on %s on %s", self._response_key, self._address)
+        await self.write_to_device(True)
+
+    async def async_turn_off(self, **kwargs):
+        """Turn the entity off."""
+        _LOGGER.debug("Turn off %s on %s", self._response_key, self._address)
+        await self.write_to_device(False)
+
+    async def write_to_device(self, state: bool):
+        """Write to device."""
+        device = bluetooth.async_ble_device_from_address(self.hass, self._address)
+        if device is None:
+            _LOGGER.error("Device %s not available", self._address)
+            return
+
+        command = self._bluetti_device.build_setter_command(self._response_key, state)
+
+        # Wait until polling is done
+        while self.hass.data[DOMAIN][self._entry_id][DATA_POLLING_RUNNING] is True:
+            _LOGGER.debug("Waiting for polling to finish...")
+            asyncio.sleep(1)
+
+        client = BleakClient(device)
+        try:
+            async with async_timeout.timeout(15):
+                await client.connect()
+
+                # Send command
+                await client.write_gatt_char(
+                    BluetoothClient.WRITE_UUID, bytes(command)
+                )
+
+                # Wait until device has changed value, otherwise reading register might reset it
+                await asyncio.sleep(5)
+
+        except TimeoutError:
+            _LOGGER.error("Timed out for device %s", self._address)
+            return None
+        except BleakError as err:
+            _LOGGER.error("Bleak error: %s", err)
+            return None
+        finally:
+            await client.disconnect()
+
+        await self.coordinator.async_request_refresh()

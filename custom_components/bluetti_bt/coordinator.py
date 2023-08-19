@@ -1,12 +1,11 @@
 """Coordinator for Bluetti integration."""
 
 from __future__ import annotations
-from typing import List
+from typing import List, cast
 
 import asyncio
 from datetime import timedelta
 import logging
-from typing import cast
 import async_timeout
 
 from bleak import BleakClient, BleakError
@@ -26,6 +25,8 @@ from bluetti_mqtt.bluetooth import (
 )
 from bluetti_mqtt.core.devices.bluetti_device import BluettiDevice
 from bluetti_mqtt.core.commands import ReadHoldingRegisters
+
+from .const import DATA_POLLING_RUNNING, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -151,6 +152,8 @@ class PollingCoordinator(DataUpdateCoordinator):
         This is the place to pre-process the data to lookup tables
         so entities can quickly look up their data.
         """
+        self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_POLLING_RUNNING] = True
+
         self.logger.debug("Polling data")
 
         device = bluetooth.async_ble_device_from_address(self.hass, self._address)
@@ -204,7 +207,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                         parsed_data.update(parsed)
 
                     except TimeoutError:
-                        self.logger.error(
+                        self.logger.warning(
                             "Polling timed out (address: %s)", self._address
                         )
                     except ParseError:
@@ -217,16 +220,18 @@ class PollingCoordinator(DataUpdateCoordinator):
                         )
                     except (BadConnectionError, BleakError) as err:
                         self.logger.warning(
-                            "Needed to disconnect due to error: %s", err
+                            "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
                         )
         except TimeoutError:
-            self.logger.error("Polling timed out for device %s", self._address)
+            self.logger.warning("Polling timed out for device %s", self._address)
             return None
         except BleakError as err:
-            self.logger.error("Bleak error: %s", err)
+            self.logger.warning("Bleak error: %s", err)
             return None
         finally:
             await client.disconnect()
+
+        self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_POLLING_RUNNING] = False
 
         # Pass data back to sensors
         return parsed_data

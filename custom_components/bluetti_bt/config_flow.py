@@ -14,9 +14,10 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.const import CONF_ADDRESS, CONF_TYPE, CONF_NAME
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import selector
 
 from . import get_type_by_bt_name
-from .const import DOMAIN
+from .const import DOMAIN, CONF_USE_CONTROLS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,4 +86,57 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=data_schema,
+        )
+
+    @staticmethod
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Create the options flow."""
+        return OptionsFlowHandler(config_entry)
+
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle a option flow."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            changed = self.hass.config_entries.async_update_entry(
+                self.config_entry,
+                data={
+                    **self.config_entry.data,
+                    **{
+                        CONF_USE_CONTROLS: user_input[CONF_USE_CONTROLS],
+                    },
+                },
+            )
+            if changed is False:
+                _LOGGER.error(
+                    "Method OptionsFlowHandler.async_step_init: Config entry %s has not been changed",
+                    self.config_entry.entry_id,
+                )
+            return self.async_create_entry(
+                title="",
+                data={
+                    CONF_USE_CONTROLS: user_input[CONF_USE_CONTROLS],
+                },
+            )
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_USE_CONTROLS,
+                        default=self.config_entry.data.get(CONF_USE_CONTROLS, False),
+                    ): selector.BooleanSelector(),
+                }
+            ),
         )
