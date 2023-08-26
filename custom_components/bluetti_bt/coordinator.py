@@ -129,13 +129,13 @@ class DummyDevice(BluettiDevice):
 class PollingCoordinator(DataUpdateCoordinator):
     """Polling coordinator."""
 
-    def __init__(self, hass: HomeAssistant, address, device_name: str):
+    def __init__(self, hass: HomeAssistant, address, device_name: str, polling_interval: int):
         """Initialize coordinator."""
         super().__init__(
             hass,
             _LOGGER,
             name="Bluetti polling coordinator",
-            update_interval=timedelta(seconds=20),
+            update_interval=timedelta(seconds=polling_interval),
         )
         self._address = address
         self.notify_future = None

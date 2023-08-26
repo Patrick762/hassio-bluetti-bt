@@ -3,7 +3,9 @@
     "step": {
       "init": {
         "data": {
-          "use_controls": "Steuerung aktivieren (auf eigenes Risiko)"
+          "use_controls": "Steuerung aktivieren (auf eigenes Risiko)",
+          "persistant_conn": "Dauerhafte Verbindung",
+          "polling_interval": "Datenabruf-Intervall"
         }
       }
     }
