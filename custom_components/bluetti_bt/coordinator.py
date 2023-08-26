@@ -146,6 +146,7 @@ class PollingCoordinator(DataUpdateCoordinator):
         )
         self._address = address
         self.client = None
+        self.has_notifier = False
         self.notify_future = None
         self.current_command = None
         self.notify_response = bytearray()
@@ -174,18 +175,19 @@ class PollingCoordinator(DataUpdateCoordinator):
             self.logger.error("Device type for %s not found", self._address)
             return None
 
-        # Polling
+        # Create client
         self.client = BleakClient(device)
         parsed_data: dict = {}
 
         # Connect to device
         try:
-            async with async_timeout.timeout(5):
+            async with async_timeout.timeout(20):
                 await self.client.connect()
 
                 await self.client.start_notify(
                     BluetoothClient.NOTIFY_UUID, self._notification_handler
                 )
+                self.has_notifier = True
         except TimeoutError:
             self.logger.warning("Connection timed out for device %s", self._address)
             return None
@@ -199,6 +201,13 @@ class PollingCoordinator(DataUpdateCoordinator):
                 # Reconnect if not connected
                 if not self.client.is_connected:
                     await self.client.connect()
+
+                # Attach notifier if needed
+                if not self.has_notifier:
+                    await self.client.start_notify(
+                        BluetoothClient.NOTIFY_UUID, self._notification_handler
+                    )
+                    self.has_notifier = True
 
                 for command in self.bluetti_device.polling_commands:
                     try:
@@ -230,7 +239,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                         parsed_data.update(parsed)
 
                     except TimeoutError:
-                        self.logger.warning(
+                        self.logger.debug(
                             "Polling timed out (address: %s)", self._address
                         )
                     except ParseError:
@@ -246,7 +255,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                             "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
                         )
         except TimeoutError:
-            self.logger.warning("Polling timed out for device %s", self._address)
+            self.logger.debug("Polling timed out for device %s", self._address)
             return None
         except BleakError as err:
             self.logger.warning("Bleak error: %s", err)
