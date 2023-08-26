@@ -27,6 +27,7 @@ from bluetti_mqtt.core.devices.bluetti_device import BluettiDevice
 from bluetti_mqtt.core.commands import ReadHoldingRegisters
 
 from .const import DATA_POLLING_RUNNING, DOMAIN
+from .utils import mac_loggable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -135,7 +136,7 @@ class PollingCoordinator(DataUpdateCoordinator):
         address: str,
         device_name: str,
         polling_interval: int,
-        persistant_conn: bool,
+        persistent_conn: bool,
     ):
         """Initialize coordinator."""
         super().__init__(
@@ -145,16 +146,22 @@ class PollingCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=polling_interval),
         )
         self._address = address
-        self.client = None
         self.has_notifier = False
         self.notify_future = None
         self.current_command = None
         self.notify_response = bytearray()
         bluetti_device = build_device(address, device_name)
-        self.persistant_conn = persistant_conn
+        self.persistent_conn = persistent_conn
 
         # Add or modify device fields
         self.bluetti_device = DummyDevice(bluetti_device)
+
+        # Create client
+        device = bluetooth.async_ble_device_from_address(hass, address)
+        if device is None:
+            self.logger.error("Device %s not available", mac_loggable(address))
+            return None
+        self.client = BleakClient(device)
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.
@@ -166,17 +173,10 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         self.logger.debug("Polling data")
 
-        device = bluetooth.async_ble_device_from_address(self.hass, self._address)
-        if device is None:
-            self.logger.error("Device %s not available", self._address)
-            return None
-
         if self.bluetti_device is None:
-            self.logger.error("Device type for %s not found", self._address)
+            self.logger.error("Device type for %s not found", mac_loggable(self._address))
             return None
 
-        # Create client
-        self.client = BleakClient(device)
         parsed_data: dict = {}
 
         # Connect to device
@@ -189,10 +189,10 @@ class PollingCoordinator(DataUpdateCoordinator):
                 )
                 self.has_notifier = True
         except TimeoutError:
-            self.logger.warning("Connection timed out for device %s", self._address)
+            self.logger.debug("Connection timed out for device %s", mac_loggable(self._address))
             return None
         except BleakError as err:
-            self.logger.warning("Bleak error: %s", err)
+            self.logger.debug("Bleak error: %s", err)
             return None
 
         try:
@@ -240,7 +240,7 @@ class PollingCoordinator(DataUpdateCoordinator):
 
                     except TimeoutError:
                         self.logger.debug(
-                            "Polling timed out (address: %s)", self._address
+                            "Polling timed out (address: %s)", mac_loggable(self._address)
                         )
                     except ParseError:
                         self.logger.warning("Got a parse exception...")
@@ -255,14 +255,14 @@ class PollingCoordinator(DataUpdateCoordinator):
                             "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
                         )
         except TimeoutError:
-            self.logger.debug("Polling timed out for device %s", self._address)
+            self.logger.debug("Polling timed out for device %s", mac_loggable(self._address))
             return None
         except BleakError as err:
             self.logger.warning("Bleak error: %s", err)
             return None
         finally:
             # Disconnect if connection not persistant
-            if not self.persistant_conn:
+            if not self.persistent_conn:
                 await self.client.disconnect()
 
         self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_POLLING_RUNNING] = False

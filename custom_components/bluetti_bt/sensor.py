@@ -32,6 +32,7 @@ from bluetti_mqtt.mqtt_client import (
 from . import device_info as dev_info, get_unique_id
 from .const import DATA_COORDINATOR, DOMAIN, CONF_OPTIONS, DIAGNOSTIC_FIELDS, ADDITIONAL_DEVICE_FIELDS
 from .coordinator import PollingCoordinator, DummyDevice
+from .utils import unique_id_loggable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -129,10 +130,10 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        _LOGGER.debug("Updating state of %s", self._attr_unique_id)
+        _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
         if not isinstance(self.coordinator.data, dict):
             _LOGGER.debug(
-                "Invalid data from coordinator (sensor.%s)", self._attr_unique_id
+                "Invalid data from coordinator (sensor.%s)", unique_id_loggable(self._attr_unique_id)
             )
             self._attr_available = False
             return
@@ -151,7 +152,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         ):
             _LOGGER.warning(
                 "Invalid response data type from coordinator (sensor.%s): %s has type %s",
-                self._attr_unique_id,
+                unique_id_loggable(self._attr_unique_id),
                 response_data,
                 type(response_data),
             )

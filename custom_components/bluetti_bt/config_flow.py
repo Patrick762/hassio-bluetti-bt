@@ -17,7 +17,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
 from . import get_type_by_bt_name
-from .const import CONF_PERSISTANT_CONN, CONF_POLLING_INTERVAL, DATA_COORDINATOR, DOMAIN, CONF_USE_CONTROLS
+from .const import CONF_PERSISTENT_CONN, CONF_POLLING_INTERVAL, DATA_COORDINATOR, DOMAIN, CONF_USE_CONTROLS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -119,7 +119,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     **self.config_entry.data,
                     **{
                         CONF_USE_CONTROLS: user_input[CONF_USE_CONTROLS],
-                        CONF_PERSISTANT_CONN: user_input[CONF_PERSISTANT_CONN],
+                        CONF_PERSISTENT_CONN: user_input[CONF_PERSISTENT_CONN],
                         CONF_POLLING_INTERVAL: user_input[CONF_POLLING_INTERVAL],
                     },
                 },
@@ -133,7 +133,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 title="",
                 data={
                     CONF_USE_CONTROLS: user_input[CONF_USE_CONTROLS],
-                    CONF_PERSISTANT_CONN: user_input[CONF_PERSISTANT_CONN],
+                    CONF_PERSISTENT_CONN: user_input[CONF_PERSISTENT_CONN],
                     CONF_POLLING_INTERVAL: user_input[CONF_POLLING_INTERVAL],
                 },
             )
@@ -147,8 +147,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         default=self.config_entry.data.get(CONF_USE_CONTROLS, False),
                     ): selector.BooleanSelector(),
                     vol.Required(
-                        CONF_PERSISTANT_CONN,
-                        default=self.config_entry.data.get(CONF_PERSISTANT_CONN, False),
+                        CONF_PERSISTENT_CONN,
+                        default=self.config_entry.data.get(CONF_PERSISTENT_CONN, False),
                     ): selector.BooleanSelector(),
                     vol.Required(
                         CONF_POLLING_INTERVAL,

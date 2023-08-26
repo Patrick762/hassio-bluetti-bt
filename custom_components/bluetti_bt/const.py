@@ -7,7 +7,7 @@ MANUFACTURER = "Bluetti"
 
 CONF_OPTIONS = "options"
 CONF_USE_CONTROLS = "use_controls"
-CONF_PERSISTANT_CONN = "persistant_conn"
+CONF_PERSISTENT_CONN = "persistent_conn"
 CONF_POLLING_INTERVAL = "polling_interval"
 
 DATA_COORDINATOR = "coordinator"

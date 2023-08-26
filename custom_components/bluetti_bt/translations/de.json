@@ -4,7 +4,7 @@
       "init": {
         "data": {
           "use_controls": "Steuerung aktivieren (auf eigenes Risiko)",
-          "persistant_conn": "Dauerhafte Verbindung (Neustart erforderlich)",
+          "persistent_conn": "Dauerhafte Verbindung (Neustart erforderlich)",
           "polling_interval": "Datenabruf-Intervall in Sekunden (Neustart erforderlich)"
         }
       }

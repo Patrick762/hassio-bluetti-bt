@@ -4,7 +4,7 @@
       "init": {
         "data": {
           "use_controls": "Use controls (use at own risk)",
-          "persistant_conn": "Persistant connection (restart required)",
+          "persistent_conn": "Persistent connection (restart required)",
           "polling_interval": "Polling interval in seconds (restart required)"
         }
       }
