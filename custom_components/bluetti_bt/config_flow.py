@@ -108,6 +108,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
+
+            # Validate update interval
+            if user_input[CONF_POLLING_INTERVAL] < 5:
+                return self.async_abort(reason="invalid_interval")
+
             changed = self.hass.config_entries.async_update_entry(
                 self.config_entry,
                 data={

@@ -50,7 +50,7 @@ async def async_setup_entry(
         _LOGGER.error("Device has no address")
 
     # Generate device info
-    _LOGGER.info("Creating sensors for device with address %s", address)
+    _LOGGER.info("Creating switches for device with address %s", address)
     device_info = dev_info(entry)
 
     # Add sensors according to device_info
@@ -116,7 +116,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         _LOGGER.debug("Updating state of %s", self._attr_unique_id)
         if not isinstance(self.coordinator.data, dict):
             _LOGGER.error(
-                "Invalid data from coordinator (sensor.%s)", self._attr_unique_id
+                "Invalid data from coordinator (switch.%s)", self._attr_unique_id
             )
             self._attr_available = False
             return
@@ -128,7 +128,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
 
         if not isinstance(response_data, bool):
             _LOGGER.warning(
-                "Invalid response data type from coordinator (sensor.%s): %s",
+                "Invalid response data type from coordinator (switch.%s): %s",
                 self._attr_unique_id,
                 response_data,
             )

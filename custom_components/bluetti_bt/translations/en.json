@@ -4,10 +4,13 @@
       "init": {
         "data": {
           "use_controls": "Use controls (use at own risk)",
-          "persistant_conn": "Persistant connection",
+          "persistant_conn": "Persistant connection (restart required)",
           "polling_interval": "Polling interval in seconds (restart required)"
         }
       }
+    },
+    "abort": {
+      "invalid_interval": "Invalid polling interval. Use 5 seconds or more"
     }
   }
 }

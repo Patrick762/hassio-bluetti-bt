@@ -131,7 +131,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         """Handle updated data from the coordinator."""
         _LOGGER.debug("Updating state of %s", self._attr_unique_id)
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.error(
+            _LOGGER.debug(
                 "Invalid data from coordinator (sensor.%s)", self._attr_unique_id
             )
             self._attr_available = False
