@@ -18,5 +18,5 @@
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/Patrick762/hassio-bluetti-bt/issues",
     "requirements": ["bluetti_mqtt==0.15.0"],
-    "version": "0.0.8"
+    "version": "0.0.10"
 }
