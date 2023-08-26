@@ -5,7 +5,7 @@
         "data": {
           "use_controls": "Steuerung aktivieren (auf eigenes Risiko)",
           "persistant_conn": "Dauerhafte Verbindung",
-          "polling_interval": "Datenabruf-Intervall"
+          "polling_interval": "Datenabruf-Intervall in Sekunden (Neustart erforderlich)"
         }
       }
     }

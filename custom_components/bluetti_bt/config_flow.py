@@ -17,7 +17,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
 from . import get_type_by_bt_name
-from .const import CONF_PERSISTANT_CONN, CONF_POLLING_INTERVAL, DOMAIN, CONF_USE_CONTROLS
+from .const import CONF_PERSISTANT_CONN, CONF_POLLING_INTERVAL, DATA_COORDINATOR, DOMAIN, CONF_USE_CONTROLS
 
 _LOGGER = logging.getLogger(__name__)
 

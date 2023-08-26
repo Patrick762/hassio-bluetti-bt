@@ -129,7 +129,14 @@ class DummyDevice(BluettiDevice):
 class PollingCoordinator(DataUpdateCoordinator):
     """Polling coordinator."""
 
-    def __init__(self, hass: HomeAssistant, address, device_name: str, polling_interval: int):
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        address: str,
+        device_name: str,
+        polling_interval: int,
+        persistant_conn: bool,
+    ):
         """Initialize coordinator."""
         super().__init__(
             hass,
@@ -138,10 +145,12 @@ class PollingCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=polling_interval),
         )
         self._address = address
+        self.client = None
         self.notify_future = None
         self.current_command = None
         self.notify_response = bytearray()
         bluetti_device = build_device(address, device_name)
+        self.persistant_conn = persistant_conn
 
         # Add or modify device fields
         self.bluetti_device = DummyDevice(bluetti_device)
@@ -166,16 +175,30 @@ class PollingCoordinator(DataUpdateCoordinator):
             return None
 
         # Polling
-        client = BleakClient(device)
+        self.client = BleakClient(device)
         parsed_data: dict = {}
+
+        # Connect to device
+        try:
+            async with async_timeout.timeout(5):
+                await self.client.connect()
+
+                await self.client.start_notify(
+                    BluetoothClient.NOTIFY_UUID, self._notification_handler
+                )
+        except TimeoutError:
+            self.logger.warning("Connection timed out for device %s", self._address)
+            return None
+        except BleakError as err:
+            self.logger.warning("Bleak error: %s", err)
+            return None
 
         try:
             async with async_timeout.timeout(15):
-                await client.connect()
 
-                await client.start_notify(
-                    BluetoothClient.NOTIFY_UUID, self._notification_handler
-                )
+                # Reconnect if not connected
+                if not self.client.is_connected:
+                    await self.client.connect()
 
                 for command in self.bluetti_device.polling_commands:
                     try:
@@ -186,7 +209,7 @@ class PollingCoordinator(DataUpdateCoordinator):
 
                         # Make request
                         self.logger.debug("Requesting %s", command)
-                        await client.write_gatt_char(
+                        await self.client.write_gatt_char(
                             BluetoothClient.WRITE_UUID, bytes(command)
                         )
 
@@ -229,7 +252,9 @@ class PollingCoordinator(DataUpdateCoordinator):
             self.logger.warning("Bleak error: %s", err)
             return None
         finally:
-            await client.disconnect()
+            # Disconnect if connection not persistant
+            if not self.persistant_conn:
+                await self.client.disconnect()
 
         self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_POLLING_RUNNING] = False
 
