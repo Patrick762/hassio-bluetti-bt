@@ -27,6 +27,7 @@ from bluetti_mqtt.core.devices.bluetti_device import BluettiDevice
 from bluetti_mqtt.core.commands import ReadHoldingRegisters
 
 from .const import DATA_POLLING_RUNNING, DOMAIN
+from .utils import mac_loggable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -129,22 +130,38 @@ class DummyDevice(BluettiDevice):
 class PollingCoordinator(DataUpdateCoordinator):
     """Polling coordinator."""
 
-    def __init__(self, hass: HomeAssistant, address, device_name: str):
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        address: str,
+        device_name: str,
+        polling_interval: int,
+        persistent_conn: bool,
+    ):
         """Initialize coordinator."""
         super().__init__(
             hass,
             _LOGGER,
             name="Bluetti polling coordinator",
-            update_interval=timedelta(seconds=20),
+            update_interval=timedelta(seconds=polling_interval),
         )
         self._address = address
+        self.has_notifier = False
         self.notify_future = None
         self.current_command = None
         self.notify_response = bytearray()
         bluetti_device = build_device(address, device_name)
+        self.persistent_conn = persistent_conn
 
         # Add or modify device fields
         self.bluetti_device = DummyDevice(bluetti_device)
+
+        # Create client
+        device = bluetooth.async_ble_device_from_address(hass, address)
+        if device is None:
+            self.logger.error("Device %s not available", mac_loggable(address))
+            return None
+        self.client = BleakClient(device)
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.
@@ -156,26 +173,41 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         self.logger.debug("Polling data")
 
-        device = bluetooth.async_ble_device_from_address(self.hass, self._address)
-        if device is None:
-            self.logger.error("Device %s not available", self._address)
-            return None
-
         if self.bluetti_device is None:
-            self.logger.error("Device type for %s not found", self._address)
+            self.logger.error("Device type for %s not found", mac_loggable(self._address))
             return None
 
-        # Polling
-        client = BleakClient(device)
         parsed_data: dict = {}
+
+        # Connect to device
+        try:
+            async with async_timeout.timeout(20):
+                await self.client.connect()
+
+                await self.client.start_notify(
+                    BluetoothClient.NOTIFY_UUID, self._notification_handler
+                )
+                self.has_notifier = True
+        except TimeoutError:
+            self.logger.debug("Connection timed out for device %s", mac_loggable(self._address))
+            return None
+        except BleakError as err:
+            self.logger.debug("Bleak error: %s", err)
+            return None
 
         try:
             async with async_timeout.timeout(15):
-                await client.connect()
 
-                await client.start_notify(
-                    BluetoothClient.NOTIFY_UUID, self._notification_handler
-                )
+                # Reconnect if not connected
+                if not self.client.is_connected:
+                    await self.client.connect()
+
+                # Attach notifier if needed
+                if not self.has_notifier:
+                    await self.client.start_notify(
+                        BluetoothClient.NOTIFY_UUID, self._notification_handler
+                    )
+                    self.has_notifier = True
 
                 for command in self.bluetti_device.polling_commands:
                     try:
@@ -186,7 +218,7 @@ class PollingCoordinator(DataUpdateCoordinator):
 
                         # Make request
                         self.logger.debug("Requesting %s", command)
-                        await client.write_gatt_char(
+                        await self.client.write_gatt_char(
                             BluetoothClient.WRITE_UUID, bytes(command)
                         )
 
@@ -207,8 +239,8 @@ class PollingCoordinator(DataUpdateCoordinator):
                         parsed_data.update(parsed)
 
                     except TimeoutError:
-                        self.logger.warning(
-                            "Polling timed out (address: %s)", self._address
+                        self.logger.debug(
+                            "Polling timed out (address: %s)", mac_loggable(self._address)
                         )
                     except ParseError:
                         self.logger.warning("Got a parse exception...")
@@ -223,13 +255,15 @@ class PollingCoordinator(DataUpdateCoordinator):
                             "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
                         )
         except TimeoutError:
-            self.logger.warning("Polling timed out for device %s", self._address)
+            self.logger.debug("Polling timed out for device %s", mac_loggable(self._address))
             return None
         except BleakError as err:
             self.logger.warning("Bleak error: %s", err)
             return None
         finally:
-            await client.disconnect()
+            # Disconnect if connection not persistant
+            if not self.persistent_conn:
+                await self.client.disconnect()
 
         self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_POLLING_RUNNING] = False
 

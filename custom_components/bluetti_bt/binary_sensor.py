@@ -28,6 +28,7 @@ from bluetti_mqtt.mqtt_client import (
 from . import device_info as dev_info, get_unique_id
 from .const import DATA_COORDINATOR, DOMAIN, ADDITIONAL_DEVICE_FIELDS
 from .coordinator import PollingCoordinator, DummyDevice
+from .utils import unique_id_loggable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Setup sensor entities."""
+    """Setup binary_sensor entities."""
 
     device_name = entry.data.get(CONF_NAME)
     address = entry.data.get(CONF_ADDRESS)
@@ -43,7 +44,7 @@ async def async_setup_entry(
         _LOGGER.error("Device has no address")
 
     # Generate device info
-    _LOGGER.info("Creating sensors for device with address %s", address)
+    _LOGGER.info("Creating binary_sensors for device with address %s", address)
     device_info = dev_info(entry)
 
     # Add sensors according to device_info
@@ -103,10 +104,10 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        _LOGGER.debug("Updating state of %s", self._attr_unique_id)
+        _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.error(
-                "Invalid data from coordinator (sensor.%s)", self._attr_unique_id
+            _LOGGER.debug(
+                "Invalid data from coordinator (binary_sensor.%s)", unique_id_loggable(self._attr_unique_id)
             )
             self._attr_available = False
             return
@@ -118,8 +119,8 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
 
         if not isinstance(response_data, bool):
             _LOGGER.warning(
-                "Invalid response data type from coordinator (sensor.%s): %s",
-                self._attr_unique_id,
+                "Invalid response data type from coordinator (binary_sensor.%s): %s",
+                unique_id_loggable(self._attr_unique_id),
                 response_data,
             )
             self._attr_available = False

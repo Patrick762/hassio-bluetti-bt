@@ -3,9 +3,14 @@
     "step": {
       "init": {
         "data": {
-          "use_controls": "Steuerung aktivieren (auf eigenes Risiko)"
+          "use_controls": "Steuerung aktivieren (auf eigenes Risiko)",
+          "persistent_conn": "Dauerhafte Verbindung (Neustart erforderlich)",
+          "polling_interval": "Datenabruf-Intervall in Sekunden (Neustart erforderlich)"
         }
       }
+    },
+    "abort": {
+      "invalid_interval": "Ungültiger Datenabruf-Intervall. Verwende 5 Sekunden oder mehr"
     }
   }
 }

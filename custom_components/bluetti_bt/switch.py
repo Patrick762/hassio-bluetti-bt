@@ -35,6 +35,7 @@ from bluetti_mqtt.mqtt_client import (
 from . import device_info as dev_info, get_unique_id
 from .const import CONTROL_FIELDS, DATA_COORDINATOR, DATA_POLLING_RUNNING, DOMAIN, ADDITIONAL_DEVICE_FIELDS
 from .coordinator import PollingCoordinator, DummyDevice
+from .utils import mac_loggable, unique_id_loggable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ async def async_setup_entry(
         _LOGGER.error("Device has no address")
 
     # Generate device info
-    _LOGGER.info("Creating sensors for device with address %s", address)
+    _LOGGER.info("Creating switches for device with address %s", address)
     device_info = dev_info(entry)
 
     # Add sensors according to device_info
@@ -113,10 +114,10 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        _LOGGER.debug("Updating state of %s", self._attr_unique_id)
+        _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
         if not isinstance(self.coordinator.data, dict):
             _LOGGER.error(
-                "Invalid data from coordinator (sensor.%s)", self._attr_unique_id
+                "Invalid data from coordinator (switch.%s)", unique_id_loggable(self._attr_unique_id)
             )
             self._attr_available = False
             return
@@ -128,8 +129,8 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
 
         if not isinstance(response_data, bool):
             _LOGGER.warning(
-                "Invalid response data type from coordinator (sensor.%s): %s",
-                self._attr_unique_id,
+                "Invalid response data type from coordinator (switch.%s): %s",
+                unique_id_loggable(self._attr_unique_id),
                 response_data,
             )
             self._attr_available = False
@@ -141,19 +142,19 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
-        _LOGGER.debug("Turn on %s on %s", self._response_key, self._address)
+        _LOGGER.debug("Turn on %s on %s", self._response_key, mac_loggable(self._address))
         await self.write_to_device(True)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        _LOGGER.debug("Turn off %s on %s", self._response_key, self._address)
+        _LOGGER.debug("Turn off %s on %s", self._response_key, mac_loggable(self._address))
         await self.write_to_device(False)
 
     async def write_to_device(self, state: bool):
         """Write to device."""
         device = bluetooth.async_ble_device_from_address(self.hass, self._address)
         if device is None:
-            _LOGGER.error("Device %s not available", self._address)
+            _LOGGER.error("Device %s not available", mac_loggable(self._address))
             return
 
         command = self._bluetti_device.build_setter_command(self._response_key, state)
@@ -177,7 +178,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
                 await asyncio.sleep(5)
 
         except TimeoutError:
-            _LOGGER.error("Timed out for device %s", self._address)
+            _LOGGER.error("Timed out for device %s", mac_loggable(self._address))
             return None
         except BleakError as err:
             _LOGGER.error("Bleak error: %s", err)
