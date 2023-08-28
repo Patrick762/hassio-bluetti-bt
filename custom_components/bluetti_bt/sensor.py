@@ -131,7 +131,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
 
-        if not self.coordinator.client.is_connected:
+        if self.coordinator.persistent_conn and not self.coordinator.client.is_connected:
             return
 
         _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
