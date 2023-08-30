@@ -81,6 +81,10 @@ class DummyDevice(BluettiDevice):
         self._parent = device
 
     @property
+    def pack_num_max(self):
+        return self._parent.pack_num_max
+
+    @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
         if self.type == "EP600":
             return [
@@ -112,7 +116,7 @@ class DummyDevice(BluettiDevice):
 
     @property
     def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
-        return self._parent.pack_logging_commands
+        return self._parent.pack_polling_commands
 
     @property
     def logging_commands(self) -> List[ReadHoldingRegisters]:
@@ -180,7 +184,7 @@ class PollingCoordinator(DataUpdateCoordinator):
         parsed_data: dict = {}
 
         try:
-            async with async_timeout.timeout(15):
+            async with async_timeout.timeout(45):
 
                 # Reconnect if not connected
                 if not self.client.is_connected:
@@ -238,6 +242,98 @@ class PollingCoordinator(DataUpdateCoordinator):
                         self.logger.warning(
                             "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
                         )
+                
+                # pack polling
+                for pack in range (1, self.bluetti_device.pack_num_max + 1):
+                    # TODO need to set pack num ...
+                    # We need to wait after switching packs for the data to be available (as per bluetti_mqtt device_handler.py)
+                    try:
+                        # Prepare to make request
+                        command = self.bluetti_device.build_setter_command('pack_num', pack)
+                        self.current_command = command
+                        self.notify_future = self.hass.loop.create_future()
+                        self.notify_response = bytearray()
+
+                        # Make request
+                        self.logger.debug("Requesting %s : pack_num(%s)", command, pack)
+                        await self.client.write_gatt_char(
+                            BluetoothClient.WRITE_UUID, bytes(command)
+                        )
+
+                        # Wait for response
+                        res = await asyncio.wait_for(
+                            self.notify_future, timeout=BluetoothClient.RESPONSE_TIMEOUT
+                        )
+                        # nothing to process - setting current pack_num
+                        
+                    except TimeoutError:
+                        self.logger.debug(
+                            "Polling timed out (address: %s)", mac_loggable(self._address)
+                        )
+                    except ModbusError as err:
+                        self.logger.warning(
+                            "Got an invalid request error for %s: %s",
+                            command,
+                            err,
+                        )
+                    except (BadConnectionError, BleakError) as err:
+                        self.logger.warning(
+                            "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
+                        )
+                    
+                    for command in self.bluetti_device.pack_polling_commands:
+                        try:
+                            # Prepare to make request
+                            self.current_command = command
+                            self.notify_future = self.hass.loop.create_future()
+                            self.notify_response = bytearray()
+
+                            # Make request
+                            self.logger.debug("Requesting %s", command)
+                            await self.client.write_gatt_char(
+                                BluetoothClient.WRITE_UUID, bytes(command)
+                            )
+
+                            # Wait for response
+                            res = await asyncio.wait_for(
+                                self.notify_future, timeout=BluetoothClient.RESPONSE_TIMEOUT
+                            )
+
+                            # Process data
+                            self.logger.debug("Got %s bytes", len(res))
+                            response = cast(bytes, res)
+                            body = command.parse_response(response)
+                            parsed = self.bluetti_device.parse(
+                                command.starting_address, body
+                            )
+
+                            self.logger.debug("Parsed data: %s", parsed)
+
+                            packNo = parsed.get('pack_num')
+                            if not isinstance(packNo, int) or packNo != pack:
+                                self.logger.debug("Parsed pack_num(%s) does not match expected '%s'", packNo, pack)
+                                continue
+
+                            for key, value in parsed.items():
+                                parsed_data.update({key+str(pack):value})
+
+                        except TimeoutError:
+                            self.logger.debug(
+                                "Polling timed out (address: %s)", mac_loggable(self._address)
+                            )
+                        except ParseError:
+                            self.logger.warning("Got a parse exception...")
+                        except ModbusError as err:
+                            self.logger.warning(
+                                "Got an invalid request error for %s: %s",
+                                command,
+                                err,
+                            )
+                        except (BadConnectionError, BleakError) as err:
+                            self.logger.warning(
+                                "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
+                            )
+                    
         except TimeoutError:
             self.logger.debug("Polling timed out for device %s", mac_loggable(self._address))
             return None
