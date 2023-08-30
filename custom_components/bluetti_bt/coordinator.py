@@ -179,22 +179,6 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         parsed_data: dict = {}
 
-        # Connect to device
-        try:
-            async with async_timeout.timeout(20):
-                await self.client.connect()
-
-                await self.client.start_notify(
-                    BluetoothClient.NOTIFY_UUID, self._notification_handler
-                )
-                self.has_notifier = True
-        except TimeoutError:
-            self.logger.debug("Connection timed out for device %s", mac_loggable(self._address))
-            return None
-        except BleakError as err:
-            self.logger.debug("Bleak error: %s", err)
-            return None
-
         try:
             async with async_timeout.timeout(15):
 
