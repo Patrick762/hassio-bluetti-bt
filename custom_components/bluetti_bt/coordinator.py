@@ -245,8 +245,6 @@ class PollingCoordinator(DataUpdateCoordinator):
                 
                 # pack polling
                 for pack in range (1, self.bluetti_device.pack_num_max + 1):
-                    # TODO need to set pack num ...
-                    # We need to wait after switching packs for the data to be available (as per bluetti_mqtt device_handler.py)
                     try:
                         # Prepare to make request
                         command = self.bluetti_device.build_setter_command('pack_num', pack)
