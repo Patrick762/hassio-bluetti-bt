@@ -293,6 +293,9 @@ class PollingCoordinator(DataUpdateCoordinator):
             self.logger.warning(
                 "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
             )
+        
+        # caught an exception, return empty bytes object
+        return bytes()
 
     def _notification_handler(self, _sender: int, data: bytearray):
         """Handle bt data."""
