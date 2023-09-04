@@ -99,6 +99,9 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         super().__init__(coordinator)
 
         self._bluetti_device = bluetti_device
+        self._coordinator = coordinator
+        self._client = coordinator.client
+        self._polling_lock = coordinator.polling_lock
         e_name = f"{device_info.get('name')} {name}"
         self._address = address
         self._response_key = response_key
@@ -156,38 +159,32 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
 
     async def write_to_device(self, state: bool):
         """Write to device."""
-        device = bluetooth.async_ble_device_from_address(self.hass, self._address)
-        if device is None:
-            _LOGGER.error("Device %s not available", mac_loggable(self._address))
-            return
-
         command = self._bluetti_device.build_setter_command(self._response_key, state)
 
-        # Wait until polling is done
-        while self.hass.data[DOMAIN][self._entry_id][DATA_POLLING_RUNNING] is True:
-            _LOGGER.debug("Waiting for polling to finish...")
-            asyncio.sleep(1)
+        async with self._polling_lock:
+            try:
+                async with async_timeout.timeout(15):
+                    if not self._client.is_connected:
+                        await self._client.connect()
 
-        client = BleakClient(device)
-        try:
-            async with async_timeout.timeout(15):
-                await client.connect()
+                    # Send command
+                    _LOGGER.debug("Requesting %s (%s,%s)", command, self._response_key, state)
+                    await self._client.write_gatt_char(
+                        BluetoothClient.WRITE_UUID, bytes(command)
+                    )
 
-                # Send command
-                await client.write_gatt_char(
-                    BluetoothClient.WRITE_UUID, bytes(command)
-                )
+                    # Wait until device has changed value, otherwise reading register might reset it
+                    await asyncio.sleep(5)
 
-                # Wait until device has changed value, otherwise reading register might reset it
-                await asyncio.sleep(5)
-
-        except TimeoutError:
-            _LOGGER.error("Timed out for device %s", mac_loggable(self._address))
-            return None
-        except BleakError as err:
-            _LOGGER.error("Bleak error: %s", err)
-            return None
-        finally:
-            await client.disconnect()
+            except TimeoutError:
+                _LOGGER.error("Timed out for device %s", mac_loggable(self._address))
+                return None
+            except BleakError as err:
+                _LOGGER.error("Bleak error: %s", err)
+                return None
+            finally:
+                # Disconnect if connection not persistant
+                if not self._coordinator.persistent_conn:
+                    await self._client.disconnect()
 
         await self.coordinator.async_request_refresh()
