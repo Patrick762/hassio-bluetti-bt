@@ -191,8 +191,18 @@ class PollingCoordinator(DataUpdateCoordinator):
                 async with async_timeout.timeout(30):
 
                     # Reconnect if not connected
-                    if not self.client.is_connected:
-                        await self.client.connect()
+                    max_retries = 5
+                    for attempt in range(1,max_retries + 1):
+                        try:
+                            if not self.client.is_connected:
+                                await self.client.connect()
+                            break
+                        except Exception as e:
+                            if attempt == max_retries:
+                                raise  # pass exception on max_retries attempt
+                            else:
+                                self.logger.debug(f"Connect unsucessful (attempt {attempt}): {e}. Retrying...")
+                                await asyncio.sleep(2)
 
                     # Attach notifier if needed
                     if not self.has_notifier:
