@@ -182,7 +182,7 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         async with self.polling_lock:
             try:
-                async with async_timeout.timeout(30):
+                async with async_timeout.timeout(45):
 
                     # Reconnect if not connected
                     max_retries = 5

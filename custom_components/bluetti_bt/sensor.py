@@ -60,11 +60,13 @@ async def async_setup_entry(
     all_fields = NORMAL_DEVICE_FIELDS
     all_fields.update(DC_INPUT_FIELDS)
     all_fields.update(ADDITIONAL_DEVICE_FIELDS)
-    # add pack fields for device
-    _LOGGER.info("Device type(%s) pack_num_max(%s)", bluetti_device.type, bluetti_device.pack_num_max)
-    for pack in range (1, bluetti_device.pack_num_max + 1):
-        for name, field in battery_pack_fields(pack).items():
-            all_fields.update({name+str(pack):field})
+
+    if len(bluetti_device.pack_polling_commands) > 0:
+        # add pack fields for device
+        _LOGGER.info("Device type(%s) pack_num_max(%s)", bluetti_device.type, bluetti_device.pack_num_max)
+        for pack in range (1, bluetti_device.pack_num_max + 1):
+            for name, field in battery_pack_fields(pack).items():
+                all_fields.update({name+str(pack): field})
 
     for field_key, field_config in all_fields.items():
         if bluetti_device.has_field(field_key) or field_config.id_override is not None:
