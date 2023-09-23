@@ -65,7 +65,7 @@ async def async_setup_entry(
     for pack in range (1, bluetti_device.pack_num_max + 1):
         for name, field in battery_pack_fields(pack).items():
             all_fields.update({name+str(pack):field})
-        
+
     for field_key, field_config in all_fields.items():
         if bluetti_device.has_field(field_key) or field_config.id_override is not None:
             category = None
@@ -151,7 +151,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
-            _LOGGER.debug("No data for available for (%s)",self._response_key)
+            _LOGGER.debug("No data for available for (%s)", self._response_key)
             self._attr_available = False
             return
 

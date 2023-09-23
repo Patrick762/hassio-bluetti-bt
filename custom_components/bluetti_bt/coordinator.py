@@ -44,6 +44,13 @@ class DummyDevice(BluettiDevice):
         self.struct = device.struct
 
         if device.type == "EP600":
+            # DC Solar Input (copied from PR https://github.com/warhammerkid/bluetti_mqtt/pull/87 by KM011092)
+            self.struct.add_uint_field('pv_input_power1', 1212)  # MPP 1 in - value * 0.1
+            #self.struct.add_uint_field('pv_input_voltage1', 1213)  # MPP 1 in  - value * 0.1
+            #self.struct.add_uint_field('pv_input_current1', 1214)  # MPP 1 in
+            self.struct.add_uint_field('pv_input_power2', 1220)  # MPP 2 in  - value * 0.1
+            #self.struct.add_uint_field('pv_input_voltage2', 1221)  # MPP 2 in  - value * 0.1
+            #self.struct.add_uint_field('pv_input_current2', 1222)  # MPP 2 in
             # ADL400 Smart Meter for AC Solar
             self.struct.add_uint_field("adl400_ac_input_power_phase1", 1228)
             self.struct.add_uint_field("adl400_ac_input_power_phase2", 1236)
@@ -73,9 +80,6 @@ class DummyDevice(BluettiDevice):
             self.struct.add_decimal_field("ac_output_current_phase1", 1512, 1)
             self.struct.add_decimal_field("ac_output_current_phase2", 1519, 1)
             self.struct.add_decimal_field("ac_output_current_phase3", 1526, 1)
-            # Testing
-            # for i in range(0, 10):
-            #      self.struct.add_decimal_field("testing"+str(i), 1520+i, 1)
 
         super().__init__(device.address, device.type, device.sn)
         self._parent = device
@@ -94,28 +98,18 @@ class DummyDevice(BluettiDevice):
                 ReadHoldingRegisters(1500, 27),
                 ReadHoldingRegisters(2022, 6),
                 ReadHoldingRegisters(2213, 4),
+                ReadHoldingRegisters(1212, 11),
                 # Battery
                 ReadHoldingRegisters(6101, 7),
                 ReadHoldingRegisters(6175, 11),
-                # Testing
-                # ReadHoldingRegisters(100, 62),
-                # ReadHoldingRegisters(1100, 51),
-                # ReadHoldingRegisters(1200, 80),
-                # ReadHoldingRegisters(1300, 31),
-                # ReadHoldingRegisters(1400, 48),
-                # ReadHoldingRegisters(1500, 30),
-                # ReadHoldingRegisters(2000, 89),
-                # ReadHoldingRegisters(2200, 41),
-                # ReadHoldingRegisters(2300, 36),
-                # ReadHoldingRegisters(6000, 32),
-                # ReadHoldingRegisters(6100, 100),
-                # ReadHoldingRegisters(6300, 100),
             ]
 
         return self._parent.polling_commands
 
     @property
     def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
+        if self.type == "EP600":
+            return []
         return self._parent.pack_polling_commands
 
     @property
@@ -224,36 +218,38 @@ class PollingCoordinator(DataUpdateCoordinator):
 
                         except ParseError:
                             self.logger.warning("Got a parse exception...")
-                    
-                    # pack polling
-                    for pack in range (1, self.bluetti_device.pack_num_max + 1):
-                        # Set current pack number
-                        await self.async_send_command(
-                            self.bluetti_device.build_setter_command('pack_num', pack)
-                            )
-                        
-                        for command in self.bluetti_device.pack_polling_commands:
-                            # Request & parse result for each pack
-                            try:
-                                body = command.parse_response(
-                                    await self.async_send_command(command)
+
+                    if len(self.bluetti_device.pack_polling_commands) > 0:
+                        _LOGGER.debug("Polling battery packs")
+                        # pack polling
+                        for pack in range (1, self.bluetti_device.pack_num_max + 1):
+                            # Set current pack number
+                            await self.async_send_command(
+                                self.bluetti_device.build_setter_command('pack_num', pack)
                                 )
-                                parsed = self.bluetti_device.parse(
-                                    command.starting_address, body
-                                )
-                                self.logger.debug("Parsed data: %s", parsed)
 
-                                packNo = parsed.get('pack_num')
-                                if not isinstance(packNo, int) or packNo != pack:
-                                    self.logger.debug("Parsed pack_num(%s) does not match expected '%s'", packNo, pack)
-                                    continue
+                            for command in self.bluetti_device.pack_polling_commands:
+                                # Request & parse result for each pack
+                                try:
+                                    body = command.parse_response(
+                                        await self.async_send_command(command)
+                                    )
+                                    parsed = self.bluetti_device.parse(
+                                        command.starting_address, body
+                                    )
+                                    self.logger.debug("Parsed data: %s", parsed)
 
-                                for key, value in parsed.items():
-                                    parsed_data.update({key+str(pack):value})
+                                    pack_number = parsed.get('pack_num')
+                                    if not isinstance(pack_number, int) or pack_number != pack:
+                                        self.logger.debug("Parsed pack_num(%s) does not match expected '%s'", pack_number, pack)
+                                        continue
 
-                            except ParseError:
-                                self.logger.warning("Got a parse exception...")
-                        
+                                    for key, value in parsed.items():
+                                        parsed_data.update({key+str(pack):value})
+
+                                except ParseError:
+                                    self.logger.warning("Got a parse exception...")
+
             except TimeoutError:
                 self.logger.debug("Polling timed out for device %s", mac_loggable(self._address))
                 return None

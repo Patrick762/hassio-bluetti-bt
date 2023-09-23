@@ -6,7 +6,7 @@ import asyncio
 import logging
 import async_timeout
 
-from bleak import BleakClient, BleakError
+from bleak import BleakError
 
 from homeassistant.components import bluetooth
 from homeassistant.components.switch import SwitchEntity, SwitchDeviceClass
@@ -33,7 +33,7 @@ from bluetti_mqtt.mqtt_client import (
 )
 
 from . import device_info as dev_info, get_unique_id
-from .const import CONTROL_FIELDS, DATA_COORDINATOR, DATA_POLLING_RUNNING, DOMAIN, ADDITIONAL_DEVICE_FIELDS
+from .const import CONTROL_FIELDS, DATA_COORDINATOR, DOMAIN, ADDITIONAL_DEVICE_FIELDS
 from .coordinator import PollingCoordinator, DummyDevice
 from .utils import mac_loggable, unique_id_loggable
 
