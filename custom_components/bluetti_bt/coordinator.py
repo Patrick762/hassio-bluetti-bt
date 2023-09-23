@@ -81,6 +81,10 @@ class DummyDevice(BluettiDevice):
         self._parent = device
 
     @property
+    def pack_num_max(self):
+        return self._parent.pack_num_max
+
+    @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
         if self.type == "EP600":
             return [
@@ -112,7 +116,7 @@ class DummyDevice(BluettiDevice):
 
     @property
     def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
-        return self._parent.pack_logging_commands
+        return self._parent.pack_polling_commands
 
     @property
     def logging_commands(self) -> List[ReadHoldingRegisters]:
@@ -163,6 +167,9 @@ class PollingCoordinator(DataUpdateCoordinator):
             return None
         self.client = BleakClient(device)
 
+        # polling mutex to guard against switches
+        self.polling_lock = asyncio.Lock()
+
     async def _async_update_data(self):
         """Fetch data from API endpoint.
 
@@ -179,80 +186,130 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         parsed_data: dict = {}
 
+        async with self.polling_lock:
+            try:
+                async with async_timeout.timeout(30):
+
+                    # Reconnect if not connected
+                    max_retries = 5
+                    for attempt in range(1,max_retries + 1):
+                        try:
+                            if not self.client.is_connected:
+                                await self.client.connect()
+                            break
+                        except Exception as e:
+                            if attempt == max_retries:
+                                raise  # pass exception on max_retries attempt
+                            else:
+                                self.logger.debug(f"Connect unsucessful (attempt {attempt}): {e}. Retrying...")
+                                await asyncio.sleep(2)
+
+                    # Attach notifier if needed
+                    if not self.has_notifier:
+                        await self.client.start_notify(
+                            BluetoothClient.NOTIFY_UUID, self._notification_handler
+                        )
+                        self.has_notifier = True
+
+                    for command in self.bluetti_device.polling_commands:
+                        try:
+                            body = command.parse_response(
+                                await self.async_send_command(command)
+                            )
+                            parsed = self.bluetti_device.parse(
+                                command.starting_address, body
+                            )
+                            self.logger.debug("Parsed data: %s", parsed)
+                            parsed_data.update(parsed)
+
+                        except ParseError:
+                            self.logger.warning("Got a parse exception...")
+                    
+                    # pack polling
+                    for pack in range (1, self.bluetti_device.pack_num_max + 1):
+                        # Set current pack number
+                        await self.async_send_command(
+                            self.bluetti_device.build_setter_command('pack_num', pack)
+                            )
+                        
+                        for command in self.bluetti_device.pack_polling_commands:
+                            # Request & parse result for each pack
+                            try:
+                                body = command.parse_response(
+                                    await self.async_send_command(command)
+                                )
+                                parsed = self.bluetti_device.parse(
+                                    command.starting_address, body
+                                )
+                                self.logger.debug("Parsed data: %s", parsed)
+
+                                packNo = parsed.get('pack_num')
+                                if not isinstance(packNo, int) or packNo != pack:
+                                    self.logger.debug("Parsed pack_num(%s) does not match expected '%s'", packNo, pack)
+                                    continue
+
+                                for key, value in parsed.items():
+                                    parsed_data.update({key+str(pack):value})
+
+                            except ParseError:
+                                self.logger.warning("Got a parse exception...")
+                        
+            except TimeoutError:
+                self.logger.debug("Polling timed out for device %s", mac_loggable(self._address))
+                return None
+            except BleakError as err:
+                self.logger.warning("Bleak error: %s", err)
+                return None
+            finally:
+                # Disconnect if connection not persistant
+                if not self.persistent_conn:
+                    await self.client.disconnect()
+
+            self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_POLLING_RUNNING] = False
+
+            # Pass data back to sensors
+            return parsed_data
+
+    async def async_send_command(self, command: ReadHoldingRegisters) -> bytes:
+        """Send command and return response"""
         try:
-            async with async_timeout.timeout(15):
+            # Prepare to make request
+            self.current_command = command
+            self.notify_future = self.hass.loop.create_future()
+            self.notify_response = bytearray()
 
-                # Reconnect if not connected
-                if not self.client.is_connected:
-                    await self.client.connect()
+            # Make request
+            self.logger.debug("Requesting %s", command)
+            await self.client.write_gatt_char(
+                BluetoothClient.WRITE_UUID, bytes(command)
+            )
 
-                # Attach notifier if needed
-                if not self.has_notifier:
-                    await self.client.start_notify(
-                        BluetoothClient.NOTIFY_UUID, self._notification_handler
-                    )
-                    self.has_notifier = True
+            # Wait for response
+            res = await asyncio.wait_for(
+                self.notify_future, timeout=BluetoothClient.RESPONSE_TIMEOUT
+            )
 
-                for command in self.bluetti_device.polling_commands:
-                    try:
-                        # Prepare to make request
-                        self.current_command = command
-                        self.notify_future = self.hass.loop.create_future()
-                        self.notify_response = bytearray()
+            # Process data
+            self.logger.debug("Got %s bytes", len(res))
+            return cast(bytes, res)
 
-                        # Make request
-                        self.logger.debug("Requesting %s", command)
-                        await self.client.write_gatt_char(
-                            BluetoothClient.WRITE_UUID, bytes(command)
-                        )
-
-                        # Wait for response
-                        res = await asyncio.wait_for(
-                            self.notify_future, timeout=BluetoothClient.RESPONSE_TIMEOUT
-                        )
-
-                        # Process data
-                        self.logger.debug("Got %s bytes", len(res))
-                        response = cast(bytes, res)
-                        body = command.parse_response(response)
-                        parsed = self.bluetti_device.parse(
-                            command.starting_address, body
-                        )
-
-                        self.logger.debug("Parsed data: %s", parsed)
-                        parsed_data.update(parsed)
-
-                    except TimeoutError:
-                        self.logger.debug(
-                            "Polling timed out (address: %s)", mac_loggable(self._address)
-                        )
-                    except ParseError:
-                        self.logger.warning("Got a parse exception...")
-                    except ModbusError as err:
-                        self.logger.warning(
-                            "Got an invalid request error for %s: %s",
-                            command,
-                            err,
-                        )
-                    except (BadConnectionError, BleakError) as err:
-                        self.logger.warning(
-                            "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
-                        )
         except TimeoutError:
-            self.logger.debug("Polling timed out for device %s", mac_loggable(self._address))
-            return None
-        except BleakError as err:
-            self.logger.warning("Bleak error: %s", err)
-            return None
-        finally:
-            # Disconnect if connection not persistant
-            if not self.persistent_conn:
-                await self.client.disconnect()
-
-        self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_POLLING_RUNNING] = False
-
-        # Pass data back to sensors
-        return parsed_data
+            self.logger.debug(
+                "Polling timed out (address: %s)", mac_loggable(self._address)
+            )
+        except ModbusError as err:
+            self.logger.warning(
+                "Got an invalid request error for %s: %s",
+                command,
+                err,
+            )
+        except (BadConnectionError, BleakError) as err:
+            self.logger.warning(
+                "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
+            )
+        
+        # caught an exception, return empty bytes object
+        return bytes()
 
     def _notification_handler(self, _sender: int, data: bytearray):
         """Handle bt data."""

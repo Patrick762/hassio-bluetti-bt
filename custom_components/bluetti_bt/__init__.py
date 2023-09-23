@@ -28,11 +28,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     polling_interval = entry.data.get(CONF_POLLING_INTERVAL, 20)
     persistent_conn = entry.data.get(CONF_PERSISTENT_CONN, False)
 
-    # Prevent persistant connection and controls at same time
-    if use_controls is True and persistent_conn is True:
-        _LOGGER.warning("Enabling controls and persistant connection at the same time is currently not supported. Disabled persistant connection")
-        persistent_conn = False
-
     if address is None:
         return False
 
