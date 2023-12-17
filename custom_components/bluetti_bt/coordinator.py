@@ -155,6 +155,7 @@ class PollingCoordinator(DataUpdateCoordinator):
         self.bluetti_device = DummyDevice(bluetti_device)
 
         # Create client
+        self.logger.debug("Creating client")
         device = bluetooth.async_ble_device_from_address(hass, address)
         if device is None:
             self.logger.error("Device %s not available", mac_loggable(address))
@@ -195,7 +196,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                             if attempt == max_retries:
                                 raise  # pass exception on max_retries attempt
                             else:
-                                self.logger.debug(f"Connect unsucessful (attempt {attempt}): {e}. Retrying...")
+                                self.logger.warning(f"Connect unsucessful (attempt {attempt}): {e}. Retrying...")
                                 await asyncio.sleep(2)
 
                     # Attach notifier if needed
@@ -220,7 +221,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                             self.logger.warning("Got a parse exception...")
 
                     if len(self.bluetti_device.pack_polling_commands) > 0:
-                        _LOGGER.debug("Polling battery packs")
+                        self.logger.debug("Polling battery packs")
                         # pack polling
                         for pack in range (1, self.bluetti_device.pack_num_max + 1):
                             # Set current pack number
@@ -251,7 +252,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                                     self.logger.warning("Got a parse exception...")
 
             except TimeoutError:
-                self.logger.debug("Polling timed out for device %s", mac_loggable(self._address))
+                self.logger.warning("Polling timed out for device %s", mac_loggable(self._address))
                 return None
             except BleakError as err:
                 self.logger.warning("Bleak error: %s", err)
