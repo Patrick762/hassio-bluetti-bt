@@ -1,0 +1,16 @@
+{
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "use_controls": "Usar os comandos",
+          "persistent_conn": "Ligação presistente (necessario reninciar)",
+          "polling_interval": "Intervalo deatualização (necessario reninciar)"
+        }
+      }
+    },
+    "abort": {
+      "invalid_interval": "Valor invalido . Tem de ser no minimo 5 segundos"
+    }
+  }
+}
