@@ -231,7 +231,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                             # Set current pack number
                             await self.async_send_command(
                                 self.bluetti_device.build_setter_command('pack_num', pack)
-                                )
+                            )
 
                             for command in self.bluetti_device.pack_polling_commands:
                                 # Request & parse result for each pack
@@ -311,7 +311,7 @@ class PollingCoordinator(DataUpdateCoordinator):
             self.logger.warning(
                 "Needed to disconnect due to error: %s (This can also be the case if you used device controls)", err
             )
-        
+
         # caught an exception, return empty bytes object
         return bytes()
 

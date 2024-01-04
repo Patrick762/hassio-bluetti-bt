@@ -26,8 +26,7 @@ After the installation, you can use this button to install the integration:
 - EP600 (tested)
 
 ### Available sensors:
-All sensors which are available in bluetti_mqtt (Based on [this file](https://github.com/warhammerkid/bluetti_mqtt/blob/main/bluetti_mqtt/mqtt_client.py))
-excluding battery pack fields.
+All sensors which are available in bluetti_mqtt (Based on [this file](https://github.com/warhammerkid/bluetti_mqtt/blob/main/bluetti_mqtt/mqtt_client.py)).
 
 ### Available controls:
 If enabled in the Integration options (you need to reload the integration if you change this option):

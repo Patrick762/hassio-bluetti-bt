@@ -12,7 +12,17 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import CONF_MAX_RETRIES, CONF_PERSISTENT_CONN, CONF_POLLING_INTERVAL, CONF_POLLING_TIMEOUT, DATA_COORDINATOR, DOMAIN, MANUFACTURER, CONF_USE_CONTROLS, DATA_POLLING_RUNNING
+from .const import (
+    CONF_MAX_RETRIES,
+    CONF_PERSISTENT_CONN,
+    CONF_POLLING_INTERVAL,
+    CONF_POLLING_TIMEOUT,
+    CONF_USE_CONTROLS,
+    DATA_COORDINATOR,
+    DATA_POLLING_RUNNING,
+    DOMAIN,
+    MANUFACTURER,
+)
 from .coordinator import PollingCoordinator
 
 PLATFORMS: [Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
