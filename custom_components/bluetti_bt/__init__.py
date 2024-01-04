@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import CONF_PERSISTENT_CONN, CONF_POLLING_INTERVAL, DATA_COORDINATOR, DOMAIN, MANUFACTURER, CONF_USE_CONTROLS, DATA_POLLING_RUNNING
+from .const import CONF_MAX_RETRIES, CONF_PERSISTENT_CONN, CONF_POLLING_INTERVAL, CONF_POLLING_TIMEOUT, DATA_COORDINATOR, DOMAIN, MANUFACTURER, CONF_USE_CONTROLS, DATA_POLLING_RUNNING
 from .coordinator import PollingCoordinator
 
 PLATFORMS: [Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
@@ -27,6 +27,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     use_controls = entry.data.get(CONF_USE_CONTROLS)
     polling_interval = entry.data.get(CONF_POLLING_INTERVAL, 20)
     persistent_conn = entry.data.get(CONF_PERSISTENT_CONN, False)
+    polling_timeout = entry.data.get(CONF_POLLING_TIMEOUT, 45)
+    max_retries = entry.data.get(CONF_MAX_RETRIES, 5)
 
     if address is None:
         return False
@@ -40,7 +42,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_POLLING_RUNNING, False)
 
     # Create coordinator for polling
-    coordinator = PollingCoordinator(hass, address, device_name, polling_interval, persistent_conn)
+    coordinator = PollingCoordinator(hass, address, device_name, polling_interval, persistent_conn, polling_timeout, max_retries)
     await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_COORDINATOR, coordinator)
 

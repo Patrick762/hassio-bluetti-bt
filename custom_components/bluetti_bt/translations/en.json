@@ -5,12 +5,16 @@
         "data": {
           "use_controls": "Use controls (use at own risk)",
           "persistent_conn": "Persistent connection (restart required)",
-          "polling_interval": "Polling interval in seconds (restart required)"
+          "polling_interval": "Polling interval in seconds (restart required)",
+          "polling_timeout": "Polling timeout in seconds (restart required)",
+          "max_retries": "Maximum amount of connection retries (restart required)"
         }
       }
     },
     "abort": {
-      "invalid_interval": "Invalid polling interval. Use 5 seconds or more"
+      "invalid_interval": "Invalid polling interval. Use 5 seconds or more",
+      "invalid_timeout": "Invalid polling timeout. Use 1 second or more",
+      "invalid_retries": "Invalid max retries. Use 1 or more"
     }
   }
 }

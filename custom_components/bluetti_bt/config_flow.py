@@ -17,7 +17,14 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
 from . import get_type_by_bt_name
-from .const import CONF_PERSISTENT_CONN, CONF_POLLING_INTERVAL, DOMAIN, CONF_USE_CONTROLS
+from .const import (
+    CONF_MAX_RETRIES,
+    CONF_PERSISTENT_CONN,
+    CONF_POLLING_INTERVAL,
+    CONF_POLLING_TIMEOUT,
+    CONF_USE_CONTROLS,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -112,6 +119,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             # Validate update interval
             if user_input[CONF_POLLING_INTERVAL] < 5:
                 return self.async_abort(reason="invalid_interval")
+            
+            # Validate update timeout
+            if user_input[CONF_POLLING_TIMEOUT] < 1:
+                return self.async_abort(reason="invalid_timeout")
+            
+            # Validate max retries
+            if user_input[CONF_MAX_RETRIES] < 1:
+                return self.async_abort(reason="invalid_retries")
 
             changed = self.hass.config_entries.async_update_entry(
                 self.config_entry,
@@ -121,6 +136,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_USE_CONTROLS: user_input[CONF_USE_CONTROLS],
                         CONF_PERSISTENT_CONN: user_input[CONF_PERSISTENT_CONN],
                         CONF_POLLING_INTERVAL: user_input[CONF_POLLING_INTERVAL],
+                        CONF_POLLING_TIMEOUT: user_input[CONF_POLLING_TIMEOUT],
+                        CONF_MAX_RETRIES: user_input[CONF_MAX_RETRIES],
                     },
                 },
             )
@@ -135,6 +152,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_USE_CONTROLS: user_input[CONF_USE_CONTROLS],
                     CONF_PERSISTENT_CONN: user_input[CONF_PERSISTENT_CONN],
                     CONF_POLLING_INTERVAL: user_input[CONF_POLLING_INTERVAL],
+                    CONF_POLLING_TIMEOUT: user_input[CONF_POLLING_TIMEOUT],
+                    CONF_MAX_RETRIES: user_input[CONF_MAX_RETRIES],
                 },
             )
 
@@ -153,6 +172,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         CONF_POLLING_INTERVAL,
                         default=self.config_entry.data.get(CONF_POLLING_INTERVAL, 20),
+                    ): int,
+                    vol.Required(
+                        CONF_POLLING_TIMEOUT,
+                        default=self.config_entry.data.get(CONF_POLLING_TIMEOUT, 45),
+                    ): int,
+                    vol.Required(
+                        CONF_MAX_RETRIES,
+                        default=self.config_entry.data.get(CONF_MAX_RETRIES, 5),
                     ): int,
                 }
             ),

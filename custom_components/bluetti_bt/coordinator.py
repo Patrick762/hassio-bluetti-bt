@@ -135,6 +135,8 @@ class PollingCoordinator(DataUpdateCoordinator):
         device_name: str,
         polling_interval: int,
         persistent_conn: bool,
+        polling_timeout: int,
+        max_retries: int,
     ):
         """Initialize coordinator."""
         super().__init__(
@@ -150,6 +152,8 @@ class PollingCoordinator(DataUpdateCoordinator):
         self.notify_response = bytearray()
         bluetti_device = build_device(address, device_name)
         self.persistent_conn = persistent_conn
+        self.polling_timeout = polling_timeout
+        self.max_retries = max_retries
 
         # Add or modify device fields
         self.bluetti_device = DummyDevice(bluetti_device)
@@ -183,17 +187,16 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         async with self.polling_lock:
             try:
-                async with async_timeout.timeout(45):
+                async with async_timeout.timeout(self.polling_timeout):
 
                     # Reconnect if not connected
-                    max_retries = 5
-                    for attempt in range(1,max_retries + 1):
+                    for attempt in range(1, self.max_retries + 1):
                         try:
                             if not self.client.is_connected:
                                 await self.client.connect()
                             break
                         except Exception as e:
-                            if attempt == max_retries:
+                            if attempt == self.max_retries or attempt == 1:
                                 raise  # pass exception on max_retries attempt
                             else:
                                 self.logger.warning(f"Connect unsucessful (attempt {attempt}): {e}. Retrying...")
@@ -211,6 +214,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                             body = command.parse_response(
                                 await self.async_send_command(command)
                             )
+                            self.logger.debug("Raw data: %s", body)
                             parsed = self.bluetti_device.parse(
                                 command.starting_address, body
                             )
@@ -265,6 +269,7 @@ class PollingCoordinator(DataUpdateCoordinator):
             self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_POLLING_RUNNING] = False
 
             # Pass data back to sensors
+            # TODO No data if non persistent connection
             return parsed_data
 
     async def async_send_command(self, command: ReadHoldingRegisters) -> bytes:
@@ -313,6 +318,7 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         # Ignore notifications we don't expect
         if not self.notify_future or self.notify_future.done():
+            _LOGGER.warning("Unexpected notification")
             return
 
         # If something went wrong, we might get weird data.
