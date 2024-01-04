@@ -264,12 +264,14 @@ class PollingCoordinator(DataUpdateCoordinator):
             finally:
                 # Disconnect if connection not persistant
                 if not self.persistent_conn:
+                    if self.has_notifier:
+                        await self.client.stop_notify(BluetoothClient.NOTIFY_UUID)
+                        self.has_notifier = False
                     await self.client.disconnect()
 
             self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_POLLING_RUNNING] = False
 
             # Pass data back to sensors
-            # TODO No data if non persistent connection
             return parsed_data
 
     async def async_send_command(self, command: ReadHoldingRegisters) -> bytes:
