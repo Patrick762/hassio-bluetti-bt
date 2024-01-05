@@ -5,12 +5,16 @@
         "data": {
           "use_controls": "Steuerung aktivieren (auf eigenes Risiko)",
           "persistent_conn": "Dauerhafte Verbindung (Neustart erforderlich)",
-          "polling_interval": "Datenabruf-Intervall in Sekunden (Neustart erforderlich)"
+          "polling_interval": "Datenabruf-Intervall in Sekunden (Neustart erforderlich)",
+          "polling_timeout": "Datenabruf-Timeout in Sekunden (Neustart erforderlich)",
+          "max_retries": "Maximale Verbindungsversuche (Neustart erforderlich)"
         }
       }
     },
     "abort": {
-      "invalid_interval": "Ungültiger Datenabruf-Intervall. Verwende 5 Sekunden oder mehr"
+      "invalid_interval": "Ungültiger Datenabruf-Intervall. Verwende 5 Sekunden oder mehr",
+      "invalid_timeout": "Ungültiger Datenabruf-Timeout. Verwende 1 Sekunde oder mehr",
+      "invalid_retries": "Ungültige maximale Verbindungsversuche. Verwende 1 oder mehr"
     }
   }
 }

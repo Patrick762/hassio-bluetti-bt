@@ -9,6 +9,8 @@ CONF_OPTIONS = "options"
 CONF_USE_CONTROLS = "use_controls"
 CONF_PERSISTENT_CONN = "persistent_conn"
 CONF_POLLING_INTERVAL = "polling_interval"
+CONF_POLLING_TIMEOUT = "polling_timeout"
+CONF_MAX_RETRIES = "max_retries"
 
 DATA_COORDINATOR = "coordinator"
 DATA_POLLING_RUNNING = "polling_running"
@@ -78,6 +80,78 @@ ADDITIONAL_DEVICE_FIELDS = {
         setter=False,
         advanced=False,
         home_assistant_extra={"name": "High Voltage Safety Module Version"},
+    ),
+    'pv_input_power1': MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "Solar Input Power 1",
+            "unit_of_measurement": "W",
+            "device_class": "power",
+            "state_class": "measurement",
+            "force_update": True,
+        },
+    ),
+    'pv_input_voltage1': MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "Solar Input Voltage 1",
+            "unit_of_measurement": "V",
+            "device_class": "voltage",
+            "state_class": "measurement",
+            "force_update": True,
+        },
+    ),
+    'pv_input_current1': MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "Solar Input Current 1",
+            "unit_of_measurement": "A",
+            "device_class": "current",
+            "state_class": "measurement",
+            "force_update": True,
+        },
+    ),
+    'pv_input_power2': MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "Solar Input Power 2",
+            "unit_of_measurement": "W",
+            "device_class": "power",
+            "state_class": "measurement",
+            "force_update": True,
+        },
+    ),
+    'pv_input_voltage2': MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "Solar Input Voltage 2",
+            "unit_of_measurement": "V",
+            "device_class": "voltage",
+            "state_class": "measurement",
+            "force_update": True,
+        },
+    ),
+    'pv_input_current2': MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=False,
+        advanced=False,
+        home_assistant_extra={
+            "name": "Solar Input Current 2",
+            "unit_of_measurement": "A",
+            "device_class": "current",
+            "state_class": "measurement",
+            "force_update": True,
+        },
     ),
     "adl400_ac_input_power_phase1": MqttFieldConfig(
         type=MqttFieldType.NUMERIC,

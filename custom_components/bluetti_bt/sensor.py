@@ -27,6 +27,7 @@ from bluetti_mqtt.mqtt_client import (
     NORMAL_DEVICE_FIELDS,
     DC_INPUT_FIELDS,
     MqttFieldType,
+    battery_pack_fields,
 )
 
 from . import device_info as dev_info, get_unique_id
@@ -59,8 +60,16 @@ async def async_setup_entry(
     all_fields = NORMAL_DEVICE_FIELDS
     all_fields.update(DC_INPUT_FIELDS)
     all_fields.update(ADDITIONAL_DEVICE_FIELDS)
+
+    if len(bluetti_device.pack_polling_commands) > 0:
+        # add pack fields for device
+        _LOGGER.info("Device type(%s) pack_num_max(%s)", bluetti_device.type, bluetti_device.pack_num_max)
+        for pack in range (1, bluetti_device.pack_num_max + 1):
+            for name, field in battery_pack_fields(pack).items():
+                all_fields.update({name+str(pack): field})
+
     for field_key, field_config in all_fields.items():
-        if bluetti_device.has_field(field_key):
+        if bluetti_device.has_field(field_key) or field_config.id_override is not None:
             category = None
             if field_config.setter is True or field_key in DIAGNOSTIC_FIELDS:
                 category = EntityCategory.DIAGNOSTIC
@@ -130,9 +139,20 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
+
+        if self.coordinator.persistent_conn and not self.coordinator.client.is_connected:
+            return
+
+        if self.coordinator.data is None:
+            _LOGGER.warning(
+                "Data from coordinator is None. Skipping update for %s",
+                unique_id_loggable(self._attr_unique_id)
+            )
+            return
+
         _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.debug(
+            _LOGGER.warning(
                 "Invalid data from coordinator (sensor.%s)", unique_id_loggable(self._attr_unique_id)
             )
             self._attr_available = False
@@ -140,6 +160,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
+            _LOGGER.warning("No data for available for (%s)", self._response_key)
             self._attr_available = False
             return
 
