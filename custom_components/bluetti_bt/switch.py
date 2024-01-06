@@ -108,6 +108,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         self._entry_id = entry_id
 
         self._attr_device_info = device_info
+        self._attr_has_entity_name = True
         self._attr_name = e_name
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)

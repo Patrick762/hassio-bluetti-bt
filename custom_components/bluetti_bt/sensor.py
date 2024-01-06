@@ -122,6 +122,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         """Init battery entity."""
         super().__init__(coordinator)
 
+        self._attr_has_entity_name = True
         e_name = f"{device_info.get('name')} {name}"
         self._address = address
         self._response_key = response_key
