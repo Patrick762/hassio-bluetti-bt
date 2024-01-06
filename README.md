@@ -7,6 +7,9 @@ Bluetti Integration for Home Assistant
 
 Based on [bluetti_mqtt](https://github.com/warhammerkid/bluetti_mqtt).
 
+## Disclaimer
+This integration is provided without any warranty or support by Bluetti (unfortunately). I do not take responsibility for any problems it may cause in all cases. Use it at your own risk.
+
 ## Installation
 To install this integration, you first need [HACS](https://hacs.xyz/) installed.
 After the installation, you can use this button to install the integration:
