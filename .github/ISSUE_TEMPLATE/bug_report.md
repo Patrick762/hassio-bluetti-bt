@@ -11,6 +11,8 @@ assignees: Patrick762
 A clear and concise description of what the bug is.
 
 **Device**
+Add a "x" into the brackets to select
+
 [ ] AC60
 [ ] AC200M
 [ ] AC300
@@ -21,6 +23,8 @@ A clear and concise description of what the bug is.
 [ ] EP600
 
 **Bluetooth connection**
+Add a "x" into the brackets to select
+
 [ ] USB Bluetooth dongle
 [ ] ESPHome Bluetooth proxy
 
