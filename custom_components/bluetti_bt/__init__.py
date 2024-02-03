@@ -12,6 +12,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.exceptions import ConfigEntryNotReady
 
+from bluetti_mqtt.bluetooth import build_device as orig_build_device
+
 from .const import (
     CONF_MAX_RETRIES,
     CONF_PERSISTENT_CONN,
@@ -20,10 +22,13 @@ from .const import (
     CONF_USE_CONTROLS,
     DATA_COORDINATOR,
     DATA_POLLING_RUNNING,
+    DEVICE_NAME_RE,
     DOMAIN,
     MANUFACTURER,
 )
 from .coordinator import PollingCoordinator
+from .devices.ep600 import EP600
+from .devices.ep700 import EP700
 
 PLATFORMS: [Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
 _LOGGER = logging.getLogger(__name__)
@@ -102,4 +107,15 @@ def get_type_by_bt_name(bt_name: str):
         dev_type = "EP500"
     elif bt_name.startswith("EP600"):
         dev_type = "EP600"
+    elif bt_name.startswith("EP700"):
+        dev_type = "EP700"
     return dev_type
+
+def build_device(address: str, name: str):
+    match = DEVICE_NAME_RE.match(name)
+    if match[1] == 'EP700':
+        return EP700(address, match[2])
+    elif match[1] == 'EP600':
+        return EP600(address, match[2])
+    else:
+        return orig_build_device(address, name)

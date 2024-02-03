@@ -1,0 +1,76 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+assignees:
+  - octocat
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "An exception appeared"
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version
+      description: What version of our software are you running?
+      options:
+        - 0.0.11
+        - 0.0.10
+        - 0.0.9
+      default: 0
+    validations:
+      required: true
+  - type: dropdown
+    id: device
+    attributes:
+      label: What device are you seeing the problem on?
+      multiple: true
+      options:
+        - AC60
+        - AC200M
+        - AC300
+        - AC500
+        - EB3A
+        - EP500
+        - EP500P
+        - EP900
+    validations:
+      required: true
+  - type: dropdown
+    id: bluetooth
+    attributes:
+      label: What bluetooth connection are you using?
+      multiple: false
+      options:
+        - USB dongle
+        - ESPHome bluetooth proxy
+    validations:
+      required: true
+  - type: dropdown
+    id: options-changed
+    attributes:
+      label: Have you changed the integration settings?
+      multiple: false
+      options:
+        - No
+        - Yes (Please write down the changed settings in the next step)
+    validations:
+      required: true
+  - type: textarea
+    id: options-details
+    attributes:
+      label: Integration settings (if you changed them)
+      description: Please use one line per option
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell

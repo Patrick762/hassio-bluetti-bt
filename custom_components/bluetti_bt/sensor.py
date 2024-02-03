@@ -22,7 +22,6 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from bluetti_mqtt.bluetooth import build_device
 from bluetti_mqtt.mqtt_client import (
     NORMAL_DEVICE_FIELDS,
     DC_INPUT_FIELDS,
@@ -30,9 +29,9 @@ from bluetti_mqtt.mqtt_client import (
     battery_pack_fields,
 )
 
-from . import device_info as dev_info, get_unique_id
+from . import device_info as dev_info, get_unique_id, build_device
 from .const import DATA_COORDINATOR, DOMAIN, CONF_OPTIONS, DIAGNOSTIC_FIELDS, ADDITIONAL_DEVICE_FIELDS
-from .coordinator import PollingCoordinator, DummyDevice
+from .coordinator import PollingCoordinator
 from .utils import unique_id_loggable
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,7 +53,6 @@ async def async_setup_entry(
 
     # Add sensors according to device_info
     bluetti_device = build_device(address, device_name)
-    bluetti_device = DummyDevice(bluetti_device)
 
     sensors_to_add = []
     all_fields = NORMAL_DEVICE_FIELDS
