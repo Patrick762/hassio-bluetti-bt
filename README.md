@@ -24,6 +24,7 @@ After the installation, you can use this button to install the integration:
 - EP500
 - EP500P
 - EP600 (tested)
+- EP700 (beta, untested)
 
 ### Available sensors:
 All sensors which are available in bluetti_mqtt (Based on [this file](https://github.com/warhammerkid/bluetti_mqtt/blob/main/bluetti_mqtt/mqtt_client.py)).
