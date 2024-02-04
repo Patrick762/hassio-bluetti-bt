@@ -28,7 +28,7 @@ from .const import (
 )
 from .coordinator import PollingCoordinator
 from .devices.ep600 import EP600
-from .devices.ep700 import EP700
+from .devices.ep760 import EP760
 
 PLATFORMS: [Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
 _LOGGER = logging.getLogger(__name__)
@@ -107,14 +107,14 @@ def get_type_by_bt_name(bt_name: str):
         dev_type = "EP500"
     elif bt_name.startswith("EP600"):
         dev_type = "EP600"
-    elif bt_name.startswith("EP700"):
-        dev_type = "EP700"
+    elif bt_name.startswith("EP760"):
+        dev_type = "EP760"
     return dev_type
 
 def build_device(address: str, name: str):
     match = DEVICE_NAME_RE.match(name)
-    if match[1] == 'EP700':
-        return EP700(address, match[2])
+    if match[1] == 'EP760':
+        return EP760(address, match[2])
     elif match[1] == 'EP600':
         return EP600(address, match[2])
     else:

@@ -1,4 +1,4 @@
-"""EP700 Field definitions.
+"""EP760 Field definitions.
 
 Changes made here are only temporary and should also be
 contributed to https://github.com/warhammerkid/bluetti_mqtt
@@ -10,7 +10,7 @@ from bluetti_mqtt.core.devices.bluetti_device import BluettiDevice
 from bluetti_mqtt.core.devices.struct import DeviceStruct
 from bluetti_mqtt.core.commands import ReadHoldingRegisters
 
-class EP700(BluettiDevice):
+class EP760(BluettiDevice):
     def __init__(self, address: str, sn: str):
         self.struct = DeviceStruct()
 
@@ -36,7 +36,7 @@ class EP700(BluettiDevice):
         self.struct.add_version_field('safety_module_version', 6181)
         self.struct.add_version_field('high_voltage_module_version', 6184)
 
-        super().__init__(address, 'EP700', sn)
+        super().__init__(address, 'EP760', sn)
 
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
