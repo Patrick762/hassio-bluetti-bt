@@ -29,10 +29,10 @@ from bluetti_mqtt.mqtt_client import (
     battery_pack_fields,
 )
 
-from . import device_info as dev_info, get_unique_id, build_device
+from . import device_info as dev_info, get_unique_id
 from .const import DATA_COORDINATOR, DOMAIN, CONF_OPTIONS, DIAGNOSTIC_FIELDS, ADDITIONAL_DEVICE_FIELDS
 from .coordinator import PollingCoordinator
-from .utils import unique_id_loggable
+from .utils import unique_id_loggable, build_device
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -25,9 +25,8 @@ from bluetti_mqtt.bluetooth import (
 from bluetti_mqtt.core.devices.bluetti_device import BluettiDevice
 from bluetti_mqtt.core.commands import ReadHoldingRegisters
 
-from . import build_device
 from .const import DATA_POLLING_RUNNING, DOMAIN
-from .utils import mac_loggable
+from .utils import mac_loggable, build_device
 
 _LOGGER = logging.getLogger(__name__)
 
