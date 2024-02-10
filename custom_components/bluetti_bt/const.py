@@ -17,6 +17,17 @@ CONF_MAX_RETRIES = "max_retries"
 DATA_COORDINATOR = "coordinator"
 DATA_POLLING_RUNNING = "polling_running"
 
+SUPPORTED_MODELS = [
+    "AC60",
+    "AC200M",
+    "AC300",
+    "AC500",
+    "EB3A",
+    "EP500",
+    "EP500P",
+    "EP600",
+    "EP760",
+]
 DEVICE_NAME_RE = re.compile(r'^(AC200M|AC300|AC500|AC60|EP500P|EP500|EP600|EP760|EB3A)(\d+)$')
 
 CONTROL_FIELDS = [

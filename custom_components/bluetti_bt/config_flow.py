@@ -24,6 +24,7 @@ from .const import (
     CONF_POLLING_TIMEOUT,
     CONF_USE_CONTROLS,
     DOMAIN,
+    SUPPORTED_MODELS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,12 +59,18 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
             dev_type = get_type_by_bt_name(discovery_info.name)
+            name = re.sub("[^A-Z0-9]+", "", discovery_info.name)
+
+            if dev_type == "Unknown":
+                dev_type = user_input[CONF_TYPE]
+                name = re.sub("[^A-Z0-9]+", "", discovery_info.name).replace("PBOX", dev_type)
+
             return self.async_create_entry(
-                title=discovery_info.name,
+                title=name,
                 data={
                     CONF_ADDRESS: discovery_info.address,
                     CONF_TYPE: dev_type,
-                    CONF_NAME: re.sub("[^A-Z0-9]+", "", discovery_info.name),
+                    CONF_NAME: name,
                 },
             )
 
@@ -86,6 +93,12 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     {
                         service_info.address: service_info.name
                         for service_info in self._discovered_devices.values()
+                    }
+                ),
+                vol.Optional(CONF_TYPE): vol.In(
+                    {
+                        model: model
+                        for model in SUPPORTED_MODELS
                     }
                 ),
             }
