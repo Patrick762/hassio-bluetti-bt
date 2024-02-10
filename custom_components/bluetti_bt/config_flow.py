@@ -63,7 +63,7 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             if dev_type == "Unknown":
                 dev_type = user_input[CONF_TYPE]
-                name = re.sub("[^A-Z0-9]+", "", discovery_info.name).replace("PBOX", dev_type)
+                name = name.replace("PBOX", dev_type)
 
             return self.async_create_entry(
                 title=name,
