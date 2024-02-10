@@ -136,6 +136,9 @@ class PollingCoordinator(DataUpdateCoordinator):
                                 self.bluetti_device.build_setter_command('pack_num', pack)
                             )
 
+                            # We need to wait after switching packs for the data to be available
+                            await asyncio.sleep(5)
+
                             for command in self.bluetti_device.pack_polling_commands:
                                 # Request & parse result for each pack
                                 try:
