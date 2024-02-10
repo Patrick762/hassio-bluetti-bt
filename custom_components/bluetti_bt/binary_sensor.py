@@ -95,7 +95,7 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._response_key = response_key
 
         self._attr_device_info = device_info
-        self._attr_name = e_name
+        self._attr_name = name
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
         self._attr_entity_category = category
