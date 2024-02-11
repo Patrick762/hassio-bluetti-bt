@@ -60,6 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if use_controls is True:
         _LOGGER.warning("You are using controls with this integration at your own risk!")
         platforms.append(Platform.SWITCH)
+        platforms.append(Platform.BUTTON)
 
     # Setup platforms
     await hass.config_entries.async_forward_entry_setups(entry, platforms)

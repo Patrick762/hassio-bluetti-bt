@@ -33,6 +33,7 @@ DEVICE_NAME_RE = re.compile(r'^(AC200M|AC300|AC500|AC60|EP500P|EP500|EP600|EP760
 CONTROL_FIELDS = [
     "ac_output_on",
     "dc_output_on",
+    "power_off",
 ]
 
 DIAGNOSTIC_FIELDS = [
