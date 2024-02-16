@@ -1,7 +1,7 @@
 """Coordinator for Bluetti integration."""
 
 from __future__ import annotations
-from typing import List, cast
+from typing import cast
 
 import asyncio
 from datetime import timedelta
@@ -16,14 +16,9 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from bluetti_mqtt.bluetooth.client import BluetoothClient
-from bluetti_mqtt.bluetooth import (
-    BadConnectionError,
-    ModbusError,
-    ParseError,
-)
-from bluetti_mqtt.core.devices.bluetti_device import BluettiDevice
-from bluetti_mqtt.core.commands import ReadHoldingRegisters
+from .bluetti_bt_lib.const import NOTIFY_UUID, RESPONSE_TIMEOUT, WRITE_UUID
+from .bluetti_bt_lib.exceptions import BadConnectionError, ModbusError, ParseError
+from .bluetti_bt_lib.utils.commands import ReadHoldingRegisters
 
 from .const import DATA_POLLING_RUNNING, DOMAIN
 from .utils import mac_loggable, build_device
@@ -108,7 +103,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                     # Attach notifier if needed
                     if not self.has_notifier:
                         await self.client.start_notify(
-                            BluetoothClient.NOTIFY_UUID, self._notification_handler
+                            NOTIFY_UUID, self._notification_handler
                         )
                         self.has_notifier = True
 
@@ -171,7 +166,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                 # Disconnect if connection not persistant
                 if not self.persistent_conn:
                     if self.has_notifier:
-                        await self.client.stop_notify(BluetoothClient.NOTIFY_UUID)
+                        await self.client.stop_notify(NOTIFY_UUID)
                         self.has_notifier = False
                     await self.client.disconnect()
 
@@ -191,12 +186,12 @@ class PollingCoordinator(DataUpdateCoordinator):
             # Make request
             self.logger.debug("Requesting %s", command)
             await self.client.write_gatt_char(
-                BluetoothClient.WRITE_UUID, bytes(command)
+                WRITE_UUID, bytes(command)
             )
 
             # Wait for response
             res = await asyncio.wait_for(
-                self.notify_future, timeout=BluetoothClient.RESPONSE_TIMEOUT
+                self.notify_future, timeout=RESPONSE_TIMEOUT
             )
 
             # Process data
