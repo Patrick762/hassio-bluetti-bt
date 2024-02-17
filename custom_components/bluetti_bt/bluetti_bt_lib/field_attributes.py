@@ -58,6 +58,14 @@ class CurrentFieldAttributes(FieldAttributes):
 
 
 @dataclass
+class EnergyFieldAttributes(FieldAttributes):
+    type = FieldType.NUMERIC
+    unit_of_measurement = "kWh"
+    device_class = "energy"
+    state_class = "total_increasing"
+
+
+@dataclass
 class FrequencyFieldAttributes(FieldAttributes):
     type = (FieldType.NUMERIC,)
     unit_of_measurement = ("Hz",)
@@ -85,12 +93,8 @@ FIELD_ATTRIBUTES = {
     "dc_output_power": PowerFieldAttributes(
         name="DC Output Power",
     ),
-    "power_generation": FieldAttributes(
-        type=FieldType.NUMERIC,
+    "power_generation": EnergyFieldAttributes(
         name="Total Power Generation",
-        unit_of_measurement="kWh",
-        device_class="energy",
-        state_class="total_increasing",
     ),
     "total_battery_percent": FieldAttributes(
         type=FieldType.NUMERIC,
@@ -161,6 +165,111 @@ FIELD_ATTRIBUTES = {
     ),
     "internal_dc_input_current": CurrentFieldAttributes(
         name="Internal DC Input Current",
+    ),
+    "pv_input_power1": PowerFieldAttributes(
+        name="Solar Input Power 1",
+    ),
+    "pv_input_power2": PowerFieldAttributes(
+        name="Solar Input Power 2",
+    ),
+    "pv_input_voltage1": VoltageFieldAttributes(
+        name="Solar Input Voltage 1",
+    ),
+    "pv_input_voltage2": VoltageFieldAttributes(
+        name="Solar Input Voltage 2",
+    ),
+    "pv_input_current1": CurrentFieldAttributes(
+        name="Solar Input Current 1",
+    ),
+    "pv_input_current2": CurrentFieldAttributes(
+        name="Solar Input Current 2",
+    ),
+    "adl400_ac_input_power_phase1": PowerFieldAttributes(
+        name="AC Solar Input Power Phase 1"
+    ),
+    "adl400_ac_input_power_phase2": PowerFieldAttributes(
+        name="AC Solar Input Power Phase 2"
+    ),
+    "adl400_ac_input_power_phase3": PowerFieldAttributes(
+        name="AC Solar Input Power Phase 3"
+    ),
+    "adl400_ac_input_voltage_phase1": VoltageFieldAttributes(
+        name="AC Solar Input Voltage Phase 1",
+    ),
+    "adl400_ac_input_voltage_phase2": VoltageFieldAttributes(
+        name="AC Solar Input Voltage Phase 2",
+    ),
+    "adl400_ac_input_voltage_phase3": VoltageFieldAttributes(
+        name="AC Solar Input Voltage Phase 3",
+    ),
+    "adl400_ac_input_current_phase1": CurrentFieldAttributes(
+        name="AC Solar Input Current Phase 1",
+    ),
+    "adl400_ac_input_current_phase2": CurrentFieldAttributes(
+        name="AC Solar Input Current Phase 2",
+    ),
+    "adl400_ac_input_current_phase3": CurrentFieldAttributes(
+        name="AC Solar Input Current Phase 3",
+    ),
+    "grid_frequency": FrequencyFieldAttributes(
+        name="Grid Frequency",
+    ),
+    "grid_power_phase1": PowerFieldAttributes(
+        name="Grid Power Phase 1",
+    ),
+    "grid_power_phase2": PowerFieldAttributes(
+        name="Grid Power Phase 2",
+    ),
+    "grid_power_phase3": PowerFieldAttributes(
+        name="Grid Power Phase 3",
+    ),
+    "grid_voltage_phase1": VoltageFieldAttributes(
+        name="Grid Voltage Phase 1",
+    ),
+    "grid_voltage_phase2": VoltageFieldAttributes(
+        name="Grid Voltage Phase 2",
+    ),
+    "grid_voltage_phase3": VoltageFieldAttributes(
+        name="Grid Voltage Phase 3",
+    ),
+    "grid_current_phase1": CurrentFieldAttributes(
+        name="Grid Current Phase 1",
+    ),
+    "grid_current_phase2": CurrentFieldAttributes(
+        name="Grid Current Phase 2",
+    ),
+    "grid_current_phase3": CurrentFieldAttributes(
+        name="Grid Current Phase 3",
+    ),
+    "ac_output_frequency": FrequencyFieldAttributes(
+        name="AC Output Frequency",
+    ),
+    "ac_output_power_phase1": PowerFieldAttributes(
+        name="AC Output Power Phase 1",
+    ),
+    "ac_output_power_phase2": PowerFieldAttributes(
+        name="AC Output Power Phase 2",
+    ),
+    "ac_output_power_phase3": PowerFieldAttributes(
+        name="AC Output Power Phase 3",
+    ),
+    "ac_output_voltage_phase1": VoltageFieldAttributes(
+        name="AC Output Voltage Phase 1",
+    ),
+    "ac_output_voltage_phase2": VoltageFieldAttributes(
+        name="AC Output Voltage Phase 2",
+    ),
+    "ac_output_voltage_phase3": VoltageFieldAttributes(
+        name="AC Output Voltage Phase 3",
+    ),
+    "total_ac_consumption": EnergyFieldAttributes(
+        name="Total Load Consumption",
+    ),
+    "total_grid_consumption": EnergyFieldAttributes(
+        name="Total Grid Consumption",
+    ),
+    "total_grid_feed": EnergyFieldAttributes(
+        name="Total Grid Feed",
     ),
     # Device specific controls
     "power_off": FieldAttributes(
