@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from enum import Enum, auto, unique
 
+from .field_enums import AutoSleepMode, OutputMode
+
 
 @unique
 class FieldType(Enum):
@@ -20,6 +22,7 @@ class FieldAttributes:
     unit_of_measurement: str|None = None
     device_class: str|None = None
     state_class: str|None = None
+    options: Enum
 
 @dataclass(frozen=True)
 class PowerFieldAttributes(FieldAttributes):
@@ -33,6 +36,13 @@ class VoltageFieldAttributes(FieldAttributes):
     type = FieldType.NUMERIC
     unit_of_measurement = 'V'
     device_class = 'voltage'
+    state_class = 'measurement'
+
+@dataclass
+class CurrentFieldAttributes(FieldAttributes):
+    type = FieldType.NUMERIC
+    unit_of_measurement = 'A'
+    device_class = 'current'
     state_class = 'measurement'
 
 @dataclass(frozen=True)
@@ -65,7 +75,7 @@ FIELD_ATTRIBUTES = {
         type = FieldType.NUMERIC,
         name = 'Total Battery Percent',
         unit_of_measurement = '%',
-        device_class ='battery',
+        device_class = 'battery',
         state_class ='measurement',
     ),
     'total_battery_voltage': VoltageFieldAttributes(
@@ -87,6 +97,47 @@ FIELD_ATTRIBUTES = {
     ),
 
     # Device specific fields
+    'ac_output_mode': FieldAttributes(
+        type = FieldType.ENUM,
+        name = 'AC Output Mode',
+        options = OutputMode,
+    ),
+    'internal_ac_voltage': VoltageFieldAttributes(
+        name = 'Internal AC Voltage',
+    ),
+    'internal_current_one': CurrentFieldAttributes(
+        name = 'Internal Current Sensor 1',
+    ),
+    'internal_power_one': PowerFieldAttributes(
+        name = 'Internal Power Sensor 1',
+    ),
+    'internal_ac_frequency': FieldAttributes(
+        type = FieldType.NUMERIC,
+        name = 'Internal AC Frequency',
+        unit_of_measurement = 'Hz',
+        device_class = 'frequency',
+        state_class ='measurement',
+    ),
+    'internal_dc_input_voltage': VoltageFieldAttributes(
+        name = 'Internal DC Input Voltage',
+    ),
+    'internal_dc_input_power': PowerFieldAttributes(
+        name = 'Internal DC Input Power',
+    ),
+    'internal_dc_input_current': CurrentFieldAttributes(
+        name = 'Internal DC Input Current',
+    ),
+    'power_off': FieldAttributes(
+        type = FieldType.BUTTON,
+        setter = True,
+        name = 'Power Off',
+    ),
+    'auto_sleep_mode': FieldAttributes(
+        type = FieldType.ENUM,
+        setter = True,
+        name = 'Screen Auto Sleep Mode',
+        options = AutoSleepMode,
+    ),
 }
 
 def PACK_FIELD_ATTRIBUTES(pack: int):
