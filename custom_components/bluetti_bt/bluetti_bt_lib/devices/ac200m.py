@@ -31,18 +31,18 @@ class AC200M(ProtocolV1Device):
     @property
     def pack_num_max(self):
         return 3
-    
+
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
         return super().polling_commands + [
             ReadHoldingRegisters(70, 4),
             ReadHoldingRegisters(86, 3),
         ]
-    
+
     @property
     def writable_ranges(self) -> List[range]:
         return super().writable_ranges + [range(3060, 3061)]
-    
+
     @property
     def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
         return super().pack_polling_commands + [ReadHoldingRegisters(105, 16)]

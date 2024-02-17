@@ -18,3 +18,15 @@ class AutoSleepMode(Enum):
     ONE_MINUTE = 3
     FIVE_MINUTES = 4
     NEVER = 5
+
+@unique
+class UpsMode(Enum):
+    CUSTOMIZED = 1
+    PV_PRIORITY = 2
+    STANDARD = 3
+    TIME_CONTROL = 4
+
+@unique
+class SplitPhaseMachineType(Enum):
+    SLAVE = 0
+    MASTER = 1

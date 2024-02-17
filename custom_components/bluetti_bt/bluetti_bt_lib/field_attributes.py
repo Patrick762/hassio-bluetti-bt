@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from enum import Enum, auto, unique
 
-from .field_enums import AutoSleepMode, OutputMode
+from .field_enums import AutoSleepMode, OutputMode, SplitPhaseMachineType, UpsMode
 
 
 @unique
@@ -44,6 +44,13 @@ class CurrentFieldAttributes(FieldAttributes):
     unit_of_measurement = 'A'
     device_class = 'current'
     state_class = 'measurement'
+
+@dataclass
+class FrequencyFieldAttributes(FieldAttributes):
+    type = FieldType.NUMERIC,
+    unit_of_measurement = 'Hz',
+    device_class = 'frequency',
+    state_class ='measurement',
 
 @dataclass(frozen=True)
 class OutletFieldAttributes(FieldAttributes):
@@ -87,6 +94,8 @@ FIELD_ATTRIBUTES = {
     'dc_output_on': OutletFieldAttributes(
         name = 'DC Output',
     ),
+
+    # Controls
     'ac_output_on_switch': OutletFieldAttributes(
         name = 'AC Output',
         setter = True,
@@ -111,12 +120,26 @@ FIELD_ATTRIBUTES = {
     'internal_power_one': PowerFieldAttributes(
         name = 'Internal Power Sensor 1',
     ),
-    'internal_ac_frequency': FieldAttributes(
-        type = FieldType.NUMERIC,
+    'internal_ac_frequency': FrequencyFieldAttributes(
         name = 'Internal AC Frequency',
-        unit_of_measurement = 'Hz',
-        device_class = 'frequency',
-        state_class ='measurement',
+    ),
+    'internal_current_two': CurrentFieldAttributes(
+        name = 'Internal Current Sensor 2',
+    ),
+    'internal_power_two': PowerFieldAttributes(
+        name = 'Internal Power Sensor 2',
+    ),
+    'ac_input_voltage': VoltageFieldAttributes(
+        name = 'AC Input Voltage',
+    ),
+    'internal_current_three': CurrentFieldAttributes(
+        name = 'Internal Current Sensor 3',
+    ),
+    'internal_power_three': PowerFieldAttributes(
+        name = 'Internal Power Sensor 3',
+    ),
+    'ac_input_frequency': FrequencyFieldAttributes(
+        name = 'AC Input Frequency',
     ),
     'internal_dc_input_voltage': VoltageFieldAttributes(
         name = 'Internal DC Input Voltage',
@@ -127,6 +150,8 @@ FIELD_ATTRIBUTES = {
     'internal_dc_input_current': CurrentFieldAttributes(
         name = 'Internal DC Input Current',
     ),
+
+    # Device specific controls
     'power_off': FieldAttributes(
         type = FieldType.BUTTON,
         setter = True,
@@ -138,6 +163,45 @@ FIELD_ATTRIBUTES = {
         name = 'Screen Auto Sleep Mode',
         options = AutoSleepMode,
     ),
+    'ups_mode': FieldAttributes(
+        type = FieldType.ENUM,
+        setter = False, # Disabled for safety reasons
+        name = 'UPS Working Mode',
+        options = UpsMode,
+    ),
+    'split_phase_on': FieldAttributes(
+        type = FieldType.BOOL,
+        setter = False, # Disabled for safety reasons
+        name = 'Split Phase',
+    ),
+    'split_phase_machine_mode': FieldAttributes(
+        type = FieldType.ENUM,
+        setter = False, # Disabled for safety reasons
+        name = 'Split Phase Machine Type',
+        options = SplitPhaseMachineType,
+    ),
+    'grid_charge_on': FieldAttributes(
+        type = FieldType.BOOL,
+        setter = False, # Disabled for safety reasons
+        name = 'Grid Charge',
+    ),
+    'time_control_on': FieldAttributes(
+        type = FieldType.BOOL,
+        setter = False, # Disabled for safety reasons
+        name = 'Time Control',
+    ),
+    'battery_range_start': FieldAttributes(
+        type = FieldType.NUMERIC,
+        setter = False, # Disabled
+        name = 'Battery Range Start',
+        unit_of_measurement = '%',
+    ),
+    'battery_range_end': FieldAttributes(
+        type = FieldType.NUMERIC,
+        setter = False, # Disabled
+        name = 'Battery Range End',
+        unit_of_measurement = '%',
+    ),
 }
 
 def PACK_FIELD_ATTRIBUTES(pack: int):
@@ -146,10 +210,14 @@ def PACK_FIELD_ATTRIBUTES(pack: int):
             name = f'Battery Pack {pack} Voltage',
         ),
         'pack_battery_percent': FieldAttributes(
-            type = FieldType,
+            type = FieldType.NUMERIC,
             name = f'Battery Pack {pack} Percent',
             unit_of_measurement = '%',
             device_class ='battery',
             state_class ='measurement',
+        ),
+        'pack_bms_version': FieldAttributes(
+            type = FieldType.NUMERIC,
+            name = f'Battery Pack {pack} BMS Version',
         ),
     }
