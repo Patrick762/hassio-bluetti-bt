@@ -11,7 +11,7 @@ class AC300(ProtocolV1Device):
     def __init__(self, address: str, sn: str):
         super().__init__(address, "AC300", sn)
 
-        # Details
+        # Details (matches EP500 + AC500)
         self.struct.add_enum_field("ac_output_mode", 70, OutputMode)
         self.struct.add_uint_field("internal_ac_voltage", 71)
         self.struct.add_decimal_field("internal_current_one", 72, 1)
@@ -31,7 +31,7 @@ class AC300(ProtocolV1Device):
         self.struct.add_decimal_array_field("cell_voltages", 105, 16, 2)  # internal
         self.struct.add_version_field("pack_bms_version", 201)
 
-        # Controls
+        # Controls (matches EP500 + AC500)
         self.struct.add_enum_field("ups_mode", 3001, UpsMode)
         self.struct.add_bool_field("split_phase_on", 3004)
         self.struct.add_enum_field(
