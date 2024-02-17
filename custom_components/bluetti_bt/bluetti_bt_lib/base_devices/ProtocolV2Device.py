@@ -27,6 +27,13 @@ class ProtocolV2Device(BluettiDevice):
         # Battery
         self.struct.add_uint_field('total_battery_percent', 102)
 
+        # Battery packs
+        #self.struct.add_uint_field('pack_num_max', ?) # internal
+        #self.struct.add_decimal_field('total_battery_voltage', ?, 1)
+        #self.struct.add_uint_field('pack_num', ?) # internal
+        #self.struct.add_decimal_field('pack_voltage', ?, 2)  # Full pack voltage
+        #self.struct.add_uint_field('pack_battery_percent', ?)
+
         # Output state
         #self.struct.add_bool_field('ac_output_on', ?)
         #self.struct.add_bool_field('dc_output_on', ?)
@@ -44,6 +51,7 @@ class ProtocolV2Device(BluettiDevice):
         return [
             ReadHoldingRegisters(110, 6),
             ReadHoldingRegisters(116, 4),
+            ReadHoldingRegisters(154, 1),
             ReadHoldingRegisters(102, 1),
         ]
 
