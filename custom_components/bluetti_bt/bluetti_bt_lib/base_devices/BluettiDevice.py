@@ -52,7 +52,9 @@ class BluettiDevice:
 
     def build_setter_command(self, field: str, value: Any):
         matches = [f for f in self.struct.fields if f.name == field]
-        device_field = next(f for f in matches if any(f.address in r for r in self.writable_ranges))
+        device_field = next(
+            f for f in matches if any(f.address in r for r in self.writable_ranges)
+        )
 
         # Convert value to an integer
         if isinstance(device_field, EnumField):

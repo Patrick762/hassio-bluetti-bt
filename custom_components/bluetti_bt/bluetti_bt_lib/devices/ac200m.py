@@ -12,21 +12,21 @@ class AC200M(ProtocolV1Device):
         super().__init__(address, "AC200M", sn)
 
         # Details
-        self.struct.add_enum_field('ac_output_mode', 70, OutputMode)
-        self.struct.add_uint_field('internal_ac_voltage', 71)
-        self.struct.add_decimal_field('internal_current_one', 72, 1)
-        self.struct.add_uint_field('internal_power_one', 73)
-        self.struct.add_decimal_field('internal_ac_frequency', 74, 1)
-        self.struct.add_uint_field('internal_dc_input_voltage', 86)
-        self.struct.add_decimal_field('internal_dc_input_power', 87, 1)
-        self.struct.add_decimal_field('internal_dc_input_current', 88, 2)
+        self.struct.add_enum_field("ac_output_mode", 70, OutputMode)
+        self.struct.add_uint_field("internal_ac_voltage", 71)
+        self.struct.add_decimal_field("internal_current_one", 72, 1)
+        self.struct.add_uint_field("internal_power_one", 73)
+        self.struct.add_decimal_field("internal_ac_frequency", 74, 1)
+        self.struct.add_uint_field("internal_dc_input_voltage", 86)
+        self.struct.add_decimal_field("internal_dc_input_power", 87, 1)
+        self.struct.add_decimal_field("internal_dc_input_current", 88, 2)
 
         # Battery packs
-        self.struct.add_decimal_array_field('cell_voltages', 105, 16, 2) # internal
+        self.struct.add_decimal_array_field("cell_voltages", 105, 16, 2)  # internal
 
         # Controls
-        self.struct.add_bool_field('power_off', 3060)
-        self.struct.add_enum_field('auto_sleep_mode', 3061, AutoSleepMode)
+        self.struct.add_bool_field("power_off", 3060)
+        self.struct.add_enum_field("auto_sleep_mode", 3061, AutoSleepMode)
 
     @property
     def pack_num_max(self):

@@ -35,7 +35,7 @@ class UintField(DeviceField):
         super().__init__(name, address, 1)
 
     def parse(self, data: bytes) -> int:
-        return struct.unpack('!H', data)[0]
+        return struct.unpack("!H", data)[0]
 
     def in_range(self, val: int) -> bool:
         if self.range is None:
@@ -49,7 +49,7 @@ class BoolField(DeviceField):
         super().__init__(name, address, 1)
 
     def parse(self, data: bytes) -> bool:
-        return struct.unpack('!H', data)[0] == 1
+        return struct.unpack("!H", data)[0] == 1
 
 
 class EnumField(DeviceField):
@@ -58,18 +58,20 @@ class EnumField(DeviceField):
         super().__init__(name, address, 1)
 
     def parse(self, data: bytes) -> Any:
-        val = struct.unpack('!H', data)[0]
+        val = struct.unpack("!H", data)[0]
         return self.enum(val)
 
 
 class DecimalField(DeviceField):
-    def __init__(self, name: str, address: int, scale: int, range: Optional[Tuple[int, int]]):
+    def __init__(
+        self, name: str, address: int, scale: int, range: Optional[Tuple[int, int]]
+    ):
         self.scale = scale
         self.range = range
         super().__init__(name, address, 1)
 
     def parse(self, data: bytes) -> Decimal:
-        val = Decimal(struct.unpack('!H', data)[0])
+        val = Decimal(struct.unpack("!H", data)[0])
         return val / 10 ** self.scale
 
     def in_range(self, val: Decimal) -> bool:
@@ -85,20 +87,22 @@ class DecimalArrayField(DeviceField):
         super().__init__(name, address, size)
 
     def parse(self, data: bytes) -> Decimal:
-        values = list(struct.unpack(f'!{self.size}H', data))
+        values = list(struct.unpack(f"!{self.size}H", data))
         return [Decimal(v) / 10 ** self.scale for v in values]
 
 
 class StringField(DeviceField):
     """Fixed-width null-terminated string field"""
+
     def parse(self, data: bytes) -> str:
-        return data.rstrip(b'\0').decode('ascii')
+        return data.rstrip(b"\0").decode("ascii")
 
 
 class SwapStringField(DeviceField):
     """Fixed-width null-terminated string field"""
+
     def parse(self, data: bytes) -> str:
-        return swap_bytes(data).rstrip(b'\0').decode('ascii')
+        return swap_bytes(data).rstrip(b"\0").decode("ascii")
 
 
 class VersionField(DeviceField):
@@ -106,7 +110,7 @@ class VersionField(DeviceField):
         super().__init__(name, address, 2)
 
     def parse(self, data: bytes) -> int:
-        values = struct.unpack('!2H', data)
+        values = struct.unpack("!2H", data)
         return Decimal(values[0] + (values[1] << 16)) / 100
 
 
@@ -115,7 +119,7 @@ class SerialNumberField(DeviceField):
         super().__init__(name, address, 4)
 
     def parse(self, data: bytes) -> int:
-        values = struct.unpack('!4H', data)
+        values = struct.unpack("!4H", data)
         return values[0] + (values[1] << 16) + (values[2] << 32) + (values[3] << 48)
 
 
@@ -134,7 +138,9 @@ class DeviceStruct:
     def add_enum_field(self, name: str, address: int, enum: Type[Enum]):
         self.fields.append(EnumField(name, address, enum))
 
-    def add_decimal_field(self, name: str, address: int, scale: int, range: Tuple[int, int] = None):
+    def add_decimal_field(
+        self, name: str, address: int, scale: int, range: Tuple[int, int] = None
+    ):
         self.fields.append(DecimalField(name, address, scale, range))
 
     def add_decimal_array_field(self, name: str, address: int, size: int, scale: int):
@@ -159,14 +165,15 @@ class DeviceStruct:
 
         # Filter out fields not in range
         r = range(starting_address, starting_address + data_size)
-        fields = [f for f in self.fields
-                  if f.address in r and f.address + f.size - 1 in r]
+        fields = [
+            f for f in self.fields if f.address in r and f.address + f.size - 1 in r
+        ]
 
         # Parse fields
         parsed = {}
         for f in fields:
             data_start = 2 * (f.address - starting_address)
-            field_data = data[data_start:data_start + 2 * f.size]
+            field_data = data[data_start : data_start + 2 * f.size]
             val = f.parse(field_data)
 
             # Skip if the value is "out-of-range" - sometimes the sensors

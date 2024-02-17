@@ -19,12 +19,14 @@ class AutoSleepMode(Enum):
     FIVE_MINUTES = 4
     NEVER = 5
 
+
 @unique
 class UpsMode(Enum):
     CUSTOMIZED = 1
     PV_PRIORITY = 2
     STANDARD = 3
     TIME_CONTROL = 4
+
 
 @unique
 class SplitPhaseMachineType(Enum):
