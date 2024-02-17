@@ -38,6 +38,9 @@ class ProtocolV2Device(BluettiDevice):
         #self.struct.add_bool_field('ac_output_on', ?)
         #self.struct.add_bool_field('dc_output_on', ?)
 
+        # Pack selector
+        #self.struct.add_uint_field('pack_num', ?) # internal
+
         # Output controls
         #self.struct.add_bool_field('ac_output_on_switch', ?)
         #self.struct.add_bool_field('dc_output_on_switch', ?)
