@@ -22,7 +22,7 @@ class FieldAttributes:
     unit_of_measurement: str | None = None
     device_class: str | None = None
     state_class: str | None = None
-    options: Enum
+    options: Enum | None = None
 
 
 @dataclass(frozen=True)
