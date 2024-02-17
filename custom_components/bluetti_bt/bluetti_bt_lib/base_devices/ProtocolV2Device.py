@@ -61,3 +61,7 @@ class ProtocolV2Device(BluettiDevice):
     @property
     def writable_ranges(self) -> List[range]:
         return []
+    
+    @property
+    def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
+        return []
