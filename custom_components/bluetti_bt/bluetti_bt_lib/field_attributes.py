@@ -3,7 +3,15 @@
 from dataclasses import dataclass
 from enum import Enum, auto, unique
 
-from .field_enums import AutoSleepMode, OutputMode, SplitPhaseMachineType, UpsMode
+from .field_enums import (
+    AutoSleepMode,
+    ChargingMode,
+    EcoShutdown,
+    LedMode,
+    OutputMode,
+    SplitPhaseMachineType,
+    UpsMode,
+)
 
 
 @unique
@@ -204,6 +212,34 @@ FIELD_ATTRIBUTES = {
         setter=False,  # Disabled
         name="Battery Range End",
         unit_of_measurement="%",
+    ),
+    "led_mode": FieldAttributes(
+        type=FieldType.ENUM,
+        setter=True,
+        name="LED Mode",
+        options=LedMode,
+    ),
+    "eco_on": FieldAttributes(
+        type=FieldType.BOOL,
+        setter=True,
+        name="Eco Mode",
+    ),
+    "eco_shutdown": FieldAttributes(
+        type=FieldType.ENUM,
+        setter=True,
+        name="Eco Shutdown",
+        options=EcoShutdown,
+    ),
+    "charging_mode": FieldAttributes(
+        type=FieldType.ENUM,
+        setter=True,
+        name="Charging Mode",
+        options=ChargingMode,
+    ),
+    "power_lifting_on": FieldAttributes(
+        type=FieldType.BOOL,
+        setter=False,  # Disabled for safety reasons
+        name="Power Lifting",
     ),
 }
 

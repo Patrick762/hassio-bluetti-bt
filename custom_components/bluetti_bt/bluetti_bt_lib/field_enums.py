@@ -32,3 +32,26 @@ class UpsMode(Enum):
 class SplitPhaseMachineType(Enum):
     SLAVE = 0
     MASTER = 1
+
+
+@unique
+class LedMode(Enum):
+    LOW = 1
+    HIGH = 2
+    SOS = 3
+    OFF = 4
+
+
+@unique
+class EcoShutdown(Enum):
+    ONE_HOUR = 1
+    TWO_HOURS = 2
+    THREE_HOURS = 3
+    FOUR_HOURS = 4
+
+
+@unique
+class ChargingMode(Enum):
+    STANDARD = 0
+    SILENT = 1
+    TURBO = 2
