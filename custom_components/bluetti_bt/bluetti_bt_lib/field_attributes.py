@@ -22,61 +22,103 @@ class FieldType(Enum):
     BUTTON = auto()
 
 
-@dataclass(frozen=True)
 class FieldAttributes:
-    type: FieldType
-    setter: bool = False
-    name: str
-    unit_of_measurement: str | None = None
-    device_class: str | None = None
-    state_class: str | None = None
-    options: Enum | None = None
+    def __init__(
+        self,
+        type: FieldType = FieldType.NUMERIC,
+        setter: bool = False,
+        name: str = "",
+        unit_of_measurement: str | None = None,
+        device_class: str | None = None,
+        state_class: str | None = None,
+        options: Enum | None = None,
+    ):
+        self.type = type
+        self.setter = setter
+        self.name = name
+        self.unit_of_measurement = unit_of_measurement
+        self.device_class = device_class
+        self.state_class = state_class
+        self.options = options
 
 
-@dataclass(frozen=True)
 class PowerFieldAttributes(FieldAttributes):
-    type = FieldType.NUMERIC
-    unit_of_measurement = "W"
-    device_class = "power"
-    state_class = "measurement"
+    def __init__(
+        self,
+        name: str = "",
+    ):
+        super().__init__(
+            name=name,
+            unit_of_measurement="W",
+            device_class="power",
+            state_class="measurement",
+        )
 
 
-@dataclass
 class VoltageFieldAttributes(FieldAttributes):
-    type = FieldType.NUMERIC
-    unit_of_measurement = "V"
-    device_class = "voltage"
-    state_class = "measurement"
+    def __init__(
+        self,
+        name: str = "",
+    ):
+        super().__init__(
+            name=name,
+            unit_of_measurement="V",
+            device_class="voltage",
+            state_class="measurement",
+        )
 
 
-@dataclass
 class CurrentFieldAttributes(FieldAttributes):
-    type = FieldType.NUMERIC
-    unit_of_measurement = "A"
-    device_class = "current"
-    state_class = "measurement"
+    def __init__(
+        self,
+        name: str = "",
+    ):
+        super().__init__(
+            name=name,
+            unit_of_measurement="A",
+            device_class="current",
+            state_class="measurement",
+        )
 
 
-@dataclass
 class EnergyFieldAttributes(FieldAttributes):
-    type = FieldType.NUMERIC
-    unit_of_measurement = "kWh"
-    device_class = "energy"
-    state_class = "total_increasing"
+    def __init__(
+        self,
+        name: str = "",
+    ):
+        super().__init__(
+            name=name,
+            unit_of_measurement="kWh",
+            device_class="energy",
+            state_class="total_increasing",
+        )
 
 
-@dataclass
 class FrequencyFieldAttributes(FieldAttributes):
-    type = (FieldType.NUMERIC,)
-    unit_of_measurement = ("Hz",)
-    device_class = ("frequency",)
-    state_class = ("measurement",)
+    def __init__(
+        self,
+        name: str = "",
+    ):
+        super().__init__(
+            name=name,
+            unit_of_measurement="Hz",
+            device_class="frequency",
+            state_class="measurement",
+        )
 
 
-@dataclass(frozen=True)
 class OutletFieldAttributes(FieldAttributes):
-    type = FieldType.BOOL
-    device_class = "outlet"
+    def __init__(
+        self,
+        name: str = "",
+        setter: bool = False,
+    ):
+        super().__init__(
+            type=FieldType.BOOL,
+            name=name,
+            setter=setter,
+            device_class="outlet",
+        )
 
 
 FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {

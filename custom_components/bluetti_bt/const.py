@@ -1,7 +1,5 @@
 """Constants for the Bluetti BT integration."""
 
-import re
-
 DOMAIN = "bluetti_bt"
 MANUFACTURER = "Bluetti"
 
@@ -26,7 +24,6 @@ SUPPORTED_MODELS = [
     "EP600",
     "EP760",
 ]
-DEVICE_NAME_RE = re.compile(r'^(AC200M|AC300|AC500|AC60|EP500P|EP500|EP600|EP760|EB3A)(\d+)$')
 
 CONTROL_FIELDS = [
     "ac_output_on",
