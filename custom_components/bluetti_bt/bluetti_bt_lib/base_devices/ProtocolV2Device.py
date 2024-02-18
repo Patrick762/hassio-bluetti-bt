@@ -12,7 +12,7 @@ class ProtocolV2Device(BluettiDevice):
         self.struct = DeviceStruct()
 
         # Device info
-        self.struct.add_string_field("device_type", 110, 6)
+        self.struct.add_swap_string_field("device_type", 110, 6)
         self.struct.add_sn_field("serial_number", 116)
 
         # Power IO

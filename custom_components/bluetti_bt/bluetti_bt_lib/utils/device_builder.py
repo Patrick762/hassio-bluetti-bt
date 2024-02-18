@@ -41,6 +41,6 @@ def build_device(address: str, name: str):
 
 def get_type_by_bt_name(bt_name: str):
     match = DEVICE_NAME_RE.match(bt_name)
-    if len(match) > 0:
-        return match[1]
-    return "Unknown"
+    if match is None or len(match) < 2:
+        return "Unknown"
+    return match[1]
