@@ -18,16 +18,13 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from bluetti_mqtt.mqtt_client import (
-    NORMAL_DEVICE_FIELDS,
-    DC_INPUT_FIELDS,
-    MqttFieldType,
-)
+from .bluetti_bt_lib.field_attributes import FIELD_ATTRIBUTES, FieldType
+from .bluetti_bt_lib.utils.device_builder import build_device
 
 from . import device_info as dev_info, get_unique_id
-from .const import DATA_COORDINATOR, DOMAIN, ADDITIONAL_DEVICE_FIELDS
+from .const import DATA_COORDINATOR, DOMAIN
 from .coordinator import PollingCoordinator
-from .utils import unique_id_loggable, build_device
+from .utils import unique_id_loggable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,12 +47,10 @@ async def async_setup_entry(
     bluetti_device = build_device(address, device_name)
 
     sensors_to_add = []
-    all_fields = NORMAL_DEVICE_FIELDS
-    all_fields.update(DC_INPUT_FIELDS)
-    all_fields.update(ADDITIONAL_DEVICE_FIELDS)
+    all_fields = FIELD_ATTRIBUTES
     for field_key, field_config in all_fields.items():
         if bluetti_device.has_field(field_key):
-            if field_config.type == MqttFieldType.BOOL:
+            if field_config.type == FieldType.BOOL:
                 category = None
                 if field_config.setter is True:
                     category = EntityCategory.DIAGNOSTIC
@@ -66,7 +61,7 @@ async def async_setup_entry(
                         device_info,
                         address,
                         field_key,
-                        field_config.home_assistant_extra.get(CONF_NAME, ""),
+                        field_config.name,
                         category=category,
                     )
                 )
@@ -104,7 +99,7 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
 
-        if self.coordinator.persistent_conn and not self.coordinator.client.is_connected:
+        if self.coordinator.reader.persistent_conn and not self.coordinator.reader.client.is_connected:
             return
 
         _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
