@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import logging
+from typing import List
 
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
@@ -25,7 +26,7 @@ from .const import (
 )
 from .coordinator import PollingCoordinator
 
-PLATFORMS: [Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
+PLATFORMS: List[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
 _LOGGER = logging.getLogger(__name__)
 
 
