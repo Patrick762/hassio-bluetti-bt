@@ -23,18 +23,13 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from bluetti_mqtt.bluetooth.client import BluetoothClient
-from bluetti_mqtt.core.devices.bluetti_device import BluettiDevice
-from bluetti_mqtt.mqtt_client import (
-    NORMAL_DEVICE_FIELDS,
-    DC_INPUT_FIELDS,
-    MqttFieldType,
-)
-
+from .bluetti_bt_lib.base_devices.BluettiDevice import BluettiDevice
+from .bluetti_bt_lib.const import WRITE_UUID
+from .bluetti_bt_lib.field_attributes import FIELD_ATTRIBUTES, PACK_FIELD_ATTRIBUTES, FieldType
 from .bluetti_bt_lib.utils.device_builder import build_device
 
 from . import device_info as dev_info, get_unique_id
-from .const import CONTROL_FIELDS, DATA_COORDINATOR, DOMAIN, ADDITIONAL_DEVICE_FIELDS
+from .const import CONTROL_FIELDS, DATA_COORDINATOR, DOMAIN
 from .coordinator import PollingCoordinator
 from .utils import mac_loggable, unique_id_loggable
 
@@ -59,12 +54,10 @@ async def async_setup_entry(
     bluetti_device = build_device(address, device_name)
 
     sensors_to_add = []
-    all_fields = NORMAL_DEVICE_FIELDS
-    all_fields.update(DC_INPUT_FIELDS)
-    all_fields.update(ADDITIONAL_DEVICE_FIELDS)
+    all_fields = FIELD_ATTRIBUTES
     for field_key, field_config in all_fields.items():
         if bluetti_device.has_field(field_key):
-            if field_config.type == MqttFieldType.BOOL:
+            if field_config.type == FieldType.BOOL:
                 if field_config.setter is True and field_key in CONTROL_FIELDS:
                     sensors_to_add.append(
                         BluettiSwitch(
@@ -73,7 +66,7 @@ async def async_setup_entry(
                             device_info,
                             address,
                             field_key,
-                            field_config.home_assistant_extra.get(CONF_NAME, ""),
+                            field_config.name,
                             entry.entry_id
                         )
                     )
@@ -171,7 +164,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
                     # Send command
                     _LOGGER.debug("Requesting %s (%s,%s)", command, self._response_key, state)
                     await self._client.write_gatt_char(
-                        BluetoothClient.WRITE_UUID, bytes(command)
+                        WRITE_UUID, bytes(command)
                     )
 
                     # Wait until device has changed value, otherwise reading register might reset it

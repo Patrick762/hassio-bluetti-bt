@@ -6,33 +6,23 @@ from enum import Enum
 import logging
 from decimal import Decimal
 
-from homeassistant.components.sensor import SensorEntity, CONF_STATE_CLASS
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import (
     CONF_ADDRESS,
     CONF_NAME,
-    CONF_UNIT_OF_MEASUREMENT,
-    CONF_DEVICE_CLASS,
     EntityCategory,
 )
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from bluetti_mqtt.mqtt_client import (
-    NORMAL_DEVICE_FIELDS,
-    DC_INPUT_FIELDS,
-    MqttFieldType,
-    battery_pack_fields,
-)
-
+from .bluetti_bt_lib.field_attributes import FIELD_ATTRIBUTES, PACK_FIELD_ATTRIBUTES, FieldType
 from .bluetti_bt_lib.utils.device_builder import build_device
 
 from . import device_info as dev_info, get_unique_id
-from .const import DATA_COORDINATOR, DOMAIN, CONF_OPTIONS, DIAGNOSTIC_FIELDS, ADDITIONAL_DEVICE_FIELDS
+from .const import DATA_COORDINATOR, DOMAIN, DIAGNOSTIC_FIELDS
 from .coordinator import PollingCoordinator
 from .utils import unique_id_loggable
 
@@ -57,45 +47,43 @@ async def async_setup_entry(
     bluetti_device = build_device(address, device_name)
 
     sensors_to_add = []
-    all_fields = NORMAL_DEVICE_FIELDS
-    all_fields.update(DC_INPUT_FIELDS)
-    all_fields.update(ADDITIONAL_DEVICE_FIELDS)
+    all_fields = FIELD_ATTRIBUTES
 
     if len(bluetti_device.pack_polling_commands) > 0:
         # add pack fields for device
         _LOGGER.info("Device type(%s) pack_num_max(%s)", bluetti_device.type, bluetti_device.pack_num_max)
         for pack in range (1, bluetti_device.pack_num_max + 1):
-            for name, field in battery_pack_fields(pack).items():
+            for name, field in PACK_FIELD_ATTRIBUTES(pack).items():
                 all_fields.update({name+str(pack): field})
 
     for field_key, field_config in all_fields.items():
-        if bluetti_device.has_field(field_key) or field_config.id_override is not None:
+        if bluetti_device.has_field(field_key):
             category = None
             if field_config.setter is True or field_key in DIAGNOSTIC_FIELDS:
                 category = EntityCategory.DIAGNOSTIC
-            if field_config.type == MqttFieldType.NUMERIC:
+            if field_config.type == FieldType.NUMERIC:
                 sensors_to_add.append(
                     BluettiSensor(
                         hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR],
                         device_info,
                         address,
                         field_key,
-                        field_config.home_assistant_extra.get(CONF_NAME, ""),
-                        field_config.home_assistant_extra.get(CONF_UNIT_OF_MEASUREMENT),
-                        field_config.home_assistant_extra.get(CONF_DEVICE_CLASS),
-                        field_config.home_assistant_extra.get(CONF_STATE_CLASS),
+                        field_config.name,
+                        field_config.unit_of_measurement,
+                        field_config.device_class,
+                        field_config.state_class,
                         category=category,
                     )
                 )
-            elif field_config.type == MqttFieldType.ENUM:
+            elif field_config.type == FieldType.ENUM:
                 sensors_to_add.append(
                     BluettiSensor(
                         hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR],
                         device_info,
                         address,
                         field_key,
-                        field_config.home_assistant_extra.get(CONF_NAME, ""),
-                        options=field_config.home_assistant_extra.get(CONF_OPTIONS),
+                        field_config.name,
+                        options=[o.value for o in field_config.options],
                         category=category,
                     )
                 )

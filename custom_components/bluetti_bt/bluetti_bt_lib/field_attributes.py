@@ -79,7 +79,7 @@ class OutletFieldAttributes(FieldAttributes):
     device_class = "outlet"
 
 
-FIELD_ATTRIBUTES = {
+FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {
     # Base device fields
     "dc_input_power": PowerFieldAttributes(
         name="DC Input Power",
