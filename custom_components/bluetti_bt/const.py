@@ -38,4 +38,8 @@ DIAGNOSTIC_FIELDS = [
     "bcu_version",
     "safety_module_version",
     "high_voltage_module_version",
+    "power_generation",
+    "total_ac_consumption",
+    "total_grid_consumption",
+    "total_grid_feed",
 ]
