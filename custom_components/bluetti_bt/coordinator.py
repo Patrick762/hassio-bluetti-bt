@@ -19,9 +19,10 @@ from homeassistant.helpers.update_coordinator import (
 from .bluetti_bt_lib.const import NOTIFY_UUID, RESPONSE_TIMEOUT, WRITE_UUID
 from .bluetti_bt_lib.exceptions import BadConnectionError, ModbusError, ParseError
 from .bluetti_bt_lib.utils.commands import ReadHoldingRegisters
+from .bluetti_bt_lib.utils.device_builder import build_device
 
 from .const import DATA_POLLING_RUNNING, DOMAIN
-from .utils import mac_loggable, build_device
+from .utils import mac_loggable
 
 _LOGGER = logging.getLogger(__name__)
 

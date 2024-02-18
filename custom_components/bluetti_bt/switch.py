@@ -31,10 +31,12 @@ from bluetti_mqtt.mqtt_client import (
     MqttFieldType,
 )
 
+from .bluetti_bt_lib.utils.device_builder import build_device
+
 from . import device_info as dev_info, get_unique_id
 from .const import CONTROL_FIELDS, DATA_COORDINATOR, DOMAIN, ADDITIONAL_DEVICE_FIELDS
 from .coordinator import PollingCoordinator
-from .utils import mac_loggable, unique_id_loggable, build_device
+from .utils import mac_loggable, unique_id_loggable
 
 _LOGGER = logging.getLogger(__name__)
 
