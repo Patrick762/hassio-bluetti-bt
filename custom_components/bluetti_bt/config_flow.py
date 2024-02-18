@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import logging
+from typing import Any
 
 import voluptuous as vol
 
@@ -16,7 +17,8 @@ from homeassistant.const import CONF_ADDRESS, CONF_TYPE, CONF_NAME
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
-from . import get_type_by_bt_name
+from .bluetti_bt_lib.utils.device_builder import get_type_by_bt_name
+
 from .const import (
     CONF_MAX_RETRIES,
     CONF_PERSISTENT_CONN,

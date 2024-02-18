@@ -84,25 +84,3 @@ def get_unique_id(name: str, sensor_type: str | None = None):
     if sensor_type is not None:
         return f"{sensor_type}.{res}"
     return res
-
-
-def get_type_by_bt_name(bt_name: str):
-    """Get the device type."""
-    dev_type = "Unknown"
-    if bt_name.startswith("AC200M"):
-        dev_type = "AC200M"
-    elif bt_name.startswith("AC300"):
-        dev_type = "AC300"
-    elif bt_name.startswith("AC500"):
-        dev_type = "AC500"
-    elif bt_name.startswith("AC60"):
-        dev_type = "AC60"
-    elif bt_name.startswith("EB3A"):
-        dev_type = "EB3A"
-    elif bt_name.startswith("EP500"):
-        dev_type = "EP500"
-    elif bt_name.startswith("EP600"):
-        dev_type = "EP600"
-    elif bt_name.startswith("EP760"):
-        dev_type = "EP760"
-    return dev_type

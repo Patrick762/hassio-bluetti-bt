@@ -37,3 +37,10 @@ def build_device(address: str, name: str):
         return EP600(address, match[2])
     if match[1] == "EP760":
         return EP760(address, match[2])
+
+
+def get_type_by_bt_name(bt_name: str):
+    match = DEVICE_NAME_RE.match(bt_name)
+    if len(match) > 0:
+        return match[1]
+    return "Unknown"

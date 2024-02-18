@@ -1,6 +1,5 @@
 """Field attributes for device fields."""
 
-from dataclasses import dataclass
 from enum import Enum, auto, unique
 
 from .field_enums import (
