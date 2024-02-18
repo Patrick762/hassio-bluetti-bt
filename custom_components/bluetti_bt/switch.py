@@ -93,8 +93,8 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
 
         self._bluetti_device = bluetti_device
         self._coordinator = coordinator
-        self._client = coordinator.client
-        self._polling_lock = coordinator.polling_lock
+        self._client = coordinator.reader.client
+        self._polling_lock = coordinator.reader.polling_lock
         e_name = f"{device_info.get('name')} {name}"
         self._address = address
         self._response_key = response_key
@@ -178,7 +178,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
                 return None
             finally:
                 # Disconnect if connection not persistant
-                if not self._coordinator.persistent_conn:
+                if not self._coordinator.reader.persistent_conn:
                     await self._client.disconnect()
 
         await self.coordinator.async_request_refresh()
