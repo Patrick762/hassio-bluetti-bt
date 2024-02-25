@@ -44,6 +44,21 @@ class UintField(DeviceField):
             return val >= self.range[0] and val <= self.range[1]
 
 
+class IntField(DeviceField):
+    def __init__(self, name: str, address: int, range: Optional[Tuple[int, int]]):
+        self.range = range
+        super().__init__(name, address, 1)
+
+    def parse(self, data: bytes) -> int:
+        return struct.unpack(">h", data)[0]
+
+    def in_range(self, val: int) -> bool:
+        if self.range is None:
+            return True
+        else:
+            return val >= self.range[0] and val <= self.range[1]
+
+
 class BoolField(DeviceField):
     def __init__(self, name: str, address: int):
         super().__init__(name, address, 1)
@@ -131,6 +146,9 @@ class DeviceStruct:
 
     def add_uint_field(self, name: str, address: int, range: Tuple[int, int] = None):
         self.fields.append(UintField(name, address, range))
+
+    def add_int_field(self, name: str, address: int, range: Tuple[int, int] = None):
+        self.fields.append(IntField(name, address, range))
 
     def add_bool_field(self, name: str, address: int):
         self.fields.append(BoolField(name, address))
