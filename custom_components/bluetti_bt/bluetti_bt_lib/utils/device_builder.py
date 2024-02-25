@@ -3,6 +3,8 @@
 import re
 
 from ..devices.ac60 import AC60
+from ..devices.ac180 import AC180
+from ..devices.ac180p import AC180P
 from ..devices.ac200m import AC200M
 from ..devices.ac300 import AC300
 from ..devices.ac500 import AC500
@@ -14,7 +16,7 @@ from ..devices.ep760 import EP760
 from ..devices.ep800 import EP800
 
 DEVICE_NAME_RE = re.compile(
-    r"^(AC60|AC200M|AC300|AC500|EB3A|EP500|EP500P|EP600|EP760|EP800)(\d+)$"
+    r"^(AC60|AC180|AC180P|AC200M|AC300|AC500|EB3A|EP500|EP500P|EP600|EP760|EP800)(\d+)$"
 )
 
 
@@ -22,6 +24,10 @@ def build_device(address: str, name: str):
     match = DEVICE_NAME_RE.match(name)
     if match[1] == "AC60":
         return AC60(address, match[2])
+    if match[1] == "AC180":
+        return AC180(address, match[2])
+    if match[1] == "AC180P":
+        return AC180P(address, match[2])
     if match[1] == "AC200M":
         return AC200M(address, match[2])
     if match[1] == "AC300":

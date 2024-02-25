@@ -17,6 +17,8 @@ After the installation, you can use this button to install the integration:
 ### Supported devices:
 
 - AC60
+- AC180 (basic data)
+- AC180P (basic data)
 - AC200M
 - AC300 (tested)
 - AC500
