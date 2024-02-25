@@ -10,6 +10,7 @@
         { "local_name": "EP500*" },
         { "local_name": "EP600*" },
         { "local_name": "EP760*" },
+        { "local_name": "EP800*" },
         { "local_name": "PBOX*" }
     ],
     "codeowners": ["@Patrick762"],
