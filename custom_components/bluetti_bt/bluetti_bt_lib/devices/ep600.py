@@ -20,11 +20,11 @@ class EP600(ProtocolV2Device):
 
         # DC Solar
         self.struct.add_uint_field("pv_input_power1", 1212)
-        self.struct.add_uint_field("pv_input_voltage1", 1213)
-        self.struct.add_uint_field("pv_input_current1", 1214)
+        self.struct.add_decimal_field("pv_input_voltage1", 1213, 1)
+        self.struct.add_decimal_field("pv_input_current1", 1214, 1)
         self.struct.add_uint_field("pv_input_power2", 1220)
-        self.struct.add_uint_field("pv_input_voltage2", 1221)
-        self.struct.add_uint_field("pv_input_current2", 1222)
+        self.struct.add_decimal_field("pv_input_voltage2", 1221, 1)
+        self.struct.add_decimal_field("pv_input_current2", 1222, 1)
 
         # ADL400 Smart Meter for AC Solar
         self.struct.add_uint_field("adl400_ac_input_power_phase1", 1228)
@@ -52,9 +52,9 @@ class EP600(ProtocolV2Device):
 
         # EP600 AC Output
         self.struct.add_decimal_field("ac_output_frequency", 1500, 1)
-        self.struct.add_uint_field("ac_output_power_phase1", 1510)
-        self.struct.add_uint_field("ac_output_power_phase2", 1517)
-        self.struct.add_uint_field("ac_output_power_phase3", 1524)
+        self.struct.add_int_field("ac_output_power_phase1", 1510)
+        self.struct.add_int_field("ac_output_power_phase2", 1517)
+        self.struct.add_int_field("ac_output_power_phase3", 1524)
         self.struct.add_decimal_field("ac_output_voltage_phase1", 1511, 1)
         self.struct.add_decimal_field("ac_output_voltage_phase2", 1518, 1)
         self.struct.add_decimal_field("ac_output_voltage_phase3", 1525, 1)
