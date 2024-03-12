@@ -18,7 +18,6 @@ class FieldType(Enum):
     NUMERIC = auto()
     BOOL = auto()
     ENUM = auto()
-    BUTTON = auto()
 
 
 class FieldAttributes:
@@ -220,7 +219,7 @@ FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {
     "total_grid_feed": EnergyFieldAttributes("Total Grid Feed"),
     # Device specific controls
     "power_off": FieldAttributes(
-        type=FieldType.BUTTON,
+        type=FieldType.BOOL,
         setter=True,
         name="Power Off",
     ),
@@ -294,7 +293,7 @@ FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {
     ),
     "power_lifting_on": FieldAttributes(
         type=FieldType.BOOL,
-        setter=False,  # Disabled for safety reasons
+        setter=True,
         name="Power Lifting",
     ),
 }
