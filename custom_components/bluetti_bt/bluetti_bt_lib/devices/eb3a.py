@@ -28,6 +28,8 @@ class EB3A(ProtocolV1Device):
         return super().polling_commands + [
             ReadHoldingRegisters(77, 1),
             ReadHoldingRegisters(86, 1),
+            ReadHoldingRegisters(3060, 1),
+            ReadHoldingRegisters(3063, 4),
         ]
 
     @property
