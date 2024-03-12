@@ -33,6 +33,8 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bluetti Powerstation from a config entry."""
 
+    _LOGGER.debug("Init Bluetti BT Integration")
+
     address = entry.data.get(CONF_ADDRESS)
     device_name = entry.data.get(CONF_NAME)
     use_controls = entry.data.get(CONF_USE_CONTROLS)
@@ -53,10 +55,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_POLLING_RUNNING, False)
 
     # Create coordinator for polling
+    _LOGGER.debug("Creating coordinator")
     coordinator = PollingCoordinator(hass, address, device_name, polling_interval, persistent_conn, polling_timeout, max_retries)
     await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_COORDINATOR, coordinator)
 
+    _LOGGER.debug("Creating entities")
     platforms: list = PLATFORMS
     if use_controls is True:
         _LOGGER.warning("You are using controls with this integration at your own risk!")
@@ -64,6 +68,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Setup platforms
     await hass.config_entries.async_forward_entry_setups(entry, platforms)
+
+    _LOGGER.debug("Setup done")
 
     return True
 
