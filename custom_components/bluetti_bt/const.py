@@ -26,8 +26,11 @@ SUPPORTED_MODELS = [
 ]
 
 CONTROL_FIELDS = [
-    "ac_output_on",
-    "dc_output_on",
+    "ac_output_on_switch",
+    "dc_output_on_switch",
+    "power_off",
+    "eco_on",
+    "power_lifting_on",
 ]
 
 DIAGNOSTIC_FIELDS = [

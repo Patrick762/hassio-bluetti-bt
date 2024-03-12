@@ -28,12 +28,15 @@ class EB3A(ProtocolV1Device):
         return super().polling_commands + [
             ReadHoldingRegisters(77, 1),
             ReadHoldingRegisters(86, 1),
+            ReadHoldingRegisters(3034, 1),
+            ReadHoldingRegisters(3060, 1),
+            ReadHoldingRegisters(3063, 5),
         ]
 
     @property
     def writable_ranges(self) -> List[range]:
         return super().writable_ranges + [
-            3034,
-            3060,
-            range(3063, 3066),
+            range(3034, 3035),
+            range(3060, 3061),
+            range(3063, 3067),
         ]
