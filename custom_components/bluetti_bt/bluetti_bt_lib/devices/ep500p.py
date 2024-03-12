@@ -53,7 +53,7 @@ class EP500P(ProtocolV1Device):
     def writable_ranges(self) -> List[range]:
         return super().writable_ranges + [
             range(3001, 3016),
-            3061,
+            range(3061),
         ]
 
     @property

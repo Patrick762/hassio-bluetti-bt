@@ -33,7 +33,7 @@ class EB3A(ProtocolV1Device):
     @property
     def writable_ranges(self) -> List[range]:
         return super().writable_ranges + [
-            3034,
-            3060,
+            range(3034),
+            range(3060),
             range(3063, 3066),
         ]
