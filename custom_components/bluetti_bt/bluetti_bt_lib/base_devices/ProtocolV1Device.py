@@ -29,13 +29,6 @@ class ProtocolV1Device(BluettiDevice):
         # Battery
         self.struct.add_uint_field("total_battery_percent", 43)
 
-        # Battery packs
-        self.struct.add_uint_field("pack_num_max", 91)  # internal
-        self.struct.add_decimal_field("total_battery_voltage", 92, 1)
-        self.struct.add_uint_field("pack_num", 96)  # internal
-        self.struct.add_decimal_field("pack_voltage", 98, 2)  # Full pack voltage
-        self.struct.add_uint_field("pack_battery_percent", 99)
-
         # Output state
         self.struct.add_bool_field("ac_output_on", 48)
         self.struct.add_bool_field("dc_output_on", 49)
@@ -63,11 +56,3 @@ class ProtocolV1Device(BluettiDevice):
     @property
     def writable_ranges(self) -> List[range]:
         return [range(3006, 3009)]
-
-    @property
-    def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
-        return [
-            ReadHoldingRegisters(91, 2),
-            ReadHoldingRegisters(96, 1),
-            ReadHoldingRegisters(98, 2),
-        ]

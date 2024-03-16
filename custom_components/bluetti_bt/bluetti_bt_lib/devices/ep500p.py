@@ -11,7 +11,7 @@ class EP500P(ProtocolV1Device):
     def __init__(self, address: str, sn: str):
         super().__init__(address, "EP500P", sn)
 
-        # Details (matches AC500 + AC300)
+        # Details
         self.struct.add_enum_field("ac_output_mode", 70, OutputMode)
         self.struct.add_decimal_field("internal_ac_voltage", 71, 1)
         self.struct.add_decimal_field("internal_current_one", 72, 1)
@@ -27,10 +27,15 @@ class EP500P(ProtocolV1Device):
         self.struct.add_decimal_field("internal_dc_input_power", 87, 1)
         self.struct.add_decimal_field("internal_dc_input_current", 88, 2)
 
-        # Battery packs (matches AC500)
+        # Battery packs
+        self.struct.add_uint_field("pack_num_max", 91)  # internal
+        self.struct.add_decimal_field("total_battery_voltage", 92, 1)
+        self.struct.add_uint_field("pack_num", 96)  # internal
+        self.struct.add_decimal_field("pack_voltage", 98, 2)  # Full pack voltage
+        self.struct.add_uint_field("pack_battery_percent", 99)
         self.struct.add_decimal_array_field("cell_voltages", 105, 16, 2)  # internal
 
-        # Controls (matches AC500 + AC300)
+        # Controls
         self.struct.add_enum_field("ups_mode", 3001, UpsMode)
         self.struct.add_bool_field("split_phase_on", 3004)
         self.struct.add_enum_field(
@@ -64,6 +69,9 @@ class EP500P(ProtocolV1Device):
 
     @property
     def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
-        return super().pack_polling_commands + [
+        return [
+            ReadHoldingRegisters(91, 2),
+            ReadHoldingRegisters(96, 1),
+            ReadHoldingRegisters(98, 2),
             ReadHoldingRegisters(105, 16),
         ]

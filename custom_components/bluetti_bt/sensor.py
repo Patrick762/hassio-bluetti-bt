@@ -171,6 +171,8 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
 
         self._attr_available = True
 
+        _LOGGER.error(response_data)
+
         # Different for enum and numeric
         if (
             self._options is not None
