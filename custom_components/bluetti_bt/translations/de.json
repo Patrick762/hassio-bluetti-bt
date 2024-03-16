@@ -1,4 +1,14 @@
 {
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "address": "Gerät",
+          "type": "Modell (erforderlich bei PBOX Geräten)"
+        }
+      }
+    }
+  },
   "options": {
     "step": {
       "init": {
