@@ -175,10 +175,9 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         if (
             self._options is not None
             and isinstance(response_data, Enum)
-            and response_data.value < len(self._options)
         ):
             # Enum
-            self._attr_native_value = self._options[response_data.value]
+            self._attr_native_value = response_data.name
         else:
             # Numeric
             self._attr_native_value = response_data

@@ -79,10 +79,6 @@ class EP600(ProtocolV2Device):
         self.struct.add_version_field("safety_module_version", 6181)  # internal
         self.struct.add_version_field("high_voltage_module_version", 6184)  # internal
 
-    # @property
-    # def pack_num_max(self):
-    #    return 16
-
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
         return super().polling_commands + [
@@ -105,10 +101,3 @@ class EP600(ProtocolV2Device):
             ReadHoldingRegisters(156, 1),
             ReadHoldingRegisters(158, 1),
         ]
-
-    # @property
-    # def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
-    #    return super().pack_polling_commands + [
-    #        ReadHoldingRegisters(6101, 10),
-    #        ReadHoldingRegisters(6175, 12),
-    #    ]
