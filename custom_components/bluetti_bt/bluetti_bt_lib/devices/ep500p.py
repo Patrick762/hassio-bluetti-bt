@@ -13,10 +13,10 @@ class EP500P(ProtocolV1Device):
 
         # Details (matches AC500 + AC300)
         self.struct.add_enum_field("ac_output_mode", 70, OutputMode)
-        self.struct.add_uint_field("internal_ac_voltage", 71)
+        self.struct.add_decimal_field("internal_ac_voltage", 71, 1)
         self.struct.add_decimal_field("internal_current_one", 72, 1)
         self.struct.add_uint_field("internal_power_one", 73)
-        self.struct.add_decimal_field("internal_ac_frequency", 74, 1)
+        self.struct.add_decimal_field("internal_ac_frequency", 74, 2)
         self.struct.add_decimal_field("internal_current_two", 75, 1)
         self.struct.add_uint_field("internal_power_two", 76)
         self.struct.add_decimal_field("ac_input_voltage", 77, 1)
@@ -45,14 +45,20 @@ class EP500P(ProtocolV1Device):
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
         return super().polling_commands + [
-            ReadHoldingRegisters(70, 10),
+            ReadHoldingRegisters(70, 11),
             ReadHoldingRegisters(86, 3),
+            ReadHoldingRegisters(3001, 1),
+            ReadHoldingRegisters(3004, 2),
+            ReadHoldingRegisters(3011, 1),
+            ReadHoldingRegisters(3013, 1),
+            ReadHoldingRegisters(3015, 2),
+            ReadHoldingRegisters(3061, 1),
         ]
 
     @property
     def writable_ranges(self) -> List[range]:
         return super().writable_ranges + [
-            range(3001, 3016),
+            range(3001, 3017),
             range(3061),
         ]
 

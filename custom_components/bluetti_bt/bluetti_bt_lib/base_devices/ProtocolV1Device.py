@@ -56,10 +56,8 @@ class ProtocolV1Device(BluettiDevice):
             ReadHoldingRegisters(36, 4),
             ReadHoldingRegisters(41, 1),
             ReadHoldingRegisters(43, 1),
-            ReadHoldingRegisters(91, 2),
-            ReadHoldingRegisters(96, 1),
-            ReadHoldingRegisters(98, 2),
             ReadHoldingRegisters(48, 2),
+            ReadHoldingRegisters(3007, 2),
         ]
 
     @property

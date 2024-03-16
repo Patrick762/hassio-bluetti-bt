@@ -13,10 +13,10 @@ class AC200M(ProtocolV1Device):
 
         # Details
         self.struct.add_enum_field("ac_output_mode", 70, OutputMode)
-        self.struct.add_uint_field("internal_ac_voltage", 71)
+        self.struct.add_decimal_field("internal_ac_voltage", 71, 1)
         self.struct.add_decimal_field("internal_current_one", 72, 1)
         self.struct.add_uint_field("internal_power_one", 73)
-        self.struct.add_decimal_field("internal_ac_frequency", 74, 1)
+        self.struct.add_decimal_field("internal_ac_frequency", 74, 2)
         self.struct.add_uint_field("internal_dc_input_voltage", 86)
         self.struct.add_decimal_field("internal_dc_input_power", 87, 1)
         self.struct.add_decimal_field("internal_dc_input_current", 88, 2)
@@ -35,13 +35,14 @@ class AC200M(ProtocolV1Device):
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
         return super().polling_commands + [
-            ReadHoldingRegisters(70, 4),
+            ReadHoldingRegisters(70, 5),
             ReadHoldingRegisters(86, 3),
+            ReadHoldingRegisters(3060, 2),
         ]
 
     @property
     def writable_ranges(self) -> List[range]:
-        return super().writable_ranges + [range(3060, 3061)]
+        return super().writable_ranges + [range(3060, 3062)]
 
     @property
     def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
