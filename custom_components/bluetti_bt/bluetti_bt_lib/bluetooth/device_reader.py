@@ -110,6 +110,8 @@ class DeviceReader:
                             # We need to wait after switching packs for the data to be available
                             await asyncio.sleep(5)
 
+                            pack_ok = False
+
                             for command in pack_commands:
                                 # Request & parse result for each pack
                                 try:
@@ -121,17 +123,19 @@ class DeviceReader:
                                     )
                                     _LOGGER.debug("Parsed data: %s", parsed)
 
-                                    pack_number = parsed.get("pack_num")
-                                    if (
-                                        not isinstance(pack_number, int)
-                                        or pack_number != pack
-                                    ):
-                                        _LOGGER.debug(
-                                            "Parsed pack_num(%s) does not match expected '%s'",
-                                            pack_number,
-                                            pack,
-                                        )
-                                        continue
+                                    if not pack_ok: # Only check this once
+                                        pack_number = parsed.get("pack_num")
+                                        if (
+                                            not isinstance(pack_number, int)
+                                            or pack_number != pack
+                                        ):
+                                            _LOGGER.debug(
+                                                "Parsed pack_num(%s) does not match expected '%s'",
+                                                pack_number,
+                                                pack,
+                                            )
+                                            continue
+                                        pack_ok = True
 
                                     for key, value in parsed.items():
                                         parsed_data.update({key + str(pack): value})
