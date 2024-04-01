@@ -4,6 +4,7 @@
     "bluetooth": [
         { "local_name": "AC60*" },
         { "local_name": "AC180*" },
+        { "local_name": "AC200L*" },
         { "local_name": "AC200M*" },
         { "local_name": "AC300*" },
         { "local_name": "AC500*" },
