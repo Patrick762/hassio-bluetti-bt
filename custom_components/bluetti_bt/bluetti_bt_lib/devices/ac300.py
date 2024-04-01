@@ -69,7 +69,7 @@ class AC300(ProtocolV1Device):
     def writable_ranges(self) -> List[range]:
         return super().writable_ranges + [
             range(3001, 3017),
-            range(3061),
+            range(3061, 3062),
         ]
 
     @property
