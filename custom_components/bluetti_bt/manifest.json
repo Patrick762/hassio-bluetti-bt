@@ -16,7 +16,7 @@
     ],
     "codeowners": ["@Patrick762"],
     "config_flow": true,
-    "dependencies": ["bluetooth"],
+    "dependencies": ["bluetooth_adapters"],
     "documentation": "https://github.com/Patrick762/hassio-bluetti-bt",
     "integration_type": "device",
     "iot_class": "local_polling",
