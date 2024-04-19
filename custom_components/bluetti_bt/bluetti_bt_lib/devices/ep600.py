@@ -62,6 +62,22 @@ class EP600(ProtocolV2Device):
         self.struct.add_decimal_field("ac_output_current_phase2", 1519, 1)
         self.struct.add_decimal_field("ac_output_current_phase3", 1526, 1)
 
+        # KM - Consumption
+        self.struct.add_int_field("consumption_power_phase1", 1430)
+        self.struct.add_int_field("consumption_power_phase2", 1436)
+        self.struct.add_int_field("consumption_power_phase3", 1442)
+        self.struct.add_decimal_field("consumption_voltage_phase1", 1431, 1)
+        self.struct.add_decimal_field("consumption_voltage_phase2", 1437, 1)
+        self.struct.add_decimal_field("consumption_voltage_phase3", 1443, 1)
+        self.struct.add_decimal_field("consumption_current_phase1", 1432, 1)
+        self.struct.add_decimal_field("consumption_current_phase2", 1438, 1)
+        self.struct.add_decimal_field("consumption_current_phase3", 1444, 1)
+
+        # KM - Totals
+        self.struct.add_uint_field('pv_input_power_all', 144)  # Total PV in
+        self.struct.add_uint_field('consumption_power_all', 142)  # Total AC out
+        self.struct.add_uint_field('grid_power_all', 146)  # Total Grid in - value only +/- unknown
+
         # Statistics
         self.struct.add_decimal_field(
             "total_ac_consumption", 152, 1
@@ -100,4 +116,9 @@ class EP600(ProtocolV2Device):
             ReadHoldingRegisters(152, 1),
             ReadHoldingRegisters(156, 1),
             ReadHoldingRegisters(158, 1),
+            # KM - Consumption
+            ReadHoldingRegisters(1430, 15),
+            # KM - Totals
+            ReadHoldingRegisters(142, 5),
+
         ]
