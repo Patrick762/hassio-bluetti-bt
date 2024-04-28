@@ -217,6 +217,26 @@ FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {
     "total_ac_consumption": EnergyFieldAttributes("Total Load Consumption"),
     "total_grid_consumption": EnergyFieldAttributes("Total Grid Consumption"),
     "total_grid_feed": EnergyFieldAttributes("Total Grid Feed"),
+
+    # KM - Consumption
+    "consumption_power_phase1": PowerFieldAttributes("Consumption Power Phase 1"),
+    "consumption_power_phase2": PowerFieldAttributes("Consumption Power Phase 2"),
+    "consumption_power_phase3": PowerFieldAttributes("Consumption Power Phase 3"),
+    "consumption_voltage_phase1": VoltageFieldAttributes("Consumption Voltage Phase 1"),
+    "consumption_voltage_phase2": VoltageFieldAttributes("Consumption Voltage Phase 2"),
+    "consumption_voltage_phase3": VoltageFieldAttributes("Consumption Voltage Phase 3"),
+    "consumption_current_phase1": CurrentFieldAttributes("Consumption Current Phase 1"),
+    "consumption_current_phase2": CurrentFieldAttributes("Consumption Current Phase 2"),
+    "consumption_current_phase3": CurrentFieldAttributes("Consumption Current Phase 3"),
+    # KM - Consumption end
+
+    # KM - Totals
+    "pv_input_power_all": PowerFieldAttributes("PV Input Power All"),
+    "consumption_power_all": PowerFieldAttributes("Consumption Power All"),
+    "grid_power_all": PowerFieldAttributes("Grid Power All"),
+    # KM - Totals end
+
+
     # Device specific controls
     "power_off": FieldAttributes(
         type=FieldType.BOOL,
