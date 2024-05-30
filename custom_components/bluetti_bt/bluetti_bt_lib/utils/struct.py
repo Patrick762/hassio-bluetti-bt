@@ -30,12 +30,15 @@ class DeviceField:
 
 
 class UintField(DeviceField):
-    def __init__(self, name: str, address: int, range: Optional[Tuple[int, int]]):
+    def __init__(self, name: str, address: int, range: Optional[Tuple[int, int]], scale: int):
         self.range = range
+        self.scale = scale
         super().__init__(name, address, 1)
 
     def parse(self, data: bytes) -> int:
-        return struct.unpack("!H", data)[0]
+        val = struct.unpack("!H", data)[0]
+
+        return val * self.scale
 
     def in_range(self, val: int) -> bool:
         if self.range is None:
@@ -144,8 +147,8 @@ class DeviceStruct:
     def __init__(self):
         self.fields = []
 
-    def add_uint_field(self, name: str, address: int, range: Tuple[int, int] = None):
-        self.fields.append(UintField(name, address, range))
+    def add_uint_field(self, name: str, address: int, range: Tuple[int, int] = None, scale: int = 1):
+        self.fields.append(UintField(name, address, range, scale))
 
     def add_int_field(self, name: str, address: int, range: Tuple[int, int] = None):
         self.fields.append(IntField(name, address, range))
