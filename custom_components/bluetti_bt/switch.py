@@ -108,6 +108,11 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         self._attr_entity_category = category
         self._attr_device_class = SwitchDeviceClass.OUTLET
 
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        return self._attr_available
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -117,15 +122,17 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
 
         _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.error(
+            _LOGGER.debug(
                 "Invalid data from coordinator (switch.%s)", unique_id_loggable(self._attr_unique_id)
             )
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         if not isinstance(response_data, bool):
@@ -135,6 +142,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
                 response_data,
             )
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         self._attr_available = True

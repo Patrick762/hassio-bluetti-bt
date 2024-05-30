@@ -23,7 +23,7 @@ class AC500(ProtocolV1Device):
         self.struct.add_decimal_field("internal_current_three", 78, 1, (0, 100))
         self.struct.add_uint_field("internal_power_three", 79)
         self.struct.add_decimal_field("ac_input_frequency", 80, 2)
-        self.struct.add_uint_field("internal_dc_input_voltage", 86)
+        self.struct.add_uint_field("internal_dc_input_voltage", 86, scale=.1)
         self.struct.add_decimal_field("internal_dc_input_power", 87, 1)
         self.struct.add_decimal_field("internal_dc_input_current", 88, 2)
 

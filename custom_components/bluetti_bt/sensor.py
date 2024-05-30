@@ -125,6 +125,11 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         self._attr_entity_category = category
         self._options = options
 
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        return self._attr_available
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -133,10 +138,11 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             return
 
         if self.coordinator.data is None:
-            _LOGGER.warning(
-                "Data from coordinator is None. Skipping update for %s",
-                unique_id_loggable(self._attr_unique_id)
+            _LOGGER.debug(
+                "Data from coordinator is None",
             )
+            self._attr_available = False
+            self.async_write_ha_state()
             return
 
         _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
@@ -145,12 +151,14 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
                 "Invalid data from coordinator (sensor.%s)", unique_id_loggable(self._attr_unique_id)
             )
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
             _LOGGER.warning("No data for available for (%s)", self._response_key)
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         if (
@@ -167,6 +175,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
                 type(response_data),
             )
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         self._attr_available = True
