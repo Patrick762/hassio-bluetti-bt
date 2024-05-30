@@ -22,7 +22,7 @@ from .bluetti_bt_lib.field_attributes import FIELD_ATTRIBUTES, FieldType
 from .bluetti_bt_lib.utils.device_builder import build_device
 
 from . import device_info as dev_info, get_unique_id
-from .const import DATA_COORDINATOR, DOMAIN
+from .const import DATA_COORDINATOR, DOMAIN, CONF_USE_CONTROLS
 from .coordinator import PollingCoordinator
 from .utils import unique_id_loggable
 
@@ -36,6 +36,7 @@ async def async_setup_entry(
 
     device_name = entry.data.get(CONF_NAME)
     address = entry.data.get(CONF_ADDRESS)
+    use_controls = entry.data.get(CONF_USE_CONTROLS)
     if address is None:
         _LOGGER.error("Device has no address")
 
@@ -54,6 +55,10 @@ async def async_setup_entry(
                 category = None
                 if field_config.setter is True:
                     category = EntityCategory.DIAGNOSTIC
+
+                # Ignore setters if controls enabled
+                if field_config.setter is True and use_controls is True:
+                    continue
 
                 sensors_to_add.append(
                     BluettiBinarySensor(
