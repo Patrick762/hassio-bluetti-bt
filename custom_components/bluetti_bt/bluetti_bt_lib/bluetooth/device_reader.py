@@ -144,7 +144,7 @@ class DeviceReader:
                                     _LOGGER.warning("Got a parse exception...")
 
             except TimeoutError:
-                _LOGGER.error("Polling timed out")
+                _LOGGER.warning("Polling timed out. Trying again later")
                 return None
             except BleakError as err:
                 _LOGGER.error("Bleak error: %s", err)
@@ -153,9 +153,17 @@ class DeviceReader:
                 # Disconnect if connection not persistant
                 if not self.persistent_conn:
                     if self.has_notifier:
-                        await self.client.stop_notify(NOTIFY_UUID)
+                        try:
+                            await self.client.stop_notify(NOTIFY_UUID)
+                        except:
+                            # Ignore errors here
+                            pass
                         self.has_notifier = False
                     await self.client.disconnect()
+
+            # Check if dict is empty
+            if not parsed_data:
+                return None
 
             return parsed_data
 
@@ -187,10 +195,8 @@ class DeviceReader:
                 err,
             )
         except (BadConnectionError, BleakError) as err:
-            _LOGGER.warning(
-                "Needed to disconnect due to error: %s (This can also be the case if you used device controls)",
-                err,
-            )
+            # Ignore other errors
+            pass
 
         # caught an exception, return empty bytes object
         return bytes()

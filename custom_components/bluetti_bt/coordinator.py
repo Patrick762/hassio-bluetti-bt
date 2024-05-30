@@ -42,6 +42,8 @@ class PollingCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=polling_interval),
         )
 
+        self.address = address
+
         # Create client
         self.logger.debug("Creating client")
         device = bluetooth.async_ble_device_from_address(hass, address)
@@ -66,5 +68,11 @@ class PollingCoordinator(DataUpdateCoordinator):
         This is the place to pre-process the data to lookup tables
         so entities can quickly look up their data.
         """
+
+        # Check if device is connected
+        if bluetooth.async_address_present(self.hass, self.address, connectable=True) is False:
+            self.logger.warning("Device not connected")
+            self.last_update_success = False
+            return None
 
         return await self.reader.read_data()

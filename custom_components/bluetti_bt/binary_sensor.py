@@ -100,6 +100,11 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._attr_unique_id = get_unique_id(e_name)
         self._attr_entity_category = category
 
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        return self._attr_available
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -113,11 +118,13 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
                 "Invalid data from coordinator (binary_sensor.%s)", unique_id_loggable(self._attr_unique_id)
             )
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         if not isinstance(response_data, bool):
@@ -127,6 +134,7 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
                 response_data,
             )
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         self._attr_available = True
