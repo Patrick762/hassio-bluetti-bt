@@ -42,6 +42,11 @@ class BluettiDevice:
     def writable_ranges(self) -> List[range]:
         """The address ranges that are writable"""
         return []
+    
+    @property
+    def pack_num_field(self) -> List[ReadHoldingRegisters]:
+        """The address 'range' of the pack num"""
+        return []
 
     def has_field(self, field: str):
         return any(f.name == field for f in self.struct.fields)

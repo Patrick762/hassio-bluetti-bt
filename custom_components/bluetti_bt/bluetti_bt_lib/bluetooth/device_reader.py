@@ -97,20 +97,45 @@ class DeviceReader:
                             _LOGGER.warning("Got a parse exception")
 
                     # Execute pack polling commands
-                    if len(pack_commands) > 0:
+                    if len(pack_commands) > 0 and len(self.bluetti_device.pack_num_field) == 1:
                         _LOGGER.debug("Polling battery packs")
                         for pack in range(1, self.bluetti_device.pack_num_max + 1):
+                            _LOGGER.debug("Setting pack_num to %i", pack)
+
                             # Set current pack number
-                            await self._async_send_command(
-                                self.bluetti_device.build_setter_command(
-                                    "pack_num", pack
-                                )
+                            command = self.bluetti_device.build_setter_command(
+                                "pack_num", pack
                             )
+                            await self._async_send_command(command)
 
-                            # We need to wait after switching packs for the data to be available
-                            await asyncio.sleep(5)
+                            try:
+                                # Read pack_num field
+                                command = self.bluetti_device.pack_num_field[0]
+                                body = command.parse_response(
+                                    await self._async_send_command(command)
+                                )
+                                _LOGGER.debug("Raw data: %s", body)
+                                parsed = self.bluetti_device.parse(
+                                    command.starting_address, body
+                                )
+                                _LOGGER.debug("Parsed data: %s", parsed)
 
-                            pack_ok = False
+                                # Check pack number
+                                pack_number = parsed.get("pack_num")
+                                if (
+                                    not isinstance(pack_number, int)
+                                    or pack_number != pack
+                                ):
+                                    _LOGGER.debug(
+                                        "Parsed pack_num(%s) does not match expected '%s', Skipping pack (maybe you don't have this connected)",
+                                        pack_number,
+                                        pack,
+                                    )
+                                    continue
+
+                            except ParseError:
+                                _LOGGER.warning("Got a pack parse exception, Skipping pack")
+                                continue
 
                             for command in pack_commands:
                                 # Request & parse result for each pack
@@ -122,20 +147,6 @@ class DeviceReader:
                                         command.starting_address, body
                                     )
                                     _LOGGER.debug("Parsed data: %s", parsed)
-
-                                    if not pack_ok: # Only check this once
-                                        pack_number = parsed.get("pack_num")
-                                        if (
-                                            not isinstance(pack_number, int)
-                                            or pack_number != pack
-                                        ):
-                                            _LOGGER.debug(
-                                                "Parsed pack_num(%s) does not match expected '%s'",
-                                                pack_number,
-                                                pack,
-                                            )
-                                            continue
-                                        pack_ok = True
 
                                     for key, value in parsed.items():
                                         parsed_data.update({key + str(pack): value})
