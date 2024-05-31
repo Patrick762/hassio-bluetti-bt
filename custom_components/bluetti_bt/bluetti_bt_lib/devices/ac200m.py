@@ -42,6 +42,7 @@ class AC200M(ProtocolV1Device):
         return super().polling_commands + [
             ReadHoldingRegisters(70, 5),
             ReadHoldingRegisters(86, 3),
+            ReadHoldingRegisters(92, 1),
             ReadHoldingRegisters(3060, 2),
         ]
 

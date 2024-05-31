@@ -56,6 +56,7 @@ class AC500(ProtocolV1Device):
         return super().polling_commands + [
             ReadHoldingRegisters(70, 11),
             ReadHoldingRegisters(86, 3),
+            ReadHoldingRegisters(92, 1),
             ReadHoldingRegisters(3001, 1),
             ReadHoldingRegisters(3004, 2),
             ReadHoldingRegisters(3011, 1),
