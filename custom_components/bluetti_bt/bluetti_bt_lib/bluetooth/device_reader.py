@@ -97,20 +97,20 @@ class DeviceReader:
                             _LOGGER.warning("Got a parse exception")
 
                     # Execute pack polling commands
-                    if len(pack_commands) > 0:
+                    if len(pack_commands) > 0 and len(self.bluetti_device.pack_num_field) == 1:
                         _LOGGER.debug("Polling battery packs")
                         for pack in range(1, self.bluetti_device.pack_num_max + 1):
+                            _LOGGER.debug("Setting pack_num to %i", pack)
+
                             # Set current pack number
-                            await self._async_send_command(
-                                self.bluetti_device.build_setter_command(
-                                    "pack_num", pack
-                                )
+                            command = self.bluetti_device.build_setter_command(
+                                "pack_num", pack
                             )
-
-                            # We need to wait after switching packs for the data to be available
-                            await asyncio.sleep(5)
-
-                            pack_ok = False
+                            body = command.parse_response(
+                                await self._async_send_command(command)
+                            )
+                            _LOGGER.debug("Raw data set: %s", body)
+                            # b'\x00\x02' b'\x00\x03' here (seems like result)
 
                             for command in pack_commands:
                                 # Request & parse result for each pack
@@ -122,20 +122,6 @@ class DeviceReader:
                                         command.starting_address, body
                                     )
                                     _LOGGER.debug("Parsed data: %s", parsed)
-
-                                    if not pack_ok: # Only check this once
-                                        pack_number = parsed.get("pack_num")
-                                        if (
-                                            not isinstance(pack_number, int)
-                                            or pack_number != pack
-                                        ):
-                                            _LOGGER.debug(
-                                                "Parsed pack_num(%s) does not match expected '%s'",
-                                                pack_number,
-                                                pack,
-                                            )
-                                            continue
-                                        pack_ok = True
 
                                     for key, value in parsed.items():
                                         parsed_data.update({key + str(pack): value})
@@ -187,9 +173,9 @@ class DeviceReader:
             return cast(bytes, res)
 
         except TimeoutError:
-            _LOGGER.warning("Polling single command timed out")
+            _LOGGER.debug("Polling single command timed out")
         except ModbusError as err:
-            _LOGGER.warning(
+            _LOGGER.debug(
                 "Got an invalid request error for %s: %s",
                 command,
                 err,

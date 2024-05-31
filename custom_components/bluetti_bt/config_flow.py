@@ -14,7 +14,7 @@ from homeassistant.components.bluetooth import (
     BluetoothServiceInfoBleak,
     async_discovered_service_info,
 )
-from homeassistant.const import CONF_ADDRESS, CONF_NAME
+from homeassistant.const import CONF_ADDRESS, CONF_NAME, CONF_TYPE
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
@@ -48,11 +48,20 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(discovery_info.address)
         self._abort_if_unique_id_configured()
 
+        if isinstance(discovery_info.name, str):
+            name = re.sub("[^A-Z0-9]+", "", discovery_info.name)
+            discovery_info.manufacturer_data = {
+                CONF_TYPE: get_type_by_bt_name(name)
+            }
+
         # Get device type if needed
         if isinstance(discovery_info.name, str) and discovery_info.name.startswith("PBOX"):
             bleak_device = BleakClient(discovery_info.device)
             device_type = await recognize_device(bleak_device, self.hass.loop.create_future)
             _LOGGER.info("Device identified as %s", device_type)
+            discovery_info.manufacturer_data = {
+                CONF_TYPE: device_type.strip(),
+            }
             discovery_info.name = discovery_info.name.replace("PBOX", device_type.strip())
 
         self._discovery_info = discovery_info
@@ -76,6 +85,7 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data={
                     CONF_ADDRESS: discovery_info.address,
                     CONF_NAME: name,
+                    CONF_TYPE: discovery_info.manufacturer_data.get(CONF_TYPE, "Unknown"),
                 },
             )
 

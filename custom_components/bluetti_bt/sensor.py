@@ -57,7 +57,7 @@ async def async_setup_entry(
                 all_fields.update({name+str(pack): field})
 
     for field_key, field_config in all_fields.items():
-        if bluetti_device.has_field(field_key):
+        if bluetti_device.has_field(field_key) or (len(bluetti_device.pack_polling_commands) > 0 and field_key.startswith("pack_")):
             category = None
             if field_config.setter is True or field_key in DIAGNOSTIC_FIELDS:
                 category = EntityCategory.DIAGNOSTIC
@@ -156,7 +156,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
-            _LOGGER.warning("No data for available for (%s)", self._response_key)
+            _LOGGER.debug("No data for available for (%s)", self._response_key)
             self._attr_available = False
             self.async_write_ha_state()
             return
