@@ -2,21 +2,26 @@
     "domain": "bluetti_bt",
     "name": "Bluetti BT",
     "bluetooth": [
+        { "local_name": "AC60*" },
+        { "local_name": "AC180*" },
+        { "local_name": "AC200L*" },
         { "local_name": "AC200M*" },
         { "local_name": "AC300*" },
         { "local_name": "AC500*" },
-        { "local_name": "AC60*" },
         { "local_name": "EB3A*" },
         { "local_name": "EP500*" },
-        { "local_name": "EP600*" }
+        { "local_name": "EP600*" },
+        { "local_name": "EP760*" },
+        { "local_name": "EP800*" },
+        { "local_name": "PBOX*" }
     ],
     "codeowners": ["@Patrick762"],
     "config_flow": true,
-    "dependencies": ["bluetooth"],
+    "dependencies": ["bluetooth_adapters"],
     "documentation": "https://github.com/Patrick762/hassio-bluetti-bt",
     "integration_type": "device",
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/Patrick762/hassio-bluetti-bt/issues",
-    "requirements": ["bluetti_mqtt==0.15.0"],
-    "version": "0.0.11"
+    "requirements": [],
+    "version": "0.1.0"
 }

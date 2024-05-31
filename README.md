@@ -5,7 +5,8 @@
 
 Bluetti Integration for Home Assistant
 
-Based on [bluetti_mqtt](https://github.com/warhammerkid/bluetti_mqtt).
+## Disclaimer
+This integration is provided without any warranty or support by Bluetti (unfortunately). I do not take responsibility for any problems it may cause in all cases. Use it at your own risk.
 
 ## Installation
 To install this integration, you first need [HACS](https://hacs.xyz/) installed.
@@ -14,9 +15,11 @@ After the installation, you can use this button to install the integration:
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Patrick762&repository=hassio-bluetti-bt&category=integration)
 
 ### Supported devices:
-(based on [supported devices of bluetti_mqtt](https://github.com/warhammerkid/bluetti_mqtt/tree/main/bluetti_mqtt/core/devices))
 
 - AC60
+- AC180 (basic data)
+- AC180P (basic data)
+- AC200L (untested)
 - AC200M
 - AC300 (tested)
 - AC500
@@ -24,9 +27,8 @@ After the installation, you can use this button to install the integration:
 - EP500
 - EP500P
 - EP600 (tested)
-
-### Available sensors:
-All sensors which are available in bluetti_mqtt (Based on [this file](https://github.com/warhammerkid/bluetti_mqtt/blob/main/bluetti_mqtt/mqtt_client.py)).
+- EP760 (basic data)
+- EP800 (basic data)
 
 ### Available controls:
 If enabled in the Integration options (you need to reload the integration if you change this option):

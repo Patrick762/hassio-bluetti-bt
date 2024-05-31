@@ -6,33 +6,24 @@ from enum import Enum
 import logging
 from decimal import Decimal
 
-from homeassistant.components.sensor import SensorEntity, CONF_STATE_CLASS
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import (
     CONF_ADDRESS,
     CONF_NAME,
-    CONF_UNIT_OF_MEASUREMENT,
-    CONF_DEVICE_CLASS,
     EntityCategory,
 )
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from bluetti_mqtt.bluetooth import build_device
-from bluetti_mqtt.mqtt_client import (
-    NORMAL_DEVICE_FIELDS,
-    DC_INPUT_FIELDS,
-    MqttFieldType,
-    battery_pack_fields,
-)
+from .bluetti_bt_lib.field_attributes import FIELD_ATTRIBUTES, PACK_FIELD_ATTRIBUTES, FieldType
+from .bluetti_bt_lib.utils.device_builder import build_device
 
 from . import device_info as dev_info, get_unique_id
-from .const import DATA_COORDINATOR, DOMAIN, CONF_OPTIONS, DIAGNOSTIC_FIELDS, ADDITIONAL_DEVICE_FIELDS
-from .coordinator import PollingCoordinator, DummyDevice
+from .const import DATA_COORDINATOR, DOMAIN, DIAGNOSTIC_FIELDS
+from .coordinator import PollingCoordinator
 from .utils import unique_id_loggable
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,48 +45,45 @@ async def async_setup_entry(
 
     # Add sensors according to device_info
     bluetti_device = build_device(address, device_name)
-    bluetti_device = DummyDevice(bluetti_device)
 
     sensors_to_add = []
-    all_fields = NORMAL_DEVICE_FIELDS
-    all_fields.update(DC_INPUT_FIELDS)
-    all_fields.update(ADDITIONAL_DEVICE_FIELDS)
+    all_fields = FIELD_ATTRIBUTES
 
     if len(bluetti_device.pack_polling_commands) > 0:
         # add pack fields for device
         _LOGGER.info("Device type(%s) pack_num_max(%s)", bluetti_device.type, bluetti_device.pack_num_max)
         for pack in range (1, bluetti_device.pack_num_max + 1):
-            for name, field in battery_pack_fields(pack).items():
+            for name, field in PACK_FIELD_ATTRIBUTES(pack).items():
                 all_fields.update({name+str(pack): field})
 
     for field_key, field_config in all_fields.items():
-        if bluetti_device.has_field(field_key) or field_config.id_override is not None:
+        if bluetti_device.has_field(field_key) or (len(bluetti_device.pack_polling_commands) > 0 and field_key.startswith("pack_")):
             category = None
             if field_config.setter is True or field_key in DIAGNOSTIC_FIELDS:
                 category = EntityCategory.DIAGNOSTIC
-            if field_config.type == MqttFieldType.NUMERIC:
+            if field_config.type == FieldType.NUMERIC:
                 sensors_to_add.append(
                     BluettiSensor(
                         hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR],
                         device_info,
                         address,
                         field_key,
-                        field_config.home_assistant_extra.get(CONF_NAME, ""),
-                        field_config.home_assistant_extra.get(CONF_UNIT_OF_MEASUREMENT),
-                        field_config.home_assistant_extra.get(CONF_DEVICE_CLASS),
-                        field_config.home_assistant_extra.get(CONF_STATE_CLASS),
+                        field_config.name,
+                        field_config.unit_of_measurement,
+                        field_config.device_class,
+                        field_config.state_class,
                         category=category,
                     )
                 )
-            elif field_config.type == MqttFieldType.ENUM:
+            elif field_config.type == FieldType.ENUM:
                 sensors_to_add.append(
                     BluettiSensor(
                         hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR],
                         device_info,
                         address,
                         field_key,
-                        field_config.home_assistant_extra.get(CONF_NAME, ""),
-                        options=field_config.home_assistant_extra.get(CONF_OPTIONS),
+                        field_config.name,
+                        options=[o.value for o in field_config.options],
                         category=category,
                     )
                 )
@@ -122,12 +110,13 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         """Init battery entity."""
         super().__init__(coordinator)
 
+        self._attr_has_entity_name = True
         e_name = f"{device_info.get('name')} {name}"
         self._address = address
         self._response_key = response_key
 
         self._attr_device_info = device_info
-        self._attr_name = e_name
+        self._attr_name = name
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
         self._attr_native_unit_of_measurement = unit_of_measurement
@@ -136,18 +125,24 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         self._attr_entity_category = category
         self._options = options
 
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        return self._attr_available
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
 
-        if self.coordinator.persistent_conn and not self.coordinator.client.is_connected:
+        if self.coordinator.reader.persistent_conn and not self.coordinator.reader.client.is_connected:
             return
 
         if self.coordinator.data is None:
-            _LOGGER.warning(
-                "Data from coordinator is None. Skipping update for %s",
-                unique_id_loggable(self._attr_unique_id)
+            _LOGGER.debug(
+                "Data from coordinator is None",
             )
+            self._attr_available = False
+            self.async_write_ha_state()
             return
 
         _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
@@ -156,12 +151,14 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
                 "Invalid data from coordinator (sensor.%s)", unique_id_loggable(self._attr_unique_id)
             )
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
-            _LOGGER.warning("No data for available for (%s)", self._response_key)
+            _LOGGER.debug("No data for available for (%s)", self._response_key)
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         if (
@@ -178,6 +175,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
                 type(response_data),
             )
             self._attr_available = False
+            self.async_write_ha_state()
             return
 
         self._attr_available = True
@@ -186,10 +184,9 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         if (
             self._options is not None
             and isinstance(response_data, Enum)
-            and response_data.value < len(self._options)
         ):
             # Enum
-            self._attr_native_value = self._options[response_data.value]
+            self._attr_native_value = response_data.name
         else:
             # Numeric
             self._attr_native_value = response_data

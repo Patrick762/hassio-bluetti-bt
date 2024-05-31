@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import logging
+from typing import List
 
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
@@ -25,12 +26,14 @@ from .const import (
 )
 from .coordinator import PollingCoordinator
 
-PLATFORMS: [Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
+PLATFORMS: List[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bluetti Powerstation from a config entry."""
+
+    _LOGGER.debug("Init Bluetti BT Integration")
 
     address = entry.data.get(CONF_ADDRESS)
     device_name = entry.data.get(CONF_NAME)
@@ -52,10 +55,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_POLLING_RUNNING, False)
 
     # Create coordinator for polling
+    _LOGGER.debug("Creating coordinator")
     coordinator = PollingCoordinator(hass, address, device_name, polling_interval, persistent_conn, polling_timeout, max_retries)
     await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_COORDINATOR, coordinator)
 
+    _LOGGER.debug("Creating entities")
     platforms: list = PLATFORMS
     if use_controls is True:
         _LOGGER.warning("You are using controls with this integration at your own risk!")
@@ -63,6 +68,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Setup platforms
     await hass.config_entries.async_forward_entry_setups(entry, platforms)
+
+    _LOGGER.debug("Setup done")
 
     return True
 
@@ -83,23 +90,3 @@ def get_unique_id(name: str, sensor_type: str | None = None):
     if sensor_type is not None:
         return f"{sensor_type}.{res}"
     return res
-
-
-def get_type_by_bt_name(bt_name: str):
-    """Get the device type."""
-    dev_type = "Unknown"
-    if bt_name.startswith("AC200M"):
-        dev_type = "AC200M"
-    elif bt_name.startswith("AC300"):
-        dev_type = "AC300"
-    elif bt_name.startswith("AC500"):
-        dev_type = "AC500"
-    elif bt_name.startswith("AC60"):
-        dev_type = "AC60"
-    elif bt_name.startswith("EB3A"):
-        dev_type = "EB3A"
-    elif bt_name.startswith("EP500"):
-        dev_type = "EP500"
-    elif bt_name.startswith("EP600"):
-        dev_type = "EP600"
-    return dev_type

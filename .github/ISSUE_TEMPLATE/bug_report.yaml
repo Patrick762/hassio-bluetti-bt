@@ -31,20 +31,10 @@ body:
       default: 0
     validations:
       required: true
-  - type: dropdown
+  - type: textarea
     id: device
     attributes:
       label: What device are you seeing the problem on?
-      multiple: true
-      options:
-        - AC60
-        - AC200M
-        - AC300
-        - AC500
-        - EB3A
-        - EP500
-        - EP500P
-        - EP900
     validations:
       required: true
   - type: dropdown
@@ -55,6 +45,7 @@ body:
       options:
         - USB dongle
         - ESPHome bluetooth proxy
+        - Internal bluetooth adapter
     validations:
       required: true
   - type: dropdown
