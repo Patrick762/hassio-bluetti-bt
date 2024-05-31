@@ -30,7 +30,7 @@ class DeviceField:
 
 
 class UintField(DeviceField):
-    def __init__(self, name: str, address: int, range: Optional[Tuple[int, int]], scale: int):
+    def __init__(self, name: str, address: int, range: Optional[Tuple[int, int]], scale: float):
         self.range = range
         self.scale = scale
         super().__init__(name, address, 1)
@@ -147,7 +147,7 @@ class DeviceStruct:
     def __init__(self):
         self.fields = []
 
-    def add_uint_field(self, name: str, address: int, range: Tuple[int, int] = None, scale: int = 1):
+    def add_uint_field(self, name: str, address: int, range: Tuple[int, int] = None, scale: float = 1):
         self.fields.append(UintField(name, address, range, scale))
 
     def add_int_field(self, name: str, address: int, range: Tuple[int, int] = None):

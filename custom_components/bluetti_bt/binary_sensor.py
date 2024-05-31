@@ -36,7 +36,7 @@ async def async_setup_entry(
 
     device_name = entry.data.get(CONF_NAME)
     address = entry.data.get(CONF_ADDRESS)
-    use_controls = entry.data.get(CONF_USE_CONTROLS)
+    use_controls = entry.data.get(CONF_USE_CONTROLS, False)
     if address is None:
         _LOGGER.error("Device has no address")
 
@@ -52,12 +52,7 @@ async def async_setup_entry(
     for field_key, field_config in all_fields.items():
         if bluetti_device.has_field(field_key):
             if field_config.type == FieldType.BOOL:
-                category = None
                 if field_config.setter is True:
-                    category = EntityCategory.DIAGNOSTIC
-
-                # Ignore setters if controls enabled
-                if field_config.setter is True and use_controls is True:
                     continue
 
                 sensors_to_add.append(
@@ -67,7 +62,6 @@ async def async_setup_entry(
                         address,
                         field_key,
                         field_config.name,
-                        category=category,
                     )
                 )
 
@@ -84,7 +78,6 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         address,
         response_key: str,
         name: str,
-        category: EntityCategory | None = None,
     ):
         """Init battery entity."""
         super().__init__(coordinator)
@@ -98,7 +91,6 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._attr_name = name
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
-        self._attr_entity_category = category
 
     @property
     def available(self) -> bool:
