@@ -45,7 +45,7 @@ class BluettiDevice:
     
     @property
     def pack_num_field(self) -> List[ReadHoldingRegisters]:
-        """The address 'range' of the pack num"""
+        """The address 'range' of the pack num result. Matches pack_num_result"""
         return []
 
     def has_field(self, field: str):

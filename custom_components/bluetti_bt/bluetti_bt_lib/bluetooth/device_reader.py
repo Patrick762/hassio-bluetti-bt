@@ -106,36 +106,11 @@ class DeviceReader:
                             command = self.bluetti_device.build_setter_command(
                                 "pack_num", pack
                             )
-                            await self._async_send_command(command)
-
-                            try:
-                                # Read pack_num field
-                                command = self.bluetti_device.pack_num_field[0]
-                                body = command.parse_response(
-                                    await self._async_send_command(command)
-                                )
-                                _LOGGER.debug("Raw data: %s", body)
-                                parsed = self.bluetti_device.parse(
-                                    command.starting_address, body
-                                )
-                                _LOGGER.debug("Parsed data: %s", parsed)
-
-                                # Check pack number
-                                pack_number = parsed.get("pack_num")
-                                if (
-                                    not isinstance(pack_number, int)
-                                    or pack_number != pack
-                                ):
-                                    _LOGGER.debug(
-                                        "Parsed pack_num(%s) does not match expected '%s', Skipping pack (maybe you don't have this connected)",
-                                        pack_number,
-                                        pack,
-                                    )
-                                    continue
-
-                            except ParseError:
-                                _LOGGER.warning("Got a pack parse exception, Skipping pack")
-                                continue
+                            body = command.parse_response(
+                                await self._async_send_command(command)
+                            )
+                            _LOGGER.debug("Raw data set: %s", body)
+                            # b'\x00\x02' b'\x00\x03' here (seems like result)
 
                             for command in pack_commands:
                                 # Request & parse result for each pack
@@ -198,9 +173,9 @@ class DeviceReader:
             return cast(bytes, res)
 
         except TimeoutError:
-            _LOGGER.warning("Polling single command timed out")
+            _LOGGER.debug("Polling single command timed out")
         except ModbusError as err:
-            _LOGGER.warning(
+            _LOGGER.debug(
                 "Got an invalid request error for %s: %s",
                 command,
                 err,

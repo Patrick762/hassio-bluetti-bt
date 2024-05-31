@@ -60,5 +60,5 @@ class ProtocolV1Device(BluettiDevice):
     @property
     def pack_num_field(self) -> List[ReadHoldingRegisters]:
         return [
-            ReadHoldingRegisters(3006, 1),
+            ReadHoldingRegisters(96, 1),
         ]

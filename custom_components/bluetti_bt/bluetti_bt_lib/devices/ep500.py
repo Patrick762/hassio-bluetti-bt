@@ -30,7 +30,7 @@ class EP500(ProtocolV1Device):
         # Battery packs
         self.struct.add_uint_field("pack_num_max", 91)  # internal
         self.struct.add_decimal_field("total_battery_voltage", 92, 1)
-        self.struct.add_uint_field("pack_num", 96)  # internal
+        self.struct.add_uint_field("pack_num_result", 96)  # internal
         self.struct.add_decimal_field("pack_voltage", 98, 2)  # Full pack voltage
         self.struct.add_uint_field("pack_battery_percent", 99)
         self.struct.add_decimal_array_field("cell_voltages", 105, 16, 2)  # internal
