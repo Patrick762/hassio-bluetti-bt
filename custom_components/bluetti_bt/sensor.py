@@ -57,7 +57,7 @@ async def async_setup_entry(
                 all_fields.update({name+str(pack): field})
 
     for field_key, field_config in all_fields.items():
-        if bluetti_device.has_field(field_key):
+        if bluetti_device.has_field(field_key) or (len(bluetti_device.pack_polling_commands) > 0 and field_key.startswith("pack_")):
             category = None
             if field_config.setter is True or field_key in DIAGNOSTIC_FIELDS:
                 category = EntityCategory.DIAGNOSTIC
