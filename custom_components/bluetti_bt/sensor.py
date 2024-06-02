@@ -114,6 +114,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         e_name = f"{device_info.get('name')} {name}"
         self._address = address
         self._response_key = response_key
+        self._unavailable_counter = 0
 
         self._attr_device_info = device_info
         self._attr_name = name
@@ -130,6 +131,27 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         """Return if entity is available."""
         return self._attr_available
 
+    def _set_available(self):
+        """Set sensor as available."""
+        self._attr_available = True
+        self._unavailable_counter = 0
+        self._attr_extra_state_attributes = {}
+        self.async_write_ha_state()
+
+    def _set_unavailable(self, cause: str = "Unknown"):
+        """Set sensor as unavailable."""
+        self._unavailable_counter += 1
+
+        self._attr_extra_state_attributes = {
+            "unavailable_counter": self._unavailable_counter,
+            "unavailable_cause": cause,
+        }
+
+        if self._unavailable_counter >= 5:
+            self._attr_available = False
+
+        self.async_write_ha_state()
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -141,8 +163,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             _LOGGER.debug(
                 "Data from coordinator is None",
             )
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("Data is None")
             return
 
         _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
@@ -150,15 +171,13 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             _LOGGER.warning(
                 "Invalid data from coordinator (sensor.%s)", unique_id_loggable(self._attr_unique_id)
             )
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("Invalid data")
             return
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
             _LOGGER.debug("No data for available for (%s)", self._response_key)
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("No data")
             return
 
         if (
@@ -174,11 +193,10 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
                 response_data,
                 type(response_data),
             )
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("Invalid data type")
             return
 
-        self._attr_available = True
+        self._set_available()
 
         # Different for enum and numeric
         if (

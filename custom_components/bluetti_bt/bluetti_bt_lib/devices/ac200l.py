@@ -13,17 +13,17 @@ class AC200L(ProtocolV1Device):
 
         # Details
         self.struct.add_enum_field("ac_output_mode", 70, OutputMode)
-        self.struct.add_decimal_field("internal_ac_voltage", 71, 1)
+        self.struct.add_decimal_field("internal_ac_voltage", 71, 1, multiplier=10)
         self.struct.add_decimal_field("internal_current_one", 72, 1)
         self.struct.add_uint_field("internal_power_one", 73)
-        self.struct.add_decimal_field("internal_ac_frequency", 74, 2)
-        self.struct.add_uint_field("internal_dc_input_voltage", 86)
-        self.struct.add_decimal_field("internal_dc_input_power", 87, 1)
+        self.struct.add_decimal_field("internal_ac_frequency", 74, 2, multiplier=10)
+        self.struct.add_uint_field("internal_dc_input_voltage", 86, multiplier=.1)
+        self.struct.add_decimal_field("internal_dc_input_power", 87, 1, multiplier=10)
         self.struct.add_decimal_field("internal_dc_input_current", 88, 2)
 
         # Battery packs
         self.struct.add_uint_field("pack_num_max", 91)  # internal
-        self.struct.add_decimal_field("total_battery_voltage", 92, 1)
+        self.struct.add_decimal_field("total_battery_voltage", 92, 1, multiplier=.1)
         self.struct.add_uint_field("pack_num_result", 96)  # internal
         self.struct.add_decimal_field("pack_voltage", 98, 2)  # Full pack voltage
         self.struct.add_uint_field("pack_battery_percent", 99)
