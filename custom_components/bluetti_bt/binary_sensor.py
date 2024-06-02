@@ -96,6 +96,27 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
     def available(self) -> bool:
         """Return if entity is available."""
         return self._attr_available
+    
+    def _set_available(self):
+        """Set sensor as available."""
+        self._attr_available = True
+        self._unavailable_counter = 0
+        self._attr_extra_state_attributes = {}
+        self.async_write_ha_state()
+
+    def _set_unavailable(self, cause: str = "Unknown"):
+        """Set sensor as unavailable."""
+        self._unavailable_counter += 1
+
+        self._attr_extra_state_attributes = {
+            "unavailable_counter": self._unavailable_counter,
+            "unavailable_cause": cause,
+        }
+
+        if self._unavailable_counter >= 5:
+            self._attr_available = False
+
+        self.async_write_ha_state()
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -103,20 +124,25 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
 
         if self.coordinator.reader.persistent_conn and not self.coordinator.reader.client.is_connected:
             return
+        
+        if self.coordinator.data is None:
+            _LOGGER.debug(
+                "Data from coordinator is None",
+            )
+            self._set_unavailable("Data is None")
+            return
 
         _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
         if not isinstance(self.coordinator.data, dict):
             _LOGGER.debug(
                 "Invalid data from coordinator (binary_sensor.%s)", unique_id_loggable(self._attr_unique_id)
             )
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("Invalid data")
             return
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("No data")
             return
 
         if not isinstance(response_data, bool):
@@ -125,10 +151,9 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
                 unique_id_loggable(self._attr_unique_id),
                 response_data,
             )
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("Invalid data type")
             return
 
-        self._attr_available = True
+        self._set_available()
         self._attr_is_on = self.coordinator.data[self._response_key] is True
         self.async_write_ha_state()
