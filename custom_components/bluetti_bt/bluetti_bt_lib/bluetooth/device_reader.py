@@ -110,7 +110,12 @@ class DeviceReader:
                                 await self._async_send_command(command)
                             )
                             _LOGGER.debug("Raw data set: %s", body)
-                            # b'\x00\x02' b'\x00\x03' here (seems like result)
+
+                            # Check set pack_num
+                            set_pack = int.from_bytes(body, byteorder='big')
+                            if set_pack is not pack:
+                                _LOGGER.warning("Pack polling failed (pack_num %i doesn't match expected %i)", set_pack, pack)
+                                continue
 
                             for command in pack_commands:
                                 # Request & parse result for each pack
