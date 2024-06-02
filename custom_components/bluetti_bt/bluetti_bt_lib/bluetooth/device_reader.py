@@ -129,7 +129,9 @@ class DeviceReader:
                                     _LOGGER.debug("Parsed data: %s", parsed)
 
                                     for key, value in parsed.items():
-                                        parsed_data.update({key + str(pack): value})
+                                        # Ignore likely unavailable pack data
+                                        if value != 0:
+                                            parsed_data.update({key + str(pack): value})
 
                                 except ParseError:
                                     _LOGGER.warning("Got a parse exception...")
