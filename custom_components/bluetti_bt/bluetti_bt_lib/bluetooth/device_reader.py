@@ -117,6 +117,11 @@ class DeviceReader:
                                 _LOGGER.warning("Pack polling failed (pack_num %i doesn't match expected %i)", set_pack, pack)
                                 continue
 
+                            if self.bluetti_device.pack_num_max > 1:
+                                # We need to wait after switching packs 
+                                # for the data to be available
+                                await asyncio.sleep(5)
+                            
                             for command in pack_commands:
                                 # Request & parse result for each pack
                                 try:
