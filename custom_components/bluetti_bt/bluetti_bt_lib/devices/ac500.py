@@ -49,7 +49,7 @@ class AC500(ProtocolV1Device):
 
     @property
     def pack_num_max(self):
-        return 4
+        return 6
 
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
