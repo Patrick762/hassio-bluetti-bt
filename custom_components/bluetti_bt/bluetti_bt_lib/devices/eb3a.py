@@ -25,13 +25,7 @@ class EB3A(ProtocolV1Device):
 
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
-        return super().polling_commands + [
-            ReadHoldingRegisters(77, 1),
-            ReadHoldingRegisters(86, 1),
-            ReadHoldingRegisters(3034, 1),
-            ReadHoldingRegisters(3060, 1),
-            ReadHoldingRegisters(3063, 5),
-        ]
+        return self.struct.get_read_holding_registers()
 
     @property
     def writable_ranges(self) -> List[range]:

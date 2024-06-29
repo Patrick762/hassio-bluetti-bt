@@ -53,6 +53,8 @@ class DeviceReader:
         if filter_registers is not None:
             polling_commands = filter_registers
             pack_commands = []
+        _LOGGER.info("Pooling comands: " + ",".join([f"{c.starting_address}-{c.starting_address + c.quantity - 1}" for c in polling_commands]))
+        _LOGGER.info("Pack comands: " + ",".join([f"{c.starting_address}-{c.starting_address + c.quantity - 1}" for c in pack_commands]))
 
         parsed_data: dict = {}
 
@@ -142,7 +144,7 @@ class DeviceReader:
                                     _LOGGER.warning("Got a parse exception...")
 
             except TimeoutError:
-                _LOGGER.warning("Polling timed out. Trying again later")
+                _LOGGER.warning(f"Polling timed out ({self.polling_timeout}s). Trying again later")
                 return None
             except BleakError as err:
                 _LOGGER.error("Bleak error: %s", err)

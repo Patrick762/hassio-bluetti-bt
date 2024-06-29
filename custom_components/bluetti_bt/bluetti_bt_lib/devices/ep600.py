@@ -97,28 +97,4 @@ class EP600(ProtocolV2Device):
 
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
-        return super().polling_commands + [
-            ReadHoldingRegisters(2022, 2),
-            ReadHoldingRegisters(2213, 5),
-            ReadHoldingRegisters(1212, 3),
-            ReadHoldingRegisters(1220, 3),
-            ReadHoldingRegisters(1228, 3),
-            ReadHoldingRegisters(1236, 3),
-            ReadHoldingRegisters(1244, 3),
-            ReadHoldingRegisters(1300, 1),
-            ReadHoldingRegisters(1313, 3),
-            ReadHoldingRegisters(1319, 3),
-            ReadHoldingRegisters(1325, 3),
-            ReadHoldingRegisters(1500, 1),
-            ReadHoldingRegisters(1510, 3),
-            ReadHoldingRegisters(1517, 3),
-            ReadHoldingRegisters(1524, 3),
-            ReadHoldingRegisters(152, 1),
-            ReadHoldingRegisters(156, 1),
-            ReadHoldingRegisters(158, 1),
-            # KM - Consumption
-            ReadHoldingRegisters(1430, 15),
-            # KM - Totals
-            ReadHoldingRegisters(142, 5),
-
-        ]
+        return self.struct.get_read_holding_registers()
