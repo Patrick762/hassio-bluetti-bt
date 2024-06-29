@@ -68,8 +68,8 @@ class DeviceReader:
                                 await self.client.connect()
                             break
                         except Exception as e:
-                            if attempt == self.max_retries or attempt == 1:
-                                raise  # pass exception on max_retries attempt
+                            if attempt == self.max_retries:
+                                raise e # pass exception on max_retries attempt
                             else:
                                 _LOGGER.warning(
                                     f"Connect unsucessful (attempt {attempt}): {e}. Retrying..."
@@ -143,8 +143,8 @@ class DeviceReader:
                                 except ParseError:
                                     _LOGGER.warning("Got a parse exception...")
 
-            except TimeoutError:
-                _LOGGER.warning(f"Polling timed out ({self.polling_timeout}s). Trying again later")
+            except TimeoutError as err:
+                _LOGGER.error(f"Polling timed out ({self.polling_timeout}s). Trying again later", exc_info=err)
                 return None
             except BleakError as err:
                 _LOGGER.error("Bleak error: %s", err)
