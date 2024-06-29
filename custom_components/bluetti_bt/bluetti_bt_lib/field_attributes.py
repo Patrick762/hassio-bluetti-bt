@@ -125,6 +125,14 @@ FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {
     "ac_input_power": PowerFieldAttributes("AC Input Power"),
     "ac_output_power": PowerFieldAttributes("AC Output Power"),
     "dc_output_power": PowerFieldAttributes("DC Output Power"),
+    "dsp_version": FieldAttributes(
+        type=FieldType.NUMERIC,
+        name=f"DSP Version",
+    ),
+    "arm_version": FieldAttributes(
+        type=FieldType.NUMERIC,
+        name=f"ARM Version",
+    ),
     "power_generation": EnergyFieldAttributes("Total Power Generation"),
     "total_battery_percent": FieldAttributes(
         type=FieldType.NUMERIC,
