@@ -86,6 +86,7 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         e_name = f"{device_info.get('name')} {name}"
         self._address = address
         self._response_key = response_key
+        self._unavailable_counter = 5
 
         self._attr_device_info = device_info
         self._attr_name = name

@@ -54,17 +54,9 @@ class AC300(ProtocolV1Device):
 
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:
-        return super().polling_commands + [
-            ReadHoldingRegisters(70, 11),
-            ReadHoldingRegisters(86, 3),
-            ReadHoldingRegisters(92, 1),
-            ReadHoldingRegisters(3001, 1),
-            ReadHoldingRegisters(3004, 2),
-            ReadHoldingRegisters(3011, 1),
-            ReadHoldingRegisters(3013, 1),
-            ReadHoldingRegisters(3015, 2),
-            ReadHoldingRegisters(3061, 1),
-        ]
+        return self.struct.get_read_holding_registers(
+            filter=lambda address: address <= 90 or address >= 256 # pack_polling_commands
+        )
 
     @property
     def writable_ranges(self) -> List[range]:
@@ -76,9 +68,6 @@ class AC300(ProtocolV1Device):
     @property
     def pack_polling_commands(self) -> List[ReadHoldingRegisters]:
         return [
-            ReadHoldingRegisters(91, 2),
-            ReadHoldingRegisters(96, 1),
-            ReadHoldingRegisters(98, 2),
-            ReadHoldingRegisters(105, 16),
+            ReadHoldingRegisters(91, 37),
             ReadHoldingRegisters(201, 2),
         ]

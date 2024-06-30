@@ -24,7 +24,7 @@ After the installation, you can use this button to install the integration:
 - AC200L (untested)
 - AC200M
 - AC300 (tested)
-- AC500
+- AC500 (tested)
 - EB3A
 - EP500
 - EP500P

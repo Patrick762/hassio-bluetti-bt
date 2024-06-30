@@ -4,6 +4,7 @@
 
 from decimal import Decimal
 from enum import Enum
+from .commands import ReadHoldingRegisters
 import struct
 from typing import Any, List, Optional, Tuple, Type
 
@@ -179,6 +180,35 @@ class DeviceStruct:
 
     def add_sn_field(self, name: str, address: int):
         self.fields.append(SerialNumberField(name, address))
+        
+    def get_read_holding_registers(self, tolerance=20, filter=lambda address: True):
+        address_set = set()
+        for field in self.fields:
+            for address in range(field.address, field.address + field.size):
+                address_set.add(address)
+        # Filter out addresses that we specificly 
+        # specified to exclude.
+        for address in set(address_set):
+            if not filter(address):
+                address_set.remove(address)
+        # Fast path: no addresses -> no commands.
+        if not address_set:
+            return []
+        
+        commands = []
+
+        address_list = sorted(address_set)
+        start = address_list[0]
+        last = address_list[0]
+        for address in address_list[1:]:
+            # Create a new group if there's a gap 
+            # in the addresses.
+            if address >= last + tolerance:
+                commands.append(ReadHoldingRegisters(start, last - start + 1))
+                start = address
+            last = address
+        commands.append(ReadHoldingRegisters(start, last - start + 1))    
+        return commands
 
     def parse(self, starting_address: int, data: bytes) -> dict:
         # Offsets and size are counted in 2 byte chunks, so for the range we
