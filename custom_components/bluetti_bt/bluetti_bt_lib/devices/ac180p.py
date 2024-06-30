@@ -3,14 +3,9 @@
 from typing import List
 from enum import Enum, unique
 
+from ..field_enums import ChargingMode
 from ..utils.commands import ReadHoldingRegisters
 from ..base_devices.ProtocolV2Device import ProtocolV2Device
-
-@unique
-class ChargingMode(Enum):
-    STANDARD = 0
-    SILENT = 1
-    TURBO = 2
 
 class AC180P(ProtocolV2Device):
     def __init__(self, address: str, sn: str):
@@ -25,11 +20,9 @@ class AC180P(ProtocolV2Device):
         # Input Details (1100 - 1300)
         self.struct.add_decimal_field('ac_input_voltage', 1314, 1)
 
-        self.struct.add_bool_field('ac_output_on_0', 1509)
-
         # Controls (2000)
-        self.struct.add_bool_field('ac_output_on', 2011)
-        self.struct.add_bool_field('dc_output_on', 2012)
+        self.struct.add_bool_field('ac_output_on_switch', 2011)
+        self.struct.add_bool_field('dc_output_on_switch', 2012)
         self.struct.add_enum_field('charging_mode', 2020, ChargingMode)
         self.struct.add_bool_field('power_lifting_on', 2021)
 
@@ -44,7 +37,6 @@ class AC180P(ProtocolV2Device):
             ReadHoldingRegisters(144, 1),
             ReadHoldingRegisters(146, 1),
             ReadHoldingRegisters(1314, 1),
-            ReadHoldingRegisters(1509, 1),
             ReadHoldingRegisters(2011, 1),
             ReadHoldingRegisters(2012, 1),
             ReadHoldingRegisters(2020, 1),
@@ -55,7 +47,6 @@ class AC180P(ProtocolV2Device):
     @property
     def writable_ranges(self) -> List[range]:
         return super().writable_ranges + [
-            range(1509, 1510),
             range(2000, 2022),
             range(2200, 2226)
         ]
