@@ -91,7 +91,7 @@ class DecimalField(DeviceField):
 
     def parse(self, data: bytes) -> Decimal:
         val = Decimal(struct.unpack("!H", data)[0])
-        return (val / 10 ** self.scale) * self.multiplier
+        return (val / 10 ** self.scale) * Decimal(self.multiplier)
 
     def in_range(self, val: Decimal) -> bool:
         if self.range is None:
