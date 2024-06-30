@@ -1,0 +1,5 @@
+homeassistant
+bleak_retry_connector
+pyserial
+bluetooth_auto_recovery
+crcmod
