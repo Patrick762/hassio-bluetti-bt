@@ -33,7 +33,7 @@ CONTROL_FIELDS = [
     "eco_on",
     "power_lifting_on",
     "grid_enhancement_mode_on",
-    "charging_mode"
+    "silent_charging_on",
 ]
 
 DIAGNOSTIC_FIELDS = [
@@ -48,4 +48,5 @@ DIAGNOSTIC_FIELDS = [
     "total_ac_consumption",
     "total_grid_consumption",
     "total_grid_feed",
+    "ac_input_voltage",
 ]

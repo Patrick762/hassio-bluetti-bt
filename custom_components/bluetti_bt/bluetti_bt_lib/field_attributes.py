@@ -321,6 +321,11 @@ FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {
         setter=True,
         name="Grid Enhancement Mode",
     ),
+    "silent_charging_on": FieldAttributes(
+        type=FieldType.BOOL,
+        setter=True,
+        name="Silet Charging",
+    ),
 }
 
 
