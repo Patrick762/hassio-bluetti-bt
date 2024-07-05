@@ -22,7 +22,8 @@ class AC180P(ProtocolV2Device):
         # Controls (2000)
         self.struct.add_bool_field('ac_output_on_switch', 2011)
         self.struct.add_bool_field('dc_output_on_switch', 2012)
-        self.struct.add_bool_field('silent_charging_on', 2020)
+        self.struct.add_bool_field('silent_charging_on', 2020) # to be able to choose between normal and silent charging modes
+        self.struct.add_enum_field('charging_mode', 2020, ChargingMode) # can't be set from HA, custom switch needed
         self.struct.add_bool_field('power_lifting_on', 2021)
 
         # Controls (2200)

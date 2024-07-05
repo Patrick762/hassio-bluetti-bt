@@ -324,7 +324,7 @@ FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {
     "silent_charging_on": FieldAttributes(
         type=FieldType.BOOL,
         setter=True,
-        name="Silet Charging",
+        name="Silent Charging",
     ),
 }
 
