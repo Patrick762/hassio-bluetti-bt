@@ -3,6 +3,7 @@
     "name": "Bluetti BT",
     "bluetooth": [
         { "local_name": "AC60*" },
+        { "local_name": "AC70*" },
         { "local_name": "AC180*" },
         { "local_name": "AC200L*" },
         { "local_name": "AC200M*" },
