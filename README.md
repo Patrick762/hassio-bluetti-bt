@@ -20,7 +20,7 @@ After the installation, you can use this button to install the integration:
 - AC70 (basic data)
 - AC70P (untested)
 - AC180 (basic data)
-- AC180P (basic data)
+- AC180P (tested)
 - AC200L (untested)
 - AC200M
 - AC300 (tested)

@@ -23,6 +23,7 @@ SUPPORTED_MODELS = [
     "EP500P",
     "EP600",
     "EP760",
+    "AC180P",
 ]
 
 CONTROL_FIELDS = [
@@ -31,6 +32,8 @@ CONTROL_FIELDS = [
     "power_off",
     "eco_on",
     "power_lifting_on",
+    "grid_enhancement_mode_on",
+    "silent_charging_on",
 ]
 
 DIAGNOSTIC_FIELDS = [
@@ -45,4 +48,5 @@ DIAGNOSTIC_FIELDS = [
     "total_ac_consumption",
     "total_grid_consumption",
     "total_grid_feed",
+    "ac_input_voltage",
 ]

@@ -316,6 +316,16 @@ FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {
         setter=True,
         name="Power Lifting",
     ),
+    "grid_enhancement_mode_on": FieldAttributes(
+        type=FieldType.BOOL,
+        setter=True,
+        name="Grid Enhancement Mode",
+    ),
+    "silent_charging_on": FieldAttributes(
+        type=FieldType.BOOL,
+        setter=True,
+        name="Silent Charging",
+    ),
 }
 
 
