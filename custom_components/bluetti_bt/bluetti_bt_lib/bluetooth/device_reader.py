@@ -53,7 +53,7 @@ class DeviceReader:
         if filter_registers is not None:
             polling_commands = filter_registers
             pack_commands = []
-        _LOGGER.info("Pooling comands: " + ",".join([f"{c.starting_address}-{c.starting_address + c.quantity - 1}" for c in polling_commands]))
+        _LOGGER.info("Polling commands: " + ",".join([f"{c.starting_address}-{c.starting_address + c.quantity - 1}" for c in polling_commands]))
         _LOGGER.info("Pack comands: " + ",".join([f"{c.starting_address}-{c.starting_address + c.quantity - 1}" for c in pack_commands]))
 
         parsed_data: dict = {}
