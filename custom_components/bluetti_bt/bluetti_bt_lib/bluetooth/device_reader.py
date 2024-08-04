@@ -53,6 +53,8 @@ class DeviceReader:
         if filter_registers is not None:
             polling_commands = filter_registers
             pack_commands = []
+        _LOGGER.info("Polling commands: " + ",".join([f"{c.starting_address}-{c.starting_address + c.quantity - 1}" for c in polling_commands]))
+        _LOGGER.info("Pack comands: " + ",".join([f"{c.starting_address}-{c.starting_address + c.quantity - 1}" for c in pack_commands]))
 
         parsed_data: dict = {}
 
@@ -66,8 +68,8 @@ class DeviceReader:
                                 await self.client.connect()
                             break
                         except Exception as e:
-                            if attempt == self.max_retries or attempt == 1:
-                                raise  # pass exception on max_retries attempt
+                            if attempt == self.max_retries:
+                                raise e # pass exception on max_retries attempt
                             else:
                                 _LOGGER.warning(
                                     f"Connect unsucessful (attempt {attempt}): {e}. Retrying..."
@@ -117,6 +119,11 @@ class DeviceReader:
                                 _LOGGER.warning("Pack polling failed (pack_num %i doesn't match expected %i)", set_pack, pack)
                                 continue
 
+                            if self.bluetti_device.pack_num_max > 1:
+                                # We need to wait after switching packs 
+                                # for the data to be available
+                                await asyncio.sleep(5)
+                            
                             for command in pack_commands:
                                 # Request & parse result for each pack
                                 try:
@@ -136,8 +143,8 @@ class DeviceReader:
                                 except ParseError:
                                     _LOGGER.warning("Got a parse exception...")
 
-            except TimeoutError:
-                _LOGGER.warning("Polling timed out. Trying again later")
+            except TimeoutError as err:
+                _LOGGER.error(f"Polling timed out ({self.polling_timeout}s). Trying again later", exc_info=err)
                 return None
             except BleakError as err:
                 _LOGGER.error("Bleak error: %s", err)
