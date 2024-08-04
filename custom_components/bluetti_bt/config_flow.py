@@ -150,7 +150,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             if user_input[CONF_MAX_RETRIES] < 1:
                 return self.async_abort(reason="invalid_retries")
 
-            changed = self.hass.config_entries.async_update_entry(
+            self.hass.config_entries.async_update_entry(
                 self.config_entry,
                 data={
                     **self.config_entry.data,
@@ -163,11 +163,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     },
                 },
             )
-            if changed is False:
-                _LOGGER.error(
-                    "Method OptionsFlowHandler.async_step_init: Config entry %s has not been changed",
-                    self.config_entry.entry_id,
-                )
             return self.async_create_entry(
                 title="",
                 data={
