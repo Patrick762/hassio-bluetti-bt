@@ -1,4 +1,4 @@
-"""Unittest for device builder."""
+"""Unittest for device struct."""
 
 import unittest
 
