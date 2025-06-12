@@ -34,7 +34,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bluetti Powerstation from a config entry."""
 
-    _LOGGER.debug("Init Bluetti BT Integration")
+    _LOGGER.debug("Init Bluetti BT Integration for device %s", entry.data.get(CONF_NAME))
 
     address = entry.data.get(CONF_ADDRESS)
     device_name = entry.data.get(CONF_NAME)

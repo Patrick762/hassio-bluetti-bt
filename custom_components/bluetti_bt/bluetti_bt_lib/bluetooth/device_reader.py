@@ -6,6 +6,8 @@ from typing import Any, Callable, List, cast
 import async_timeout
 from bleak import BleakClient, BleakError
 
+from custom_components.bluetti_bt.bluetti_bt_lib.bluetooth.encryption import BluettiEncryption, Message, MessageType
+
 from ..base_devices.BluettiDevice import BluettiDevice
 from ..const import NOTIFY_UUID, RESPONSE_TIMEOUT, WRITE_UUID
 from ..exceptions import BadConnectionError, ModbusError, ParseError
@@ -40,6 +42,8 @@ class DeviceReader:
 
         # polling mutex to guard against switches
         self.polling_lock = asyncio.Lock()
+
+        self.encryption = BluettiEncryption()
 
     async def read_data(
         self, filter_registers: List[ReadHoldingRegisters] | None = None
@@ -84,6 +88,10 @@ class DeviceReader:
                             NOTIFY_UUID, self._notification_handler
                         )
                         self.has_notifier = True
+
+                    while self.encrypted and not self.encryption.is_ready_for_commands:
+                        await asyncio.sleep(5)
+                        _LOGGER.debug("Encryption handshake not finished yet")
 
                     # Execute polling commands
                     for command in polling_commands:
@@ -179,7 +187,16 @@ class DeviceReader:
 
             # Make request
             _LOGGER.debug("Requesting %s", command)
-            await self.client.write_gatt_char(WRITE_UUID, bytes(command))
+
+            command_bytes = bytes(command)
+
+            # Encrypt command
+            if self.encrypted is True:
+                if not self.encryption.is_ready_for_commands:
+                    return bytes()
+                command_bytes = self.encryption.aes_encrypt(command_bytes, self.encryption.secure_aes_key, None)
+
+            await self.client.write_gatt_char(WRITE_UUID, command_bytes)
 
             # Wait for response
             res = await asyncio.wait_for(self.notify_future, timeout=RESPONSE_TIMEOUT)
@@ -203,8 +220,46 @@ class DeviceReader:
         # caught an exception, return empty bytes object
         return bytes()
 
-    def _notification_handler(self, _sender: int, data: bytearray):
+    async def _notification_handler(self, _sender: int, data: bytearray):
         """Handle bt data."""
+
+        # Handle encrypted data
+        if self.encrypted is True:
+            message = Message(data)
+
+            # Handle key exchange
+            if message.is_pre_key_exchange:
+                message.verify_checksum()
+
+                if message.type == MessageType.CHALLENGE:
+                    challenge_response = self.encryption.msg_challenge(message)
+                    await self.client.write_gatt_char(WRITE_UUID, challenge_response)
+                    return
+
+                if message.type == MessageType.CHALLENGE_ACCEPTED:
+                    _LOGGER.debug("Challenge accepted")
+                    return
+
+            if self.encryption.unsecure_aes_key is None:
+                _LOGGER.error("Received encrypted message before key initialization")
+
+            key, iv = self.encryption.getKeyIv()
+            decrypted = Message(self.encryption.aes_decrypt(message.buffer, key, iv))
+
+            if decrypted.is_pre_key_exchange:
+                decrypted.verify_checksum()
+
+                if decrypted.type == MessageType.PEER_PUBKEY:
+                    peer_pubkey_response = self.encryption.msg_peer_pubkey(decrypted)
+                    await self.client.write_gatt_char(WRITE_UUID, peer_pubkey_response)
+                    return
+
+                if decrypted.type == MessageType.PUBKEY_ACCEPTED:
+                    self.encryption.msg_key_accepted(decrypted)
+                    return
+
+            # Handle as message
+            data = decrypted.buffer
 
         # Ignore notifications we don't expect
         if self.notify_future is None or self.notify_future.done():
