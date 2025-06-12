@@ -22,6 +22,7 @@ from .bluetti_bt_lib.utils.device_builder import get_type_by_bt_name
 from .bluetti_bt_lib.bluetooth.device_recognizer import recognize_device
 
 from .const import (
+    CONF_ENCRYPTION,
     CONF_MAX_RETRIES,
     CONF_PERSISTENT_CONN,
     CONF_POLLING_INTERVAL,
@@ -160,6 +161,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_POLLING_INTERVAL: user_input[CONF_POLLING_INTERVAL],
                         CONF_POLLING_TIMEOUT: user_input[CONF_POLLING_TIMEOUT],
                         CONF_MAX_RETRIES: user_input[CONF_MAX_RETRIES],
+                        CONF_ENCRYPTION: user_input[CONF_ENCRYPTION],
                     },
                 },
             )
@@ -171,6 +173,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_POLLING_INTERVAL: user_input[CONF_POLLING_INTERVAL],
                     CONF_POLLING_TIMEOUT: user_input[CONF_POLLING_TIMEOUT],
                     CONF_MAX_RETRIES: user_input[CONF_MAX_RETRIES],
+                    CONF_ENCRYPTION: user_input[CONF_ENCRYPTION],
                 },
             )
 
@@ -198,6 +201,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_MAX_RETRIES,
                         default=self.config_entry.data.get(CONF_MAX_RETRIES, 5),
                     ): int,
+                    vol.Required(
+                        CONF_ENCRYPTION,
+                        default=self.config_entry.data.get(CONF_ENCRYPTION, False),
+                    ): selector.BooleanSelector(),
                 }
             ),
         )

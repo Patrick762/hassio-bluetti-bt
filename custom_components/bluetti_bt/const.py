@@ -9,6 +9,7 @@ CONF_PERSISTENT_CONN = "persistent_conn"
 CONF_POLLING_INTERVAL = "polling_interval"
 CONF_POLLING_TIMEOUT = "polling_timeout"
 CONF_MAX_RETRIES = "max_retries"
+CONF_ENCRYPTION = "use_encryption"
 
 DATA_COORDINATOR = "coordinator"
 DATA_POLLING_RUNNING = "polling_running"

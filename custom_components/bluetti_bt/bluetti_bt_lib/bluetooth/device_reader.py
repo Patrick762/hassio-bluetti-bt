@@ -23,6 +23,7 @@ class DeviceReader:
         persistent_conn: bool = False,
         polling_timeout: int = 45,
         max_retries: int = 5,
+        encrypted: bool = False,
     ) -> None:
         self.client = bleak_client
         self.bluetti_device = bluetti_device
@@ -30,6 +31,7 @@ class DeviceReader:
         self.persistent_conn = persistent_conn
         self.polling_timeout = polling_timeout
         self.max_retries = max_retries
+        self.encrypted = encrypted
 
         self.has_notifier = False
         self.notify_future: asyncio.Future[Any] | None = None

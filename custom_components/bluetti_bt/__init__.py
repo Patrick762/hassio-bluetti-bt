@@ -14,6 +14,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.exceptions import ConfigEntryNotReady
 
 from .const import (
+    CONF_ENCRYPTION,
     CONF_MAX_RETRIES,
     CONF_PERSISTENT_CONN,
     CONF_POLLING_INTERVAL,
@@ -42,6 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     persistent_conn = entry.data.get(CONF_PERSISTENT_CONN, False)
     polling_timeout = entry.data.get(CONF_POLLING_TIMEOUT, 120)
     max_retries = entry.data.get(CONF_MAX_RETRIES, 5)
+    use_encryption = entry.data.get(CONF_ENCRYPTION, False)
 
     if address is None:
         return False
@@ -56,7 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Create coordinator for polling
     _LOGGER.debug("Creating coordinator")
-    coordinator = PollingCoordinator(hass, address, device_name, polling_interval, persistent_conn, polling_timeout, max_retries)
+    coordinator = PollingCoordinator(hass, address, device_name, polling_interval, persistent_conn, polling_timeout, max_retries, use_encryption)
     await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_COORDINATOR, coordinator)
 
