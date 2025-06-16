@@ -1,4 +1,4 @@
-"""AC60 fields."""
+"""AC60P fields."""
 
 from typing import List
 
@@ -6,9 +6,9 @@ from ..field_enums import ChargingMode
 from ..utils.commands import ReadHoldingRegisters
 from ..base_devices.ProtocolV2Device import ProtocolV2Device
 
-class AC60(ProtocolV2Device):
+class AC60P(ProtocolV2Device):
     def __init__(self, address: str, sn: str):
-        super().__init__(address, "AC60", sn)
+        super().__init__(address, "AC60P", sn)
 
         # Power IO
         self.struct.add_uint_field('dc_output_power', 140)
