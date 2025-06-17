@@ -283,3 +283,7 @@ class BluettiEncryption:
                 if self.secure_aes_key is None
                 else (self.secure_aes_key, None)
         )
+    
+    def reset(self):
+        self.peer_pubkey = None
+        self.secure_aes_key = None

@@ -175,6 +175,9 @@ class DeviceReader:
             if not parsed_data:
                 return None
 
+            # Reset Encryption keys
+            self.encryption.reset()
+
             return parsed_data
 
     async def _async_send_command(self, command: ReadHoldingRegisters) -> bytes:
