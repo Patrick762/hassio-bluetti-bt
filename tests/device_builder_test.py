@@ -4,6 +4,7 @@ import unittest
 
 from custom_components.bluetti_bt.bluetti_bt_lib.utils.device_builder import build_device
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac2a import AC2A
+from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac2p import AC2P
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac60 import AC60
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac70 import AC70
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac70p import AC70P
@@ -34,6 +35,14 @@ class TestDeviceBuilder(unittest.TestCase):
         built = build_device(bt_addr, bt_name)
 
         self.assertIsInstance(built, AC2A)
+        self.assertEqual(built.address, bt_addr)
+
+    def test_build_ac2p(self):
+        bt_addr = "aa:bb:cc:dd:ee:ff"
+        bt_name = "AC2P56786746478"
+        built = build_device(bt_addr, bt_name)
+
+        self.assertIsInstance(built, AC2P)
         self.assertEqual(built.address, bt_addr)
 
     def test_build_ac60(self):

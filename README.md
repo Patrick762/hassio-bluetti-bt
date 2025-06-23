@@ -17,6 +17,7 @@ After the installation, you can use this button to install the integration:
 ### Supported devices:
 
 - AC2A
+- AC2P
 - AC60
 - AC70 (basic data)
 - AC70P (untested)
