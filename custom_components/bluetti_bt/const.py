@@ -14,6 +14,8 @@ DATA_COORDINATOR = "coordinator"
 DATA_POLLING_RUNNING = "polling_running"
 
 SUPPORTED_MODELS = [
+    "AC2A",
+    "AC2P",
     "AC60",
     "AC200M",
     "AC300",
