@@ -18,6 +18,7 @@ from custom_components.bluetti_bt.bluetti_bt_lib.devices.ep500p import EP500P
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ep600 import EP600
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ep760 import EP760
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ep800 import EP800
+from custom_components.bluetti_bt.bluetti_bt_lib.devices.elite100v2 import Elite100V2
 
 
 class TestDeviceBuilder(unittest.TestCase):
@@ -145,6 +146,14 @@ class TestDeviceBuilder(unittest.TestCase):
         built = build_device(bt_addr, bt_name)
 
         self.assertIsInstance(built, EP800)
+        self.assertEqual(built.address, bt_addr)
+
+    def test_build_Elite100V2(self):
+        bt_addr = "aa:bb:cc:dd:ee:ff"
+        bt_name = "EL100V20123456789012"
+        built = build_device(bt_addr, bt_name)
+
+        self.assertIsInstance(built, Elite100V2)
         self.assertEqual(built.address, bt_addr)
 
 if __name__ == '__main__':
