@@ -31,6 +31,7 @@ After the installation, you can use this button to install the integration:
 - EP600 (tested)
 - EP760 (basic data)
 - EP800 (basic data)
+- Elite 100 V2 (basic data)
 
 ### Available controls:
 If enabled in the Integration options (you need to reload the integration if you change this option):
