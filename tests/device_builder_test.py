@@ -10,6 +10,7 @@ from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac180 import AC180
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac180p import AC180P
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac200l import AC200L
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac200m import AC200M
+from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac200pl import AC200PL
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac300 import AC300
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac500 import AC500
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.eb3a import EB3A
@@ -81,6 +82,14 @@ class TestDeviceBuilder(unittest.TestCase):
         built = build_device(bt_addr, bt_name)
 
         self.assertIsInstance(built, AC200M)
+        self.assertEqual(built.address, bt_addr)
+
+    def test_build_ac200pl(self):
+        bt_addr = "aa:bb:cc:dd:ee:ff"
+        bt_name = "AC200PL56786746478"
+        built = build_device(bt_addr, bt_name)
+
+        self.assertIsInstance(built, AC200PL)
         self.assertEqual(built.address, bt_addr)
 
     def test_build_ac300(self):
