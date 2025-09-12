@@ -4,7 +4,7 @@ import asyncio
 import logging
 from typing import Any, Callable, List, Union, cast
 import async_timeout
-from bleak import BleakClient, BleakError
+from bleak import BleakClient, BleakError, BleakScanner
 from bleak_retry_connector import establish_connection, BleakClientWithServiceCache
 
 from ..base_devices.BluettiDevice import BluettiDevice
@@ -77,24 +77,33 @@ class DeviceReader:
                 async with async_timeout.timeout(self.polling_timeout):
                     # Reconnect if not connected
                     if not self.client.is_connected:
-                        # Use stored BLE device object for reconnection if available
-                        if self.ble_device:
-                            # Create new client with retry connector using device object
-                            self.client = await establish_connection(
-                                BleakClientWithServiceCache, 
-                                self.ble_device, 
-                                "DeviceReader"
-                            )
-                        elif self.device_address:
-                            # Fallback: try with address string
-                            self.client = await establish_connection(
-                                BleakClientWithServiceCache, 
-                                self.device_address, 
-                                "DeviceReader"
-                            )
-                        else:
-                            _LOGGER.error("No device info available for reconnection")
-                            raise BadConnectionError("No device info available for reconnection")
+                        # Resolve a BLEDevice object for reconnection
+                        ble_device_obj = self.ble_device
+
+                        # Try to get the device object from the client if not provided
+                        if ble_device_obj is None and hasattr(self.client, "device"):
+                            try:
+                                ble_device_obj = getattr(self.client, "device")
+                            except Exception:  # best effort
+                                ble_device_obj = None
+
+                        # As a last resort, try to find the device by address
+                        if ble_device_obj is None and self.device_address:
+                            try:
+                                ble_device_obj = await BleakScanner.find_device_by_address(self.device_address)
+                            except Exception as e:
+                                _LOGGER.debug("BleakScanner failed to resolve device by address %s: %s", self.device_address, e)
+
+                        if ble_device_obj is None:
+                            _LOGGER.error("No BLEDevice available for reconnection (address=%s)", self.device_address)
+                            raise BadConnectionError("No BLEDevice available for reconnection")
+
+                        # Create new client with retry connector using device object
+                        self.client = await establish_connection(
+                            BleakClientWithServiceCache,
+                            ble_device_obj,
+                            "DeviceReader",
+                        )
 
                     # Attach notifier if needed
                     if not self.has_notifier:
@@ -175,7 +184,7 @@ class DeviceReader:
                     if self.has_notifier:
                         try:
                             await self.client.stop_notify(NOTIFY_UUID)
-                        except:
+                        except Exception:
                             # Ignore errors here
                             pass
                         self.has_notifier = False
