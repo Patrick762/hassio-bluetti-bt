@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Any, Callable, List, cast
+from typing import Any, Callable, List, Union, cast
 import async_timeout
 from bleak import BleakClient, BleakError
 from bleak_retry_connector import establish_connection, BleakClientWithServiceCache
@@ -10,7 +10,7 @@ from bleak_retry_connector import establish_connection, BleakClientWithServiceCa
 from ..base_devices.BluettiDevice import BluettiDevice
 from ..const import NOTIFY_UUID, RESPONSE_TIMEOUT, WRITE_UUID
 from ..exceptions import BadConnectionError, ModbusError, ParseError
-from ..utils.commands import ReadHoldingRegisters
+from ..utils.commands import ReadHoldingRegisters, WriteSingleRegister
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +31,9 @@ class DeviceReader:
         self.persistent_conn = persistent_conn
         self.polling_timeout = polling_timeout
         self.max_retries = max_retries
+        
+        # Store device address for reconnection
+        self.device_address = bleak_client.address if bleak_client.address else None
 
         self.has_notifier = False
         self.notify_future: asyncio.Future[Any] | None = None
@@ -64,14 +67,17 @@ class DeviceReader:
                 async with async_timeout.timeout(self.polling_timeout):
                     # Reconnect if not connected
                     if not self.client.is_connected:
-                        # Get device address for reconnection
-                        device_address = self.client.address
-                        # Create new client with retry connector
-                        self.client = await establish_connection(
-                            BleakClientWithServiceCache, 
-                            device_address, 
-                            "DeviceReader"
-                        )
+                        # Use stored device address for reconnection
+                        if self.device_address:
+                            # Create new client with retry connector
+                            self.client = await establish_connection(
+                                BleakClientWithServiceCache, 
+                                self.device_address, 
+                                "DeviceReader"
+                            )
+                        else:
+                            _LOGGER.error("No device address available for reconnection")
+                            raise BadConnectionError("No device address available for reconnection")
 
                     # Attach notifier if needed
                     if not self.has_notifier:
@@ -164,7 +170,7 @@ class DeviceReader:
 
             return parsed_data
 
-    async def _async_send_command(self, command: ReadHoldingRegisters) -> bytes:
+    async def _async_send_command(self, command: Union[ReadHoldingRegisters, WriteSingleRegister]) -> bytes:
         """Send command and return response"""
         try:
             # Prepare to make request
@@ -214,7 +220,13 @@ class DeviceReader:
 
         # Save data
         self.notify_response.extend(data)
-
+    
+        # Check if current_command is None before accessing its methods
+        if self.current_command is None:
+            _LOGGER.warning("Received notification but current_command is None")
+            self.notify_future.set_exception(BadConnectionError("No current command"))
+            return
+    
         if len(self.notify_response) == self.current_command.response_size():
             if self.current_command.is_valid_response(self.notify_response):
                 self.notify_future.set_result(self.notify_response)
