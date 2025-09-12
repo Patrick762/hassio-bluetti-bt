@@ -64,7 +64,9 @@ class DeviceReader:
                 async with async_timeout.timeout(self.polling_timeout):
                     # Reconnect if not connected
                     if not self.client.is_connected:
-                        await establish_connection(self.client, "DeviceReader")
+                        self.client = await establish_connection(
+                            BleakClient, self.client.address, "DeviceReader"
+                        )
 
                     # Attach notifier if needed
                     if not self.has_notifier:
