@@ -74,10 +74,8 @@ class PollingCoordinator(DataUpdateCoordinator):
         so entities can quickly look up their data.
         """
 
-        # Check if device is connected
-        if bluetooth.async_address_present(self.hass, self.address, connectable=True) is False:
-            self.logger.warning("Device not connected")
-            self.last_update_success = False
-            return None
+        # Presence check (best-effort). With BLE proxies this may flap; proceed anyway.
+        if bluetooth.async_address_present(self.hass, self.address) is False:
+            self.logger.debug("Device address %s currently not present in scanner; attempting read anyway", mac_loggable(self.address))
 
         return await self.reader.read_data()

@@ -104,9 +104,12 @@ class DeviceReader:
                             ble_device_obj,
                             "DeviceReader",
                         )
+                        # Force notifier to be re-attached on the new client
+                        self.has_notifier = False
 
                     # Attach notifier if needed
                     if not self.has_notifier:
+                        _LOGGER.debug("Starting notify on %s", NOTIFY_UUID)
                         await self.client.start_notify(
                             NOTIFY_UUID, self._notification_handler
                         )
@@ -144,7 +147,7 @@ class DeviceReader:
 
                             # Check set pack_num
                             set_pack = int.from_bytes(body, byteorder='big')
-                            if set_pack is not pack:
+                            if set_pack != pack:
                                 _LOGGER.warning("Pack polling failed (pack_num %i doesn't match expected %i)", set_pack, pack)
                                 continue
 
@@ -216,7 +219,7 @@ class DeviceReader:
             return cast(bytes, res)
 
         except TimeoutError:
-            _LOGGER.debug("Polling single command timed out")
+            _LOGGER.debug("Polling single command timed out (timeout=%ss) for %s", RESPONSE_TIMEOUT, command)
         except ModbusError as err:
             _LOGGER.debug(
                 "Got an invalid request error for %s: %s",
@@ -224,10 +227,10 @@ class DeviceReader:
                 err,
             )
         except (BadConnectionError, BleakError) as err:
-            # Ignore other errors
-            pass
+            _LOGGER.debug("BLE error while sending %s: %s", command, err)
 
         # caught an exception, return empty bytes object
+        _LOGGER.debug("Returning empty response for %s", command)
         return bytes()
 
     def _notification_handler(self, _sender: int, data: bytearray):
@@ -257,6 +260,7 @@ class DeviceReader:
             if self.current_command.is_valid_response(self.notify_response):
                 self.notify_future.set_result(self.notify_response)
             else:
+                _LOGGER.debug("CRC failed for %s: %s", self.current_command, self.notify_response.hex())
                 self.notify_future.set_exception(ParseError("Failed checksum"))
         elif self.current_command.is_exception_response(self.notify_response):
             # We got a MODBUS command exception
