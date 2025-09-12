@@ -52,6 +52,9 @@ class PollingCoordinator(DataUpdateCoordinator):
             return None
         client = BleakClient(device)
         bluetti_device = build_device(address, device_name)
+        if bluetti_device is None:
+            self.logger.error("Failed to build device %s with name %s", mac_loggable(address), device_name)
+            return None
 
         self.reader = DeviceReader(
             client,
@@ -60,6 +63,7 @@ class PollingCoordinator(DataUpdateCoordinator):
             persistent_conn=persistent_conn,
             polling_timeout=polling_timeout,
             max_retries=max_retries,
+            device_address=address,
         )
 
     async def _async_update_data(self):

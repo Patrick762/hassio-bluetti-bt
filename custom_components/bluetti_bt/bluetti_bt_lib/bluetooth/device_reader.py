@@ -24,6 +24,7 @@ class DeviceReader:
         persistent_conn: bool = False,
         polling_timeout: int = 45,
         max_retries: int = 5,
+        device_address: str | None = None,
     ) -> None:
         self.client = bleak_client
         self.bluetti_device = bluetti_device
@@ -33,7 +34,13 @@ class DeviceReader:
         self.max_retries = max_retries
         
         # Store device address for reconnection
-        self.device_address = bleak_client.address if bleak_client.address else None
+        # Try to get from parameter first, then from client if available
+        self.device_address = device_address
+        if not self.device_address:
+            try:
+                self.device_address = bleak_client.address if hasattr(bleak_client, '_backend') and bleak_client._backend else None
+            except (AttributeError, TypeError):
+                self.device_address = None
 
         self.has_notifier = False
         self.notify_future: asyncio.Future[Any] | None = None
