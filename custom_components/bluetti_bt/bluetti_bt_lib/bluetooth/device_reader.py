@@ -25,6 +25,7 @@ class DeviceReader:
         polling_timeout: int = 45,
         max_retries: int = 5,
         device_address: str | None = None,
+        ble_device = None,
     ) -> None:
         self.client = bleak_client
         self.bluetti_device = bluetti_device
@@ -33,9 +34,11 @@ class DeviceReader:
         self.polling_timeout = polling_timeout
         self.max_retries = max_retries
         
-        # Store device address for reconnection
-        # Try to get from parameter first, then from client if available
+        # Store device info for reconnection
         self.device_address = device_address
+        self.ble_device = ble_device
+        
+        # Try to get address from client if not provided
         if not self.device_address:
             try:
                 self.device_address = bleak_client.address if hasattr(bleak_client, '_backend') and bleak_client._backend else None
@@ -74,17 +77,24 @@ class DeviceReader:
                 async with async_timeout.timeout(self.polling_timeout):
                     # Reconnect if not connected
                     if not self.client.is_connected:
-                        # Use stored device address for reconnection
-                        if self.device_address:
-                            # Create new client with retry connector
+                        # Use stored BLE device object for reconnection if available
+                        if self.ble_device:
+                            # Create new client with retry connector using device object
+                            self.client = await establish_connection(
+                                BleakClientWithServiceCache, 
+                                self.ble_device, 
+                                "DeviceReader"
+                            )
+                        elif self.device_address:
+                            # Fallback: try with address string
                             self.client = await establish_connection(
                                 BleakClientWithServiceCache, 
                                 self.device_address, 
                                 "DeviceReader"
                             )
                         else:
-                            _LOGGER.error("No device address available for reconnection")
-                            raise BadConnectionError("No device address available for reconnection")
+                            _LOGGER.error("No device info available for reconnection")
+                            raise BadConnectionError("No device info available for reconnection")
 
                     # Attach notifier if needed
                     if not self.has_notifier:

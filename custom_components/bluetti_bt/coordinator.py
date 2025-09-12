@@ -64,6 +64,7 @@ class PollingCoordinator(DataUpdateCoordinator):
             polling_timeout=polling_timeout,
             max_retries=max_retries,
             device_address=address,
+            ble_device=device,
         )
 
     async def _async_update_data(self):
