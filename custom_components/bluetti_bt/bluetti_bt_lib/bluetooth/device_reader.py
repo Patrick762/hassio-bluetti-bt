@@ -5,6 +5,7 @@ import logging
 from typing import Any, Callable, List, cast
 import async_timeout
 from bleak import BleakClient, BleakError
+from bleak_retry_connector import establish_connection
 
 from ..base_devices.BluettiDevice import BluettiDevice
 from ..const import NOTIFY_UUID, RESPONSE_TIMEOUT, WRITE_UUID
@@ -62,19 +63,8 @@ class DeviceReader:
             try:
                 async with async_timeout.timeout(self.polling_timeout):
                     # Reconnect if not connected
-                    for attempt in range(1, self.max_retries + 1):
-                        try:
-                            if not self.client.is_connected:
-                                await self.client.connect()
-                            break
-                        except Exception as e:
-                            if attempt == self.max_retries:
-                                raise e # pass exception on max_retries attempt
-                            else:
-                                _LOGGER.warning(
-                                    f"Connect unsucessful (attempt {attempt}): {e}. Retrying..."
-                                )
-                                await asyncio.sleep(2)
+                    if not self.client.is_connected:
+                        await establish_connection(self.client, "DeviceReader")
 
                     # Attach notifier if needed
                     if not self.has_notifier:
