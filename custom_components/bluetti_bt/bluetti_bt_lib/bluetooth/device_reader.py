@@ -148,8 +148,28 @@ class DeviceReader:
                             )
                             return None
 
-                    # Execute polling commands
+                    # Pre-compute estimated minimum time (rough heuristic)
+                    estimated_min = len(polling_commands) * (RESPONSE_TIMEOUT + 0.1)
+                    if estimated_min > self.polling_timeout:
+                        _LOGGER.debug(
+                            "Configured polling_timeout=%ss likely too low for ~%d commands (est>=%.1fs)",
+                            self.polling_timeout,
+                            len(polling_commands),
+                            estimated_min,
+                        )
+
+                    start_monotonic = asyncio.get_event_loop().time()
+
+                    # Execute polling commands with remaining time budget check
                     for command in polling_commands:
+                        remaining = self.polling_timeout - (asyncio.get_event_loop().time() - start_monotonic)
+                        if remaining <= RESPONSE_TIMEOUT:
+                            _LOGGER.debug(
+                                "Breaking polling loop early; remaining %.1fs < RESPONSE_TIMEOUT %.1fs",
+                                remaining,
+                                RESPONSE_TIMEOUT,
+                            )
+                            break
                         try:
                             body = command.parse_response(
                                 await self._async_send_command(command)
@@ -263,9 +283,8 @@ class DeviceReader:
         except TimeoutError:
             _LOGGER.debug("Polling single command timed out (timeout=%ss) for %s", RESPONSE_TIMEOUT, command)
         except asyncio.CancelledError:
-            _LOGGER.debug("notify_future cancelled while waiting for %s", command)
-            # Re-raise so outer timeout handler can manage cancellation semantics
-            raise
+            _LOGGER.debug("notify_future cancelled while waiting for %s (treating as empty response)", command)
+            return bytes()
         except ModbusError as err:
             _LOGGER.debug(
                 "Got an invalid request error for %s: %s",
