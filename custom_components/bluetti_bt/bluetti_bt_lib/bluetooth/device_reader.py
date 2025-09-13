@@ -136,11 +136,17 @@ class DeviceReader:
                         # Handshake completes asynchronously via notifications
                         # Give it some time (non-blocking small sleeps)
                         wait_attempts = 0
-                        while not self.encryption.is_ready_for_commands and wait_attempts < 40:
+                        max_attempts = 80  # 80 * 0.25s = 20s
+                        while not self.encryption.is_ready_for_commands and wait_attempts < max_attempts:
                             await asyncio.sleep(0.25)
                             wait_attempts += 1
                         if not self.encryption.is_ready_for_commands:
-                            _LOGGER.debug("Encryption handshake not finished after wait; proceeding (commands may fail)")
+                            _LOGGER.warning(
+                                "Encryption handshake incomplete after %.2fs (attempts=%d). Aborting polling cycle.",
+                                0.25 * max_attempts,
+                                wait_attempts,
+                            )
+                            return None
 
                     # Execute polling commands
                     for command in polling_commands:
@@ -204,6 +210,8 @@ class DeviceReader:
 
             except TimeoutError as err:
                 _LOGGER.error(f"Polling timed out ({self.polling_timeout}s). Trying again later", exc_info=err)
+                if self.notify_future and not self.notify_future.done():
+                    self.notify_future.cancel()
                 return None
             except BleakError as err:
                 _LOGGER.error("Bleak error: %s", err)
@@ -254,6 +262,10 @@ class DeviceReader:
 
         except TimeoutError:
             _LOGGER.debug("Polling single command timed out (timeout=%ss) for %s", RESPONSE_TIMEOUT, command)
+        except asyncio.CancelledError:
+            _LOGGER.debug("notify_future cancelled while waiting for %s", command)
+            # Re-raise so outer timeout handler can manage cancellation semantics
+            raise
         except ModbusError as err:
             _LOGGER.debug(
                 "Got an invalid request error for %s: %s",

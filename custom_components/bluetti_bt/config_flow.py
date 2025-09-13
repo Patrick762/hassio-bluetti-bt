@@ -195,7 +195,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): int,
                     vol.Required(
                         CONF_POLLING_TIMEOUT,
-                        default=self.config_entry.data.get(CONF_POLLING_TIMEOUT, 45),
+                        default=self.config_entry.data.get(CONF_POLLING_TIMEOUT, 120),
                     ): int,
                     vol.Required(
                         CONF_MAX_RETRIES,
