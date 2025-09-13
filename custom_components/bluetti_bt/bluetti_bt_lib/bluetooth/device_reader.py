@@ -25,7 +25,8 @@ class DeviceReader:
         polling_timeout: int = 45,
         max_retries: int = 5,
         device_address: str | None = None,
-        ble_device = None,
+    ble_device = None,
+    encrypted: bool = False,
     ) -> None:
         self.client = bleak_client
         self.bluetti_device = bluetti_device
@@ -34,9 +35,24 @@ class DeviceReader:
         self.polling_timeout = polling_timeout
         self.max_retries = max_retries
         
-        # Store device info for reconnection
+        # Store device info for reconnection / encryption
         self.device_address = device_address
         self.ble_device = ble_device
+        self.encrypted = encrypted
+
+        if self.encrypted:
+            try:
+                from .encryption import BluettiEncryption, Message, MessageType  # type: ignore
+                self._encryption_cls = BluettiEncryption
+                self._Message = Message
+                self._MessageType = MessageType
+                self.encryption = BluettiEncryption()
+            except Exception as e:  # pragma: no cover
+                _LOGGER.error("Failed to initialize encryption support: %s", e)
+                self.encrypted = False
+                self.encryption = None
+        else:
+            self.encryption = None
         
         # Try to get address from client if not provided
         if not self.device_address:
@@ -114,6 +130,17 @@ class DeviceReader:
                             NOTIFY_UUID, self._notification_handler
                         )
                         self.has_notifier = True
+
+                    # Wait for encryption handshake to complete if needed
+                    if self.encrypted and self.encryption is not None:
+                        # Handshake completes asynchronously via notifications
+                        # Give it some time (non-blocking small sleeps)
+                        wait_attempts = 0
+                        while not self.encryption.is_ready_for_commands and wait_attempts < 40:
+                            await asyncio.sleep(0.25)
+                            wait_attempts += 1
+                        if not self.encryption.is_ready_for_commands:
+                            _LOGGER.debug("Encryption handshake not finished after wait; proceeding (commands may fail)")
 
                     # Execute polling commands
                     for command in polling_commands:
@@ -197,6 +224,13 @@ class DeviceReader:
             if not parsed_data:
                 return None
 
+            # Reset encryption keys after each full polling cycle when not persistent (align upstream)
+            if self.encrypted and self.encryption is not None and not self.persistent_conn:
+                try:
+                    self.encryption.reset()
+                except Exception:
+                    pass
+
             return parsed_data
 
     async def _async_send_command(self, command: Union[ReadHoldingRegisters, WriteSingleRegister]) -> bytes:
@@ -235,6 +269,50 @@ class DeviceReader:
 
     def _notification_handler(self, _sender: int, data: bytearray):
         """Handle bt data."""
+
+        # Handle encryption wrapping
+        if self.encrypted and self.encryption is not None:
+            try:
+                Message = self._Message  # aliases
+                MessageType = self._MessageType
+                msg_obj = Message(data)
+
+                if msg_obj.is_pre_key_exchange:
+                    # Pre key-exchange messages pass through special states
+                    msg_obj.verify_checksum()
+                    if msg_obj.type == MessageType.CHALLENGE:
+                        challenge_response = self.encryption.msg_challenge(msg_obj)
+                        if challenge_response:
+                            asyncio.create_task(self.client.write_gatt_char(WRITE_UUID, challenge_response))
+                        return
+                    if msg_obj.type == MessageType.CHALLENGE_ACCEPTED:
+                        _LOGGER.debug("Challenge accepted")
+                        return
+
+                # Determine which key/iv we should use
+                if self.encryption.unsecure_aes_key is None and not msg_obj.is_pre_key_exchange:
+                    _LOGGER.error("Encrypted payload received before key initialization")
+                    return
+
+                key, iv = self.encryption.getKeyIv()
+                decrypted = Message(self.encryption.aes_decrypt(msg_obj.buffer, key, iv))
+
+                if decrypted.is_pre_key_exchange:
+                    decrypted.verify_checksum()
+                    if decrypted.type == MessageType.PEER_PUBKEY:
+                        peer_pubkey_response = self.encryption.msg_peer_pubkey(decrypted)
+                        if peer_pubkey_response:
+                            asyncio.create_task(self.client.write_gatt_char(WRITE_UUID, peer_pubkey_response))
+                        return
+                    if decrypted.type == MessageType.PUBKEY_ACCEPTED:
+                        self.encryption.msg_key_accepted(decrypted)
+                        return
+
+                # Replace data with decrypted buffer for normal processing
+                data = decrypted.buffer
+            except Exception as e:  # pragma: no cover
+                _LOGGER.debug("Encryption handling error: %s", e)
+                return
 
         # Ignore notifications we don't expect
         if self.notify_future is None or self.notify_future.done():

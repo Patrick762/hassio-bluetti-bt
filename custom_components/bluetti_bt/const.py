@@ -9,6 +9,7 @@ CONF_PERSISTENT_CONN = "persistent_conn"
 CONF_POLLING_INTERVAL = "polling_interval"
 CONF_POLLING_TIMEOUT = "polling_timeout"
 CONF_MAX_RETRIES = "max_retries"
+CONF_ENCRYPTION = "use_encryption"
 
 DATA_COORDINATOR = "coordinator"
 DATA_POLLING_RUNNING = "polling_running"
@@ -17,6 +18,10 @@ SUPPORTED_MODELS = [
     "AC2A",
     "AC2P",
     "AC60",
+    "AC70",
+    "AC180",
+    "AC180P",
+    "AC200L",
     "AC200M",
     "AC300",
     "AC500",
@@ -25,7 +30,7 @@ SUPPORTED_MODELS = [
     "EP500P",
     "EP600",
     "EP760",
-    "AC180P",
+    "EP800",
 ]
 
 CONTROL_FIELDS = [

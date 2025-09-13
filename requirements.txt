@@ -9,3 +9,5 @@ logging
 bleak
 async_timeout
 aiousbwatcher
+pyasn1
+cryptography
