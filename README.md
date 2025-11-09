@@ -16,7 +16,8 @@ After the installation, you can use this button to install the integration:
 
 ### Supported devices:
 
-- AC60
+- AC60 (tested with one external battery B80)
+- AC60P (untested)
 - AC70 (basic data)
 - AC70P (untested)
 - AC180 (basic data)

@@ -15,6 +15,7 @@ DATA_POLLING_RUNNING = "polling_running"
 
 SUPPORTED_MODELS = [
     "AC60",
+    "AC60P",
     "AC200M",
     "AC300",
     "AC500",
