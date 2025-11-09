@@ -30,149 +30,66 @@ class TestDeviceBuilder(unittest.TestCase):
         with self.assertRaises(TypeError):
             build_device(bt_addr, bt_name)
 
-    def test_build_ac2a(self):
+    def _test_device_build(self, bt_name, cls):
         bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC2A56786746478"
         built = build_device(bt_addr, bt_name)
 
-        self.assertIsInstance(built, AC2A)
+        self.assertIsInstance(built, cls)
         self.assertEqual(built.address, bt_addr)
+
+    def test_build_ac2a(self):
+        self._test_device_build("AC2A56786746478", AC2A)
 
     def test_build_ac60(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC6056786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC60)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC6056786746478", AC60)
 
     def test_build_ac60p(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC60P56786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC60P)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC60P56786746478", AC60P)
 
     def test_build_ac70(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC7056786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC70)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC7056786746478", AC70)
 
     def test_build_ac70p(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC70P56786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC70P)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC70P56786746478", AC70P)
 
     def test_build_ac180(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC18056786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC180)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC18056786746478", AC180)
 
     def test_build_ac180p(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC180P56786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC180P)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC180P56786746478", AC180P)
 
     def test_build_ac200l(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC200L56786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC200L)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC200L56786746478", AC200L)
 
     def test_build_ac200m(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC200M56786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC200M)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC200M56786746478", AC200M)
 
     def test_build_ac200pl(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC200PL56786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC200PL)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC200PL56786746478", AC200PL)
 
     def test_build_ac300(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC30056786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC300)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC30056786746478", AC300)
 
     def test_build_ac500(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "AC50056786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, AC500)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("AC50056786746478", AC500)
 
     def test_build_eb3a(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "EB3A56786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, EB3A)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("EB3A56786746478", EB3A)
 
     def test_build_ep500(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "EP50056786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, EP500)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("EP50056786746478", EP500)
 
     def test_build_ep500p(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "EP500P56786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, EP500P)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("EP500P56786746478", EP500P)
 
     def test_build_EP600(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "EP60056786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, EP600)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("EP60056786746478", EP600)
 
     def test_build_EP760(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "EP76056786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, EP760)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("EP76056786746478", EP760)
 
     def test_build_EP800(self):
-        bt_addr = "aa:bb:cc:dd:ee:ff"
-        bt_name = "EP80056786746478"
-        built = build_device(bt_addr, bt_name)
-
-        self.assertIsInstance(built, EP800)
-        self.assertEqual(built.address, bt_addr)
+        self._test_device_build("EP80056786746478", EP800)
 
 if __name__ == '__main__':
     unittest.main()
