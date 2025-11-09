@@ -3,7 +3,9 @@
 import unittest
 
 from custom_components.bluetti_bt.bluetti_bt_lib.utils.device_builder import build_device
+from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac2a import AC2A
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac60 import AC60
+from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac60p import AC60P
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac70 import AC70
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac70p import AC70P
 from custom_components.bluetti_bt.bluetti_bt_lib.devices.ac180 import AC180
@@ -28,12 +30,28 @@ class TestDeviceBuilder(unittest.TestCase):
         with self.assertRaises(TypeError):
             build_device(bt_addr, bt_name)
 
+    def test_build_ac2a(self):
+        bt_addr = "aa:bb:cc:dd:ee:ff"
+        bt_name = "AC2A56786746478"
+        built = build_device(bt_addr, bt_name)
+
+        self.assertIsInstance(built, AC2A)
+        self.assertEqual(built.address, bt_addr)
+
     def test_build_ac60(self):
         bt_addr = "aa:bb:cc:dd:ee:ff"
         bt_name = "AC6056786746478"
         built = build_device(bt_addr, bt_name)
 
         self.assertIsInstance(built, AC60)
+        self.assertEqual(built.address, bt_addr)
+
+    def test_build_ac60p(self):
+        bt_addr = "aa:bb:cc:dd:ee:ff"
+        bt_name = "AC60P56786746478"
+        built = build_device(bt_addr, bt_name)
+
+        self.assertIsInstance(built, AC60P)
         self.assertEqual(built.address, bt_addr)
 
     def test_build_ac70(self):
