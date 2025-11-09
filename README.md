@@ -25,6 +25,7 @@ After the installation, you can use this button to install the integration:
 - AC180P (tested)
 - AC200L (untested)
 - AC200M
+- AC200PL (untested)
 - AC300 (tested)
 - AC500 (tested)
 - EB3A
