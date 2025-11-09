@@ -33,6 +33,7 @@ class PollingCoordinator(DataUpdateCoordinator):
         persistent_conn: bool,
         polling_timeout: int,
         max_retries: int,
+        encrypted: bool,
     ):
         """Initialize coordinator."""
         super().__init__(
@@ -60,6 +61,7 @@ class PollingCoordinator(DataUpdateCoordinator):
             persistent_conn=persistent_conn,
             polling_timeout=polling_timeout,
             max_retries=max_retries,
+            encrypted=encrypted,
         )
 
     async def _async_update_data(self):
