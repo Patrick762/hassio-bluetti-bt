@@ -32,7 +32,7 @@ After the installation, you can use this button to install the integration:
 - EP500
 - EP500P
 - EP600 (tested)
-- EP760 (basic data)
+- EP760 
 - EP800 (basic data)
 
 ### Available controls:

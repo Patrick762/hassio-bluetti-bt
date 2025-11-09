@@ -173,11 +173,14 @@ FIELD_ATTRIBUTES: dict[str, FieldAttributes] = {
     "internal_dc_input_power": PowerFieldAttributes("Internal DC Input Power"),
     "internal_dc_input_current": CurrentFieldAttributes("Internal DC Input Current"),
     "pv_input_power1": PowerFieldAttributes("Solar Input Power 1"),
+    "pv_input_power3": PowerFieldAttributes("Solar Input Power 3"),
     "pv_input_power2": PowerFieldAttributes("Solar Input Power 2"),
     "pv_input_voltage1": VoltageFieldAttributes("Solar Input Voltage 1"),
     "pv_input_voltage2": VoltageFieldAttributes("Solar Input Voltage 2"),
+    "pv_input_voltage3": VoltageFieldAttributes("Solar Input Voltage 3"),
     "pv_input_current1": CurrentFieldAttributes("Solar Input Current 1"),
     "pv_input_current2": CurrentFieldAttributes("Solar Input Current 2"),
+    "pv_input_current3": CurrentFieldAttributes("Solar Input Current 3"),
     "adl400_ac_input_power_phase1": PowerFieldAttributes(
         "AC Solar Input Power Phase 1"
     ),
