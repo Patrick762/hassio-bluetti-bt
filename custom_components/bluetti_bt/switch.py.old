@@ -1,13 +1,10 @@
 """Bluetti BT switches."""
 
 from __future__ import annotations
-
 import asyncio
 import logging
 import async_timeout
-
 from bleak import BleakError
-
 from homeassistant.components import bluetooth
 from homeassistant.components.switch import SwitchEntity, SwitchDeviceClass
 from homeassistant.config_entries import ConfigEntry
@@ -25,13 +22,17 @@ from homeassistant.helpers.update_coordinator import (
 
 from .bluetti_bt_lib.base_devices.BluettiDevice import BluettiDevice
 from .bluetti_bt_lib.const import WRITE_UUID
-from .bluetti_bt_lib.field_attributes import FIELD_ATTRIBUTES, PACK_FIELD_ATTRIBUTES, FieldType
+from .bluetti_bt_lib.field_attributes import (
+    FIELD_ATTRIBUTES,
+    PACK_FIELD_ATTRIBUTES,
+    FieldType,
+)
 from .bluetti_bt_lib.utils.device_builder import build_device
 
 from . import device_info as dev_info, get_unique_id
 from .const import CONTROL_FIELDS, DATA_COORDINATOR, DOMAIN
 from .coordinator import PollingCoordinator
-from .utils import mac_loggable, unique_id_loggable
+from .utils import mac_loggable, unique_id_logable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ async def async_setup_entry(
                             address,
                             field_key,
                             field_config.name,
-                            entry.entry_id
+                            entry.entry_id,
                         )
                     )
 
@@ -117,13 +118,17 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
 
-        if self.coordinator.reader.persistent_conn and not self.coordinator.reader.client.is_connected:
+        if (
+            self.coordinator.reader.persistent_conn
+            and not self.coordinator.reader.client.is_connected
+        ):
             return
 
-        _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
+        _LOGGER.debug("Updating state of %s", unique_id_logable(self._attr_unique_id))
         if not isinstance(self.coordinator.data, dict):
             _LOGGER.debug(
-                "Invalid data from coordinator (switch.%s)", unique_id_loggable(self._attr_unique_id)
+                "Invalid data from coordinator (switch.%s)",
+                unique_id_logable(self._attr_unique_id),
             )
             self._attr_available = False
             self.async_write_ha_state()
@@ -138,7 +143,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         if not isinstance(response_data, bool):
             _LOGGER.warning(
                 "Invalid response data type from coordinator (switch.%s): %s",
-                unique_id_loggable(self._attr_unique_id),
+                unique_id_logable(self._attr_unique_id),
                 response_data,
             )
             self._attr_available = False
@@ -151,12 +156,16 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
-        _LOGGER.debug("Turn on %s on %s", self._response_key, mac_loggable(self._address))
+        _LOGGER.debug(
+            "Turn on %s on %s", self._response_key, mac_loggable(self._address)
+        )
         await self.write_to_device(True)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        _LOGGER.debug("Turn off %s on %s", self._response_key, mac_loggable(self._address))
+        _LOGGER.debug(
+            "Turn off %s on %s", self._response_key, mac_loggable(self._address)
+        )
         await self.write_to_device(False)
 
     async def write_to_device(self, state: bool):
@@ -170,10 +179,10 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
                         await self._client.connect()
 
                     # Send command
-                    _LOGGER.debug("Requesting %s (%s,%s)", command, self._response_key, state)
-                    await self._client.write_gatt_char(
-                        WRITE_UUID, bytes(command)
+                    _LOGGER.debug(
+                        "Requesting %s (%s,%s)", command, self._response_key, state
                     )
+                    await self._client.write_gatt_char(WRITE_UUID, bytes(command))
 
                     # Wait until device has changed value, otherwise reading register might reset it
                     await asyncio.sleep(5)
