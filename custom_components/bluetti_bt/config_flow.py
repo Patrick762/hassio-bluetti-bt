@@ -4,7 +4,6 @@ from __future__ import annotations
 import re
 import logging
 from typing import Any
-from bleak import BleakClient
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.components.bluetooth import (
@@ -37,15 +36,16 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
 
         # Get device type
-        client = BleakClient(discovery_info.device)
-        recognized = await recognize_device(client, self.hass.loop.create_future)
+        recognized = await recognize_device(
+            discovery_info.address, self.hass.loop.create_future
+        )
 
         if recognized is None:
             return await self.async_abort(reason="Device type not supported")
 
         _LOGGER.info(
             "Device identified as %s with iot module version %s (using encryption: %s)",
-            recognized.name + "1",  # TODO add serial to name
+            recognized.name,
             recognized.iot_version,
             recognized.encrypted,
         )
@@ -53,7 +53,7 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         discovery_info.manufacturer_data = ManufacturerData(
             recognized.name, recognized.encrypted
         ).as_dict
-        discovery_info.name = recognized.name
+        discovery_info.name = recognized.full_name
         self._discovery_info = discovery_info
         self.context["title_placeholders"] = {"name": discovery_info.name}
         return await self.async_step_user()

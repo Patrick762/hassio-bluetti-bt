@@ -12,13 +12,14 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from bluetti_bt_lib import build_device
+from bluetti_bt_lib.fields import FieldName
 from bluetti_bt_lib.fields.FieldUnit import get_unit
 
-from . import FullDeviceConfig
-from . import device_info as dev_info, get_unique_id
+from . import device_info as dev_info, get_unique_id, FullDeviceConfig
 from .const import DATA_COORDINATOR, DOMAIN
 from .coordinator import PollingCoordinator
 from .utils import unique_id_logable
+from .types import get_device_class, get_state_class
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,7 +46,14 @@ async def async_setup_entry(
     sensor_fields = bluetti_device.get_sensor_fields()
 
     for field in sensor_fields:
-        unit = get_unit(field.name)
+        field_name = FieldName(field.name)
+
+        if field_name in [FieldName.DEVICE_TYPE, FieldName.DEVICE_SN]:
+            continue
+
+        unit = get_unit(field_name)
+        device_class = get_device_class(field_name)
+        state_class = get_state_class(field_name)
 
         if unit is not None:
             sensors_to_add.append(
@@ -55,7 +63,8 @@ async def async_setup_entry(
                     field.address,
                     field.name,
                     unit_of_measurement=unit,
-                    # TODO state_class and device_class
+                    device_class=device_class,
+                    state_class=state_class,
                 )
             )
         else:
