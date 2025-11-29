@@ -26,5 +26,189 @@
       "invalid_timeout": "Ungültiger Datenabruf-Timeout. Verwende 1 Sekunde oder mehr",
       "invalid_retries": "Ungültige maximale Verbindungsversuche. Verwende 1 oder mehr"
     }
+  },
+  "entity": {
+    "sensor": {
+      "ac_input_frequency": {
+        "name": "AC Eingang Frequenz"
+      },
+      "ac_input_power": {
+        "name": "AC Eingang Leistung"
+      },
+      "ac_input_voltage": {
+        "name": "AC Eingang Spannung"
+      },
+      "ac_output_frequency": {
+        "name": "AC Ausgang Frequenz"
+      },
+      "ac_output_mode": {
+        "name": "AC Ausgang Modus"
+      },
+      "ac_output_on": {
+        "name": "AC Ausgang eingeschaltet"
+      },
+      "ac_output_power": {
+        "name": "AC Ausgang Leistung"
+      },
+      "ac_p1_current": {
+        "name": "AC Phase 1 Stromstärke"
+      },
+      "ac_p1_power": {
+        "name": "AC Phase 1 Leistung"
+      },
+      "ac_p1_voltage": {
+        "name": "AC Phase 1 Spannung"
+      },
+      "ac_p2_current": {
+        "name": "AC Phase 2 Stromstärke"
+      },
+      "ac_p2_power": {
+        "name": "AC Phase 2 Leistung"
+      },
+      "ac_p2_voltage": {
+        "name": "AC Phase 2 Spannung"
+      },
+      "ac_p3_current": {
+        "name": "AC Phase 3 Stromstärke"
+      },
+      "ac_p3_power": {
+        "name": "AC Phase 3 Leistung"
+      },
+      "ac_p3_voltage": {
+        "name": "AC Phase 3 Spannung"
+      },
+      "total_battery_percent": {
+        "name": "Batterie Ladestand"
+      },
+      "ctrl_ac": {
+        "name": "AC Ausgang"
+      },
+      "ctrl_charging_mode": {
+        "name": "Lademodus"
+      },
+      "ctrl_dc": {
+        "name": "DC Ausgang"
+      },
+      "ctrl_led_mode": {
+        "name": "LED Modus"
+      },
+      "ctrl_power_lifting": {
+        "name": "Power Lifting"
+      },
+      "ctrl_power_off": {
+        "name": "Ausschalter"
+      },
+      "dc_input_power": {
+        "name": "DC Eingang Leistung"
+      },
+      "dc_output_on": {
+        "name": "DC Ausgang eingeschaltet"
+      },
+      "dc_output_power": {
+        "name": "DC Ausgang Leistung"
+      },
+      "device_type": {
+        "name": "Gerätetyp"
+      },
+      "device_sn": {
+        "name": "Seriennummer"
+      },
+      "grid_frequency": {
+        "name": "Netzfrequenz"
+      },
+      "grid_p1_current": {
+        "name": "Netz Phase 1 Stromstärke"
+      },
+      "grid_p1_power": {
+        "name": "Netz Phase 1 Leistung"
+      },
+      "grid_p1_voltage": {
+        "name": "Netz Phase 1 Spannung"
+      },
+      "grid_p2_current": {
+        "name": "Netz Phase 2 Stromstärke"
+      },
+      "grid_p2_power": {
+        "name": "Netz Phase 2 Leistung"
+      },
+      "grid_p2_voltage": {
+        "name": "Netz Phase 2 Spannung"
+      },
+      "grid_p3_current": {
+        "name": "Netz Phase 3 Stromstärke"
+      },
+      "grid_p3_power": {
+        "name": "Netz Phase 3 Leistung"
+      },
+      "grid_p3_voltage": {
+        "name": "Netz Phase 3 Spannung"
+      },
+      "internal_ac_frequency": {
+        "name": "Interne AC Frequenz"
+      },
+      "internal_ac_voltage": {
+        "name": "Interne AC Spannung"
+      },
+      "internal_dc_input_current": {
+        "name": "Interne DC Eingang Stromstärke"
+      },
+      "internal_dc_input_power": {
+        "name": "Interne DC Eingang Leistung"
+      },
+      "internal_dc_input_voltage": {
+        "name": "Interne DC Eingang Spannung"
+      },
+      "power_generation": {
+        "name": "Erzeugter Strom"
+      },
+      "power_lifting_on": {
+        "name": "Power Lifting eingeschaltet"
+      },
+      "pv_s1_current": {
+        "name": "PV String 1 Stromstärke"
+      },
+      "pv_s1_power": {
+        "name": "PV String 1 Leistung"
+      },
+      "pv_s1_voltage": {
+        "name": "PV String 1 Spannung"
+      },
+      "pv_s2_current": {
+        "name": "PV String 2 Stromstärke"
+      },
+      "pv_s2_power": {
+        "name": "PV String 2 Leistung"
+      },
+      "pv_s2_voltage": {
+        "name": "PV String 2 Spannung"
+      },
+      "sm_p1_current": {
+        "name": "Smartmeter Phase 1 Stromstärke"
+      },
+      "sm_p1_power": {
+        "name": "Smartmeter Phase 1 Leistung"
+      },
+      "sm_p1_voltage": {
+        "name": "Smartmeter Phase 1 Spannung"
+      },
+      "sm_p2_current": {
+        "name": "Smartmeter Phase 2 Stromstärke"
+      },
+      "sm_p2_power": {
+        "name": "Smartmeter Phase 2 Leistung"
+      },
+      "sm_p2_voltage": {
+        "name": "Smartmeter Phase 2 Spannung"
+      },
+      "sm_p3_current": {
+        "name": "Smartmeter Phase 3 Stromstärke"
+      },
+      "sm_p3_power": {
+        "name": "Smartmeter Phase 3 Leistung"
+      },
+      "sm_p3_voltage": {
+        "name": "Smartmeter Phase 3 Spannung"
+      }
+    }
   }
 }

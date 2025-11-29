@@ -12,5 +12,189 @@
     "abort": {
       "invalid_interval": "Valor invalido . Tem de ser no minimo 5 segundos"
     }
+  },
+  "entity": {
+    "sensor": {
+      "ac_input_frequency": {
+        "name": "AC Input Frequency"
+      },
+      "ac_input_power": {
+        "name": "AC Input Power"
+      },
+      "ac_input_voltage": {
+        "name": "AC Input Voltage"
+      },
+      "ac_output_frequency": {
+        "name": "AC Output Frequency"
+      },
+      "ac_output_mode": {
+        "name": "AC Output Mode"
+      },
+      "ac_output_on": {
+        "name": "AC Output eingeschaltet"
+      },
+      "ac_output_power": {
+        "name": "AC Output Power"
+      },
+      "ac_p1_current": {
+        "name": "AC Phase 1 Current"
+      },
+      "ac_p1_power": {
+        "name": "AC Phase 1 Power"
+      },
+      "ac_p1_voltage": {
+        "name": "AC Phase 1 Voltage"
+      },
+      "ac_p2_current": {
+        "name": "AC Phase 2 Current"
+      },
+      "ac_p2_power": {
+        "name": "AC Phase 2 Power"
+      },
+      "ac_p2_voltage": {
+        "name": "AC Phase 2 Voltage"
+      },
+      "ac_p3_current": {
+        "name": "AC Phase 3 Current"
+      },
+      "ac_p3_power": {
+        "name": "AC Phase 3 Power"
+      },
+      "ac_p3_voltage": {
+        "name": "AC Phase 3 Voltage"
+      },
+      "total_battery_percent": {
+        "name": "Battery SOC"
+      },
+      "ctrl_ac": {
+        "name": "AC Output"
+      },
+      "ctrl_charging_mode": {
+        "name": "Charging Mode"
+      },
+      "ctrl_dc": {
+        "name": "DC Output"
+      },
+      "ctrl_led_mode": {
+        "name": "LED Mode"
+      },
+      "ctrl_power_lifting": {
+        "name": "Power Lifting"
+      },
+      "ctrl_power_off": {
+        "name": "Poweroff"
+      },
+      "dc_input_power": {
+        "name": "DC Input Power"
+      },
+      "dc_output_on": {
+        "name": "DC Output on"
+      },
+      "dc_output_power": {
+        "name": "DC Output Power"
+      },
+      "device_type": {
+        "name": "Device Type"
+      },
+      "device_sn": {
+        "name": "Serial Number"
+      },
+      "grid_frequency": {
+        "name": "Grid Frequency"
+      },
+      "grid_p1_current": {
+        "name": "Grid Phase 1 Current"
+      },
+      "grid_p1_power": {
+        "name": "Grid Phase 1 Power"
+      },
+      "grid_p1_voltage": {
+        "name": "Grid Phase 1 Voltage"
+      },
+      "grid_p2_current": {
+        "name": "Grid Phase 2 Current"
+      },
+      "grid_p2_power": {
+        "name": "Grid Phase 2 Power"
+      },
+      "grid_p2_voltage": {
+        "name": "Grid Phase 2 Voltage"
+      },
+      "grid_p3_current": {
+        "name": "Grid Phase 3 Current"
+      },
+      "grid_p3_power": {
+        "name": "Grid Phase 3 Power"
+      },
+      "grid_p3_voltage": {
+        "name": "Grid Phase 3 Voltage"
+      },
+      "internal_ac_frequency": {
+        "name": "Internal AC Frequency"
+      },
+      "internal_ac_voltage": {
+        "name": "Internal AC Voltage"
+      },
+      "internal_dc_input_current": {
+        "name": "Internal DC Input Current"
+      },
+      "internal_dc_input_power": {
+        "name": "Internal DC Input Power"
+      },
+      "internal_dc_input_voltage": {
+        "name": "Internal DC Input Voltage"
+      },
+      "power_generation": {
+        "name": "Generated Electricity"
+      },
+      "power_lifting_on": {
+        "name": "Power Lifting on"
+      },
+      "pv_s1_current": {
+        "name": "PV String 1 Current"
+      },
+      "pv_s1_power": {
+        "name": "PV String 1 Power"
+      },
+      "pv_s1_voltage": {
+        "name": "PV String 1 Voltage"
+      },
+      "pv_s2_current": {
+        "name": "PV String 2 Current"
+      },
+      "pv_s2_power": {
+        "name": "PV String 2 Power"
+      },
+      "pv_s2_voltage": {
+        "name": "PV String 2 Voltage"
+      },
+      "sm_p1_current": {
+        "name": "Smartmeter Phase 1 Current"
+      },
+      "sm_p1_power": {
+        "name": "Smartmeter Phase 1 Power"
+      },
+      "sm_p1_voltage": {
+        "name": "Smartmeter Phase 1 Voltage"
+      },
+      "sm_p2_current": {
+        "name": "Smartmeter Phase 2 Current"
+      },
+      "sm_p2_power": {
+        "name": "Smartmeter Phase 2 Power"
+      },
+      "sm_p2_voltage": {
+        "name": "Smartmeter Phase 2 Voltage"
+      },
+      "sm_p3_current": {
+        "name": "Smartmeter Phase 3 Current"
+      },
+      "sm_p3_power": {
+        "name": "Smartmeter Phase 3 Power"
+      },
+      "sm_p3_voltage": {
+        "name": "Smartmeter Phase 3 Voltage"
+      }
+    }
   }
 }

@@ -107,7 +107,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         self._unavailable_counter = 0
 
         self._attr_device_info = device_info
-        self._attr_name = response_key
+        self._attr_translation_key = response_key
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
         self._attr_native_unit_of_measurement = unit_of_measurement
