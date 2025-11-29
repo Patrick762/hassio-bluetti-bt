@@ -65,24 +65,6 @@
       "total_battery_percent": {
         "name": "Battery SOC"
       },
-      "ctrl_ac": {
-        "name": "AC Output"
-      },
-      "ctrl_charging_mode": {
-        "name": "Charging Mode"
-      },
-      "ctrl_dc": {
-        "name": "DC Output"
-      },
-      "ctrl_led_mode": {
-        "name": "LED Mode"
-      },
-      "ctrl_power_lifting": {
-        "name": "Power Lifting"
-      },
-      "ctrl_power_off": {
-        "name": "Poweroff"
-      },
       "dc_input_power": {
         "name": "DC Input Power"
       },
@@ -193,6 +175,26 @@
       },
       "sm_p3_voltage": {
         "name": "Smartmeter Phase 3 Voltage"
+      }
+    },
+    "switch": {
+      "ctrl_ac": {
+        "name": "AC Output"
+      },
+      "ctrl_charging_mode": {
+        "name": "Charging Mode"
+      },
+      "ctrl_dc": {
+        "name": "DC Output"
+      },
+      "ctrl_led_mode": {
+        "name": "LED Mode"
+      },
+      "ctrl_power_lifting": {
+        "name": "Power Lifting"
+      },
+      "ctrl_power_off": {
+        "name": "Poweroff"
       }
     }
   }

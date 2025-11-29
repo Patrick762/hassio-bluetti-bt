@@ -36,7 +36,7 @@ async def async_setup_entry(
     _LOGGER.info("Creating binary_sensors for device with address %s", config.address)
     device_info = dev_info(entry)
 
-    # Add sensors according to device_info
+    # Add sensors
     bluetti_device = build_device(config.name)
 
     sensors_to_add = []
@@ -64,16 +64,16 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         address: int,
         response_key: str,
     ):
-        """Init battery entity."""
+        """Init binary entity."""
         super().__init__(coordinator)
         self.coordinator = coordinator
 
-        self._attr_has_entity_name = True
         e_name = f"{device_info.get('name')} {response_key}"
         self._address = address
         self._response_key = response_key
         self._unavailable_counter = 5
 
+        self._attr_has_entity_name = True
         self._attr_device_info = device_info
         self._attr_translation_key = response_key
         self._attr_available = False

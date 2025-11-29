@@ -39,7 +39,7 @@ async def async_setup_entry(
     _LOGGER.info("Creating sensors for device with address %s", config.address)
     device_info = dev_info(entry)
 
-    # Add sensors according to device_info
+    # Add sensors
     bluetti_device = build_device(config.name)
 
     sensors_to_add = []
@@ -96,7 +96,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         category: EntityCategory | None = None,
         options: list[str] | None = None,
     ):
-        """Init battery entity."""
+        """Init sensor entity."""
         super().__init__(coordinator)
         self.coordinator = coordinator
 

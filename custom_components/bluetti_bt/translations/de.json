@@ -79,24 +79,6 @@
       "total_battery_percent": {
         "name": "Batterie Ladestand"
       },
-      "ctrl_ac": {
-        "name": "AC Ausgang"
-      },
-      "ctrl_charging_mode": {
-        "name": "Lademodus"
-      },
-      "ctrl_dc": {
-        "name": "DC Ausgang"
-      },
-      "ctrl_led_mode": {
-        "name": "LED Modus"
-      },
-      "ctrl_power_lifting": {
-        "name": "Power Lifting"
-      },
-      "ctrl_power_off": {
-        "name": "Ausschalter"
-      },
       "dc_input_power": {
         "name": "DC Eingang Leistung"
       },
@@ -207,6 +189,26 @@
       },
       "sm_p3_voltage": {
         "name": "Smartmeter Phase 3 Spannung"
+      }
+    },
+    "switch": {
+      "ctrl_ac": {
+        "name": "AC Ausgang"
+      },
+      "ctrl_charging_mode": {
+        "name": "Lademodus"
+      },
+      "ctrl_dc": {
+        "name": "DC Ausgang"
+      },
+      "ctrl_led_mode": {
+        "name": "LED Modus"
+      },
+      "ctrl_power_lifting": {
+        "name": "Power Lifting"
+      },
+      "ctrl_power_off": {
+        "name": "Ausschalter"
       }
     }
   }

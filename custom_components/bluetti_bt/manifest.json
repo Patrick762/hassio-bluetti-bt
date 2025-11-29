@@ -23,6 +23,6 @@
     "integration_type": "device",
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/Patrick762/hassio-bluetti-bt/issues",
-    "requirements": ["bluetti-bt-lib==0.0.14"],
+    "requirements": ["bluetti-bt-lib==0.0.15"],
     "version": "0.1.6"
 }
