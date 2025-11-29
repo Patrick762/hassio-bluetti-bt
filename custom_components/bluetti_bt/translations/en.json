@@ -14,7 +14,6 @@
       "init": {
         "data": {
           "use_controls": "Use controls (use at own risk)",
-          "persistent_conn": "Persistent connection (restart required)",
           "polling_interval": "Polling interval in seconds (restart required)",
           "polling_timeout": "Polling timeout in seconds (restart required)",
           "max_retries": "Maximum amount of connection retries (restart required)"

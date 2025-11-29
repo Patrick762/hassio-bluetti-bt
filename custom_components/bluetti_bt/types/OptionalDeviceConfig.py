@@ -3,7 +3,6 @@ import voluptuous as vol
 from homeassistant.helpers import selector
 
 CONF_USE_CONTROLS = "use_controls"
-CONF_PERSISTENT_CONN = "persistent_conn"
 CONF_POLLING_INTERVAL = "polling_interval"
 CONF_POLLING_TIMEOUT = "polling_timeout"
 CONF_MAX_RETRIES = "max_retries"
@@ -17,13 +16,11 @@ class OptionalDeviceConfig:
     def __init__(
         self,
         use_controls: bool,
-        persistent_conn: bool,
         polling_interval: int,
         polling_timeout: int,
         max_retries: int,
     ):
         self.use_controls = use_controls
-        self.persistent_conn = persistent_conn
         self.polling_interval = polling_interval
         self.polling_timeout = polling_timeout
         self.max_retries = max_retries
@@ -32,7 +29,6 @@ class OptionalDeviceConfig:
     def from_dict(raw: Dict[str, Any]):
         return OptionalDeviceConfig(
             raw.get(CONF_USE_CONTROLS, False),
-            raw.get(CONF_PERSISTENT_CONN, False),
             raw.get(CONF_POLLING_INTERVAL, 20),
             raw.get(CONF_POLLING_TIMEOUT, 45),
             raw.get(CONF_MAX_RETRIES, 5),
@@ -51,7 +47,6 @@ class OptionalDeviceConfig:
     def as_dict(self) -> Dict[str, Any]:
         return {
             CONF_USE_CONTROLS: self.use_controls,
-            CONF_PERSISTENT_CONN: self.persistent_conn,
             CONF_POLLING_INTERVAL: self.polling_interval,
             CONF_POLLING_TIMEOUT: self.polling_timeout,
             CONF_MAX_RETRIES: self.max_retries,
@@ -64,10 +59,6 @@ class OptionalDeviceConfig:
                 vol.Required(
                     CONF_USE_CONTROLS,
                     default=self.use_controls,
-                ): selector.BooleanSelector(),
-                vol.Required(
-                    CONF_PERSISTENT_CONN,
-                    default=self.persistent_conn,
                 ): selector.BooleanSelector(),
                 vol.Required(
                     CONF_POLLING_INTERVAL,

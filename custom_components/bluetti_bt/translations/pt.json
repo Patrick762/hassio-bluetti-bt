@@ -4,7 +4,6 @@
       "init": {
         "data": {
           "use_controls": "Usar os comandos",
-          "persistent_conn": "Ligação presistente (necessario reninciar)",
           "polling_interval": "Intervalo deatualização (necessario reninciar)"
         }
       }

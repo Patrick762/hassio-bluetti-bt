@@ -15,7 +15,6 @@ class FullDeviceConfig:
         self.dev_type = initial.dev_type
         self.use_encryption = initial.use_encryption
         self.use_controls = optional.use_controls
-        self.persistent_conn = optional.persistent_conn
         self.polling_interval = optional.polling_interval
         self.polling_timeout = optional.polling_timeout
         self.max_retries = optional.max_retries

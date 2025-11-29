@@ -14,7 +14,6 @@
       "init": {
         "data": {
           "use_controls": "Steuerung aktivieren (auf eigenes Risiko)",
-          "persistent_conn": "Dauerhafte Verbindung (Neustart erforderlich)",
           "polling_interval": "Datenabruf-Intervall in Sekunden (Neustart erforderlich)",
           "polling_timeout": "Datenabruf-Timeout in Sekunden (Neustart erforderlich)",
           "max_retries": "Maximale Verbindungsversuche (Neustart erforderlich)"
