@@ -28,6 +28,9 @@
   },
   "entity": {
     "sensor": {
+      "ac_input_current": {
+        "name": "AC Eingang Stromstärke"
+      },
       "ac_input_frequency": {
         "name": "AC Eingang Frequenz"
       },
@@ -46,8 +49,14 @@
       "ac_output_on": {
         "name": "AC Ausgang eingeschaltet"
       },
+      "ac_output_current": {
+        "name": "AC Ausgang Stromstärke"
+      },
       "ac_output_power": {
         "name": "AC Ausgang Leistung"
+      },
+      "ac_output_voltage": {
+        "name": "AC Ausgang Spannung"
       },
       "ac_p1_current": {
         "name": "AC Phase 1 Stromstärke"
@@ -79,8 +88,14 @@
       "total_battery_percent": {
         "name": "Batterie Ladestand"
       },
+      "dc_input_current": {
+        "name": "DC Eingang Stromstärke"
+      },
       "dc_input_power": {
         "name": "DC Eingang Leistung"
+      },
+      "dc_input_voltage": {
+        "name": "DC Eingang Spannung"
       },
       "dc_output_on": {
         "name": "DC Ausgang eingeschaltet"
@@ -200,6 +215,9 @@
       },
       "ctrl_dc": {
         "name": "DC Ausgang"
+      },
+      "ctrl_eco": {
+        "name": "ECO Modus"
       },
       "ctrl_led_mode": {
         "name": "LED Modus"

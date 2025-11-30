@@ -4,11 +4,14 @@ from bluetti_bt_lib.fields import FieldName
 
 
 FIELD_STATE_CLASS: Dict[FieldName, SensorStateClass] = {
+    FieldName.AC_INPUT_CURRENT: SensorStateClass.MEASUREMENT,
     FieldName.AC_INPUT_FREQUENCY: SensorStateClass.MEASUREMENT,
     FieldName.AC_INPUT_POWER: SensorStateClass.MEASUREMENT,
     FieldName.AC_INPUT_VOLTAGE: SensorStateClass.MEASUREMENT,
     FieldName.AC_OUTPUT_FREQUENCY: SensorStateClass.MEASUREMENT,
+    FieldName.AC_OUTPUT_CURRENT: SensorStateClass.MEASUREMENT,
     FieldName.AC_OUTPUT_POWER: SensorStateClass.MEASUREMENT,
+    FieldName.AC_OUTPUT_VOLTAGE: SensorStateClass.MEASUREMENT,
     FieldName.AC_P1_CURRENT: SensorStateClass.MEASUREMENT,
     FieldName.AC_P1_POWER: SensorStateClass.MEASUREMENT,
     FieldName.AC_P1_VOLTAGE: SensorStateClass.MEASUREMENT,
@@ -19,7 +22,9 @@ FIELD_STATE_CLASS: Dict[FieldName, SensorStateClass] = {
     FieldName.AC_P3_POWER: SensorStateClass.MEASUREMENT,
     FieldName.AC_P3_VOLTAGE: SensorStateClass.MEASUREMENT,
     FieldName.BATTERY_SOC: SensorStateClass.MEASUREMENT,
+    FieldName.DC_INPUT_CURRENT: SensorStateClass.MEASUREMENT,
     FieldName.DC_INPUT_POWER: SensorStateClass.MEASUREMENT,
+    FieldName.DC_INPUT_VOLTAGE: SensorStateClass.MEASUREMENT,
     FieldName.DC_OUTPUT_POWER: SensorStateClass.MEASUREMENT,
     FieldName.GRID_FREQUENCY: SensorStateClass.MEASUREMENT,
     FieldName.GRID_P1_CURRENT: SensorStateClass.MEASUREMENT,

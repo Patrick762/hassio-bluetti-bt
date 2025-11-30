@@ -28,6 +28,9 @@
   },
   "entity": {
     "sensor": {
+      "ac_input_current": {
+        "name": "AC Input Current"
+      },
       "ac_input_frequency": {
         "name": "AC Input Frequency"
       },
@@ -46,8 +49,14 @@
       "ac_output_on": {
         "name": "AC Output eingeschaltet"
       },
+      "ac_output_current": {
+        "name": "AC Output Current"
+      },
       "ac_output_power": {
         "name": "AC Output Power"
+      },
+      "ac_output_voltage": {
+        "name": "AC Output Voltage"
       },
       "ac_p1_current": {
         "name": "AC Phase 1 Current"
@@ -79,8 +88,14 @@
       "total_battery_percent": {
         "name": "Battery SOC"
       },
+      "dc_input_current": {
+        "name": "DC Input Current"
+      },
       "dc_input_power": {
         "name": "DC Input Power"
+      },
+      "dc_input_voltage": {
+        "name": "DC Input Voltage"
       },
       "dc_output_on": {
         "name": "DC Output on"
@@ -200,6 +215,9 @@
       },
       "ctrl_dc": {
         "name": "DC Output"
+      },
+      "ctrl_eco": {
+        "name": "ECO Mode"
       },
       "ctrl_led_mode": {
         "name": "LED Mode"

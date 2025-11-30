@@ -80,7 +80,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         """Init entity."""
         super().__init__(coordinator)
         self.coordinator = coordinator
-        
+
         e_name = f"{device_info.get('name')} {field.name}"
         self._bluetti_device = bluetti_device
         self._mac = mac
@@ -101,7 +101,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
     def available(self) -> bool:
         """Return if entity is available."""
         return self._attr_available
-    
+
     def _set_available(self):
         """Set switch as available."""
         self._attr_available = True
@@ -163,29 +163,23 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
-        _LOGGER.debug(
-            "Turn on %s on %s", self._response_key, mac_loggable(self._mac)
-        )
+        _LOGGER.debug("Turn on %s on %s", self._response_key, mac_loggable(self._mac))
         await self.write_to_device(True)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        _LOGGER.debug(
-            "Turn off %s on %s", self._response_key, mac_loggable(self._mac)
-        )
+        _LOGGER.debug("Turn off %s on %s", self._response_key, mac_loggable(self._mac))
         await self.write_to_device(False)
 
     async def write_to_device(self, state: bool):
         """Write to device."""
 
         try:
-            device = await BleakScanner.find_device_by_address(
-                self._mac, timeout=5
-            )
+            device = await BleakScanner.find_device_by_address(self._mac, timeout=5)
 
             if device is None:
                 return
-            
+
             client = await establish_connection(
                 BleakClientWithServiceCache,
                 device,
@@ -196,11 +190,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
             if not client.is_connected:
                 return
 
-            writer = DeviceWriter(
-                client,
-                self._bluetti_device,
-                lock=self._lock
-            )
+            writer = DeviceWriter(client, self._bluetti_device, lock=self._lock)
 
             async with async_timeout.timeout(15):
                 # Send command
