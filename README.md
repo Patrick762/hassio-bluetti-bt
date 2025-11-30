@@ -16,25 +16,12 @@ After the installation, you can use this button to install the integration:
 
 ### Supported devices:
 
-- AC2A
-- AC60 (tested with one external battery B80)
-- AC60P (untested)
-- AC70 (basic data)
-- AC70P (untested)
-- AC180 (basic data)
-- AC180P (tested)
-- AC200L (untested)
-- AC200M
-- AC200PL (untested)
-- AC300 (tested)
-- AC500 (tested)
-- EB3A
-- EP500
-- EP500P
-- EP600 (tested)
-- EP760 
-- EP800 (basic data)
+See [bluetti-bt-lib](https://github.com/Patrick762/bluetti-bt-lib?tab=readme-ov-file#supported-powerstations-and-data)
 
 ### Available controls:
 If enabled in the Integration options (you need to reload the integration if you change this option):
 AC and DC outputs
+
+### Adding devices or fields
+
+See [bluetti-bt-lib](https://github.com/Patrick762/bluetti-bt-lib?tab=readme-ov-file#supported-powerstations-and-data)

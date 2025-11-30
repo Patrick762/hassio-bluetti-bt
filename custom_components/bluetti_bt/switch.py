@@ -1,37 +1,30 @@
 """Bluetti BT switches."""
 
 from __future__ import annotations
-
 import asyncio
 import logging
 import async_timeout
-
-from bleak import BleakError
-
-from homeassistant.components import bluetooth
+from bleak import BleakScanner
+from bleak_retry_connector import BleakClientWithServiceCache, establish_connection
 from homeassistant.components.switch import SwitchEntity, SwitchDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.const import (
-    CONF_ADDRESS,
-    CONF_NAME,
-    EntityCategory,
-)
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from .bluetti_bt_lib.base_devices.BluettiDevice import BluettiDevice
-from .bluetti_bt_lib.const import WRITE_UUID
-from .bluetti_bt_lib.field_attributes import FIELD_ATTRIBUTES, PACK_FIELD_ATTRIBUTES, FieldType
-from .bluetti_bt_lib.utils.device_builder import build_device
+from bluetti_bt_lib import build_device
+from bluetti_bt_lib.base_devices import BluettiDevice
+from bluetti_bt_lib.bluetooth import DeviceWriter
+from bluetti_bt_lib.fields import DeviceField
 
+from .types import FullDeviceConfig
 from . import device_info as dev_info, get_unique_id
-from .const import CONTROL_FIELDS, DATA_COORDINATOR, DOMAIN
+from .const import DATA_COORDINATOR, DATA_LOCK, DOMAIN
 from .coordinator import PollingCoordinator
-from .utils import mac_loggable, unique_id_loggable
+from .utils import mac_loggable, unique_id_logable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,37 +34,35 @@ async def async_setup_entry(
 ) -> None:
     """Setup switch entities."""
 
-    device_name = entry.data.get(CONF_NAME)
-    address = entry.data.get(CONF_ADDRESS)
-    if address is None:
-        _LOGGER.error("Device has no address")
+    config = FullDeviceConfig.from_dict(entry.data)
+    coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
+    lock = hass.data[DOMAIN][entry.entry_id][DATA_LOCK]
+
+    if config is None or not isinstance(coordinator, PollingCoordinator):
+        return None
 
     # Generate device info
-    _LOGGER.info("Creating switches for device with address %s", address)
+    _LOGGER.info("Creating switches for device with address %s", config.address)
     device_info = dev_info(entry)
 
-    # Add sensors according to device_info
-    bluetti_device = build_device(address, device_name)
+    # Add switches
+    bluetti_device = build_device(config.name)
 
-    sensors_to_add = []
-    all_fields = FIELD_ATTRIBUTES
-    for field_key, field_config in all_fields.items():
-        if bluetti_device.has_field(field_key):
-            if field_config.type == FieldType.BOOL:
-                if field_config.setter is True and field_key in CONTROL_FIELDS:
-                    sensors_to_add.append(
-                        BluettiSwitch(
-                            bluetti_device,
-                            hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR],
-                            device_info,
-                            address,
-                            field_key,
-                            field_config.name,
-                            entry.entry_id
-                        )
-                    )
+    switches_to_add = []
+    switch_fields = bluetti_device.get_switch_fields()
+    for field in switch_fields:
+        switches_to_add.append(
+            BluettiSwitch(
+                bluetti_device,
+                config.address,
+                coordinator,
+                device_info,
+                field,
+                lock,
+            )
+        )
 
-    async_add_entities(sensors_to_add)
+    async_add_entities(switches_to_add)
 
 
 class BluettiSwitch(CoordinatorEntity, SwitchEntity):
@@ -80,32 +71,30 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
     def __init__(
         self,
         bluetti_device: BluettiDevice,
+        mac: str,
         coordinator: PollingCoordinator,
         device_info: DeviceInfo,
-        address,
-        response_key: str,
-        name: str,
-        entry_id: str,
-        category: EntityCategory | None = None,
+        field: DeviceField,
+        lock: asyncio.Lock,
     ):
         """Init entity."""
         super().__init__(coordinator)
+        self.coordinator = coordinator
 
+        e_name = f"{device_info.get('name')} {field.name}"
         self._bluetti_device = bluetti_device
-        self._coordinator = coordinator
-        self._client = coordinator.reader.client
-        self._polling_lock = coordinator.reader.polling_lock
-        e_name = f"{device_info.get('name')} {name}"
-        self._address = address
-        self._response_key = response_key
-        self._entry_id = entry_id
+        self._mac = mac
+        self._field = field
+        self._response_key = field.name
+        self._unavailable_counter = 5
+        self._lock = lock
 
-        self._attr_device_info = device_info
         self._attr_has_entity_name = True
-        self._attr_name = name
+        self._attr_device_info = device_info
+        self._attr_translation_key = field.name
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
-        self._attr_entity_category = category
+
         self._attr_device_class = SwitchDeviceClass.OUTLET
 
     @property
@@ -113,80 +102,105 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         """Return if entity is available."""
         return self._attr_available
 
+    def _set_available(self):
+        """Set switch as available."""
+        self._attr_available = True
+        self._unavailable_counter = 0
+        self._attr_extra_state_attributes = {}
+        self.async_write_ha_state()
+
+    def _set_unavailable(self, cause: str = "Unknown"):
+        """Set switch as unavailable."""
+        self._unavailable_counter += 1
+
+        self._attr_extra_state_attributes = {
+            "unavailable_counter": self._unavailable_counter,
+            "unavailable_cause": cause,
+        }
+
+        if self._unavailable_counter >= 5:
+            self._attr_available = False
+
+        self.async_write_ha_state()
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
 
-        if self.coordinator.reader.persistent_conn and not self.coordinator.reader.client.is_connected:
+        if self.coordinator.data is None:
+            _LOGGER.debug(
+                "Data from coordinator is None",
+            )
+            self._set_unavailable("Data is None")
             return
 
-        _LOGGER.debug("Updating state of %s", unique_id_loggable(self._attr_unique_id))
+        _LOGGER.debug("Updating state of %s", unique_id_logable(self._attr_unique_id))
         if not isinstance(self.coordinator.data, dict):
             _LOGGER.debug(
-                "Invalid data from coordinator (switch.%s)", unique_id_loggable(self._attr_unique_id)
+                "Invalid data from coordinator (switch.%s)",
+                unique_id_logable(self._attr_unique_id),
             )
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("Invalid data")
             return
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("No data")
             return
 
         if not isinstance(response_data, bool):
             _LOGGER.warning(
                 "Invalid response data type from coordinator (switch.%s): %s",
-                unique_id_loggable(self._attr_unique_id),
+                unique_id_logable(self._attr_unique_id),
                 response_data,
             )
-            self._attr_available = False
-            self.async_write_ha_state()
+            self._set_unavailable("Invalid data type")
             return
 
-        self._attr_available = True
+        self._set_available()
         self._attr_is_on = self.coordinator.data[self._response_key] is True
         self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
-        _LOGGER.debug("Turn on %s on %s", self._response_key, mac_loggable(self._address))
+        _LOGGER.debug("Turn on %s on %s", self._response_key, mac_loggable(self._mac))
         await self.write_to_device(True)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        _LOGGER.debug("Turn off %s on %s", self._response_key, mac_loggable(self._address))
+        _LOGGER.debug("Turn off %s on %s", self._response_key, mac_loggable(self._mac))
         await self.write_to_device(False)
 
     async def write_to_device(self, state: bool):
         """Write to device."""
-        command = self._bluetti_device.build_setter_command(self._response_key, state)
 
-        async with self._polling_lock:
-            try:
-                async with async_timeout.timeout(15):
-                    if not self._client.is_connected:
-                        await self._client.connect()
+        try:
+            device = await BleakScanner.find_device_by_address(self._mac, timeout=5)
 
-                    # Send command
-                    _LOGGER.debug("Requesting %s (%s,%s)", command, self._response_key, state)
-                    await self._client.write_gatt_char(
-                        WRITE_UUID, bytes(command)
-                    )
+            if device is None:
+                return
 
-                    # Wait until device has changed value, otherwise reading register might reset it
-                    await asyncio.sleep(5)
+            client = await establish_connection(
+                BleakClientWithServiceCache,
+                device,
+                device.name or "Unknown Device",
+                max_attempts=10,
+            )
 
-            except TimeoutError:
-                _LOGGER.error("Timed out for device %s", mac_loggable(self._address))
-                return None
-            except BleakError as err:
-                _LOGGER.error("Bleak error: %s", err)
-                return None
-            finally:
-                # Disconnect if connection not persistant
-                if not self._coordinator.reader.persistent_conn:
-                    await self._client.disconnect()
+            if not client.is_connected:
+                return
+
+            writer = DeviceWriter(client, self._bluetti_device, lock=self._lock)
+
+            async with async_timeout.timeout(15):
+                # Send command
+                await writer.write(self._field.name, state)
+
+                # Wait until device has changed value, otherwise reading register might reset it
+                await asyncio.sleep(5)
+
+        except TimeoutError:
+            _LOGGER.error("Timed out for device %s", mac_loggable(self._mac))
+            return None
 
         await self.coordinator.async_request_refresh()
