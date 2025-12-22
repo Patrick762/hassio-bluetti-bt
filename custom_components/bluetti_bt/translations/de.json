@@ -13,7 +13,6 @@
     "step": {
       "init": {
         "data": {
-          "use_controls": "Steuerung aktivieren (auf eigenes Risiko)",
           "polling_interval": "Datenabruf-Intervall in Sekunden (Neustart erforderlich)",
           "polling_timeout": "Datenabruf-Timeout in Sekunden (Neustart erforderlich)",
           "max_retries": "Maximale Verbindungsversuche (Neustart erforderlich)"
@@ -227,6 +226,17 @@
       },
       "ctrl_power_off": {
         "name": "Ausschalter"
+      }
+    },
+    "select": {
+      "ctrl_charging_mode": {
+        "name": "Lademodus"
+      },
+      "ctrl_eco_time_mode": {
+        "name": "Eco Timer"
+      },
+      "ctrl_led_mode": {
+        "name": "LED Modus"
       }
     }
   }

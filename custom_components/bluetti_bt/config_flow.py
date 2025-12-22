@@ -41,7 +41,7 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         if recognized is None:
-            return await self.async_abort(reason="Device type not supported")
+            return self.async_abort(reason="Device type not supported")
 
         _LOGGER.info(
             "Device identified as %s with iot module version %s (using encryption: %s)",

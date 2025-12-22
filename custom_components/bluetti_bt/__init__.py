@@ -21,7 +21,10 @@ from .const import (
 from .types import FullDeviceConfig
 from .coordinator import PollingCoordinator
 
-PLATFORMS: List[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
+PLATFORMS: List[Platform] = [
+    Platform.BINARY_SENSOR,
+    Platform.SENSOR,
+]
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -58,11 +61,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _LOGGER.debug("Creating entities")
     platforms: list = PLATFORMS
-    if config.use_controls is True:
-        _LOGGER.warning(
-            "You are using controls with this integration at your own risk!"
-        )
+    if not config.use_encryption:
         platforms.append(Platform.SWITCH)
+        platforms.append(Platform.SELECT)
 
     # Setup platforms
     await hass.config_entries.async_forward_entry_setups(entry, platforms)

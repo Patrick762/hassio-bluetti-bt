@@ -11,9 +11,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from bluetti_bt_lib import build_device
-from bluetti_bt_lib.fields import FieldName
-from bluetti_bt_lib.fields.FieldUnit import get_unit
+from bluetti_bt_lib import build_device, FieldName, get_unit
 
 from . import device_info as dev_info, get_unique_id, FullDeviceConfig
 from .const import DATA_COORDINATOR, DOMAIN
@@ -33,6 +31,7 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
 
     if config is None or not isinstance(coordinator, PollingCoordinator):
+        _LOGGER.error("No coordinator found")
         return None
 
     # Generate device info

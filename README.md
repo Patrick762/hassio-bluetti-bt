@@ -6,7 +6,7 @@
 Bluetti Integration for Home Assistant
 
 ## Disclaimer
-This integration is provided without any warranty or support by Bluetti (unfortunately). I do not take responsibility for any problems it may cause in all cases. Use it at your own risk.
+This integration is provided without any warranty or support by Bluetti. I do not take responsibility for any problems it may cause in all cases. Use it at your own risk.
 
 ## Installation
 To install this integration, you first need [HACS](https://hacs.xyz/) installed.
@@ -19,9 +19,8 @@ After the installation, you can use this button to install the integration:
 See [bluetti-bt-lib](https://github.com/Patrick762/bluetti-bt-lib?tab=readme-ov-file#supported-powerstations-and-data)
 
 ### Available controls:
-If enabled in the Integration options (you need to reload the integration if you change this option):
-AC and DC outputs
+See [bluetti-bt-lib](https://github.com/Patrick762/bluetti-bt-lib?tab=readme-ov-file#supported-powerstations-and-data)
 
 ### Adding devices or fields
 
-See [bluetti-bt-lib](https://github.com/Patrick762/bluetti-bt-lib?tab=readme-ov-file#supported-powerstations-and-data)
+Please use the issue template at [bluetti-bt-lib](https://github.com/Patrick762/bluetti-bt-lib?tab=readme-ov-file#supported-powerstations-and-data)

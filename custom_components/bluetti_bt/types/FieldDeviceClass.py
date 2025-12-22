@@ -1,6 +1,6 @@
 from typing import Dict
 from homeassistant.components.sensor import SensorDeviceClass
-from bluetti_bt_lib.fields import FieldName
+from bluetti_bt_lib import FieldName
 
 
 FIELD_DEVICE_CLASS: Dict[FieldName, SensorDeviceClass] = {

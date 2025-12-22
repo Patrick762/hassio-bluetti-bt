@@ -13,7 +13,6 @@
     "step": {
       "init": {
         "data": {
-          "use_controls": "Use controls (use at own risk)",
           "polling_interval": "Polling interval in seconds (restart required)",
           "polling_timeout": "Polling timeout in seconds (restart required)",
           "max_retries": "Maximum amount of connection retries (restart required)"
@@ -227,6 +226,17 @@
       },
       "ctrl_power_off": {
         "name": "Poweroff"
+      }
+    },
+    "select": {
+      "ctrl_charging_mode": {
+        "name": "Charging Mode"
+      },
+      "ctrl_eco_time_mode": {
+        "name": "Eco Timer"
+      },
+      "ctrl_led_mode": {
+        "name": "LED Mode"
       }
     }
   }
