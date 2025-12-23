@@ -6,7 +6,7 @@ import logging
 import async_timeout
 from bleak import BleakScanner
 from bleak_retry_connector import BleakClientWithServiceCache, establish_connection
-from homeassistant.components.switch import SwitchEntity, SwitchDeviceClass
+from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -15,7 +15,8 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from bluetti_bt_lib import build_device, BluettiDevice, DeviceWriter, DeviceField
+from bluetti_bt_lib import build_device, BluettiDevice, DeviceWriter
+from bluetti_bt_lib.fields import SelectField
 
 from .types import FullDeviceConfig
 from . import device_info as dev_info, get_unique_id
@@ -29,7 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Setup switch entities."""
+    """Setup select entities."""
 
     config = FullDeviceConfig.from_dict(entry.data)
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
@@ -40,17 +41,17 @@ async def async_setup_entry(
         return None
 
     # Generate device info
-    _LOGGER.info("Creating switches for device with address %s", config.address)
+    _LOGGER.info("Creating selects for device with address %s", config.address)
     device_info = dev_info(entry)
 
     # Add switches
     bluetti_device = build_device(config.name)
 
     switches_to_add = []
-    switch_fields = bluetti_device.get_switch_fields()
+    switch_fields = bluetti_device.get_select_fields()
     for field in switch_fields:
         switches_to_add.append(
-            BluettiSwitch(
+            BluettiSelect(
                 bluetti_device,
                 config.address,
                 coordinator,
@@ -63,7 +64,7 @@ async def async_setup_entry(
     async_add_entities(switches_to_add)
 
 
-class BluettiSwitch(CoordinatorEntity, SwitchEntity):
+class BluettiSelect(CoordinatorEntity, SelectEntity):
     """Bluetti universal switch."""
 
     def __init__(
@@ -72,7 +73,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         mac: str,
         coordinator: PollingCoordinator,
         device_info: DeviceInfo,
-        field: DeviceField,
+        field: SelectField,
         lock: asyncio.Lock,
     ):
         """Init entity."""
@@ -86,14 +87,13 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         self._response_key = field.name
         self._unavailable_counter = 5
         self._lock = lock
+        self._attr_options = [e.name for e in field.e]
 
         self._attr_has_entity_name = True
         self._attr_device_info = device_info
         self._attr_translation_key = field.name
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
-
-        self._attr_device_class = SwitchDeviceClass.OUTLET
 
     @property
     def available(self) -> bool:
@@ -135,7 +135,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         _LOGGER.debug("Updating state of %s", unique_id_logable(self._attr_unique_id))
         if not isinstance(self.coordinator.data, dict):
             _LOGGER.debug(
-                "Invalid data from coordinator (switch.%s)",
+                "Invalid data from coordinator (select.%s)",
                 unique_id_logable(self._attr_unique_id),
             )
             self._set_unavailable("Invalid data")
@@ -146,9 +146,9 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
             self._set_unavailable("No data")
             return
 
-        if not isinstance(response_data, bool):
+        if not isinstance(response_data, self._field.e):
             _LOGGER.warning(
-                "Invalid response data type from coordinator (switch.%s): %s",
+                "Invalid response data type from coordinator (select.%s): %s",
                 unique_id_logable(self._attr_unique_id),
                 response_data,
             )
@@ -156,20 +156,15 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
             return
 
         self._set_available()
-        self._attr_is_on = response_data is True
+        self.current_option = response_data.name
         self.async_write_ha_state()
 
-    async def async_turn_on(self, **kwargs):
-        """Turn the entity on."""
-        _LOGGER.debug("Turn on %s on %s", self._response_key, mac_loggable(self._mac))
-        await self.write_to_device(True)
+    async def async_select_option(self, option: str):
+        """Set the entity to value."""
+        _LOGGER.debug("Set %s on %s to %s", self._response_key, mac_loggable(self._mac), option)
+        await self.write_to_device(option)
 
-    async def async_turn_off(self, **kwargs):
-        """Turn the entity off."""
-        _LOGGER.debug("Turn off %s on %s", self._response_key, mac_loggable(self._mac))
-        await self.write_to_device(False)
-
-    async def write_to_device(self, state: bool):
+    async def write_to_device(self, state: str):
         """Write to device."""
 
         try:
