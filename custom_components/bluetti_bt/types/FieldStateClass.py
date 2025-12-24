@@ -57,6 +57,7 @@ FIELD_STATE_CLASS: Dict[FieldName, SensorStateClass] = {
     FieldName.SM_P3_CURRENT: SensorStateClass.MEASUREMENT,
     FieldName.SM_P3_POWER: SensorStateClass.MEASUREMENT,
     FieldName.SM_P3_VOLTAGE: SensorStateClass.MEASUREMENT,
+    FieldName.TIME_REMAINING: SensorStateClass.MEASUREMENT,
 }
 
 

@@ -205,6 +205,9 @@
       },
       "sm_p3_voltage": {
         "name": "Smartmeter Phase 3 Voltage"
+      },
+      "time_remaining": {
+        "name": "Time Remaining"
       }
     },
     "switch": {
