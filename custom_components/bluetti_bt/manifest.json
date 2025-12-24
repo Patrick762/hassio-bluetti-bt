@@ -9,7 +9,10 @@
         { "local_name": "AC200*" },
         { "local_name": "AC300*" },
         { "local_name": "AC500*" },
+        { "local_name": "AP300*"},
         { "local_name": "EB3A*" },
+        { "local_name": "EL100V2*"},
+        { "local_name": "EL30V2*"},
         { "local_name": "EP500*" },
         { "local_name": "EP600*" },
         { "local_name": "EP760*" },
@@ -24,5 +27,5 @@
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/Patrick762/hassio-bluetti-bt/issues",
     "requirements": ["bluetti-bt-lib==0.1.4b2"],
-    "version": "0.2.0"
+    "version": "0.2.1"
 }
