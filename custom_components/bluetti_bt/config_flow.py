@@ -82,9 +82,14 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 manufacturer_data.use_encryption,
             )
 
+            optional = OptionalDeviceConfig.from_dict({})
+
             return self.async_create_entry(
                 title=name,
-                data=data.as_dict,
+                data={
+                    **data.as_dict,
+                    **optional.as_dict,
+                },
             )
 
         if not self._discovery_info:
@@ -105,20 +110,13 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     @staticmethod
-    def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
-    ) -> config_entries.OptionsFlow:
+    def async_get_options_flow(_) -> config_entries.OptionsFlow:
         """Create the options flow."""
-        return OptionsFlowHandler(config_entry)
+        return OptionsFlowHandler()
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        super().__init__()
-        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -144,7 +142,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 data=config.as_dict,
             )
 
-        defaults = OptionalDeviceConfig.from_dict({})
+        defaults = OptionalDeviceConfig.from_dict(self.config_entry.data)
 
         return self.async_show_form(
             step_id="init",
