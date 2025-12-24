@@ -161,7 +161,9 @@ class BluettiSelect(CoordinatorEntity, SelectEntity):
 
     async def async_select_option(self, option: str):
         """Set the entity to value."""
-        _LOGGER.debug("Set %s on %s to %s", self._response_key, mac_loggable(self._mac), option)
+        _LOGGER.debug(
+            "Set %s on %s to %s", self._response_key, mac_loggable(self._mac), option
+        )
         await self.write_to_device(option)
 
     async def write_to_device(self, state: str):

@@ -3,10 +3,12 @@
     "step": {
       "user": {
         "data": {
-          "address": "Device",
-          "type": "Model (required for PBOX devices)"
+          "address": "Device"
         }
       }
+    },
+    "abort": {
+      "no_unconfigured_devices": "No devices found"
     }
   },
   "options": {
