@@ -39,6 +39,7 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         if bluetti_device is None:
             self.logger.error("Device is unknown type")
+            self.async_shutdown()
             return None
 
         self.reader = DeviceReader(
