@@ -17,7 +17,7 @@ from . import device_info as dev_info, get_unique_id, FullDeviceConfig
 from .const import DATA_COORDINATOR, DOMAIN
 from .coordinator import PollingCoordinator
 from .utils import unique_id_logable
-from .types import get_device_class, get_state_class
+from .types import get_device_class, get_state_class, get_category
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,6 +53,7 @@ async def async_setup_entry(
         unit = get_unit(field_name)
         device_class = get_device_class(field_name)
         state_class = get_state_class(field_name)
+        category = get_category(field_name)
 
         if unit is not None:
             sensors_to_add.append(
@@ -64,6 +65,7 @@ async def async_setup_entry(
                     unit_of_measurement=unit,
                     device_class=device_class,
                     state_class=state_class,
+                    category=category,
                 )
             )
         else:
@@ -73,7 +75,7 @@ async def async_setup_entry(
                     device_info,
                     field.address,
                     field.name,
-                    # TODO Options for enum Fields
+                    category=category,
                 )
             )
 

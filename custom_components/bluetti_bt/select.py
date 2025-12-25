@@ -9,16 +9,17 @@ from bleak_retry_connector import BleakClientWithServiceCache, establish_connect
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from bluetti_bt_lib import build_device, BluettiDevice, DeviceWriter
+from bluetti_bt_lib import build_device, BluettiDevice, DeviceWriter, FieldName
 from bluetti_bt_lib.fields import SelectField
 
-from .types import FullDeviceConfig
+from .types import FullDeviceConfig, get_category
 from . import device_info as dev_info, get_unique_id
 from .const import DATA_COORDINATOR, DATA_LOCK, DOMAIN
 from .coordinator import PollingCoordinator
@@ -50,6 +51,8 @@ async def async_setup_entry(
     switches_to_add = []
     switch_fields = bluetti_device.get_select_fields()
     for field in switch_fields:
+        category = get_category(FieldName(field.name))
+
         switches_to_add.append(
             BluettiSelect(
                 bluetti_device,
@@ -58,6 +61,7 @@ async def async_setup_entry(
                 device_info,
                 field,
                 lock,
+                category=category,
             )
         )
 
@@ -75,6 +79,7 @@ class BluettiSelect(CoordinatorEntity, SelectEntity):
         device_info: DeviceInfo,
         field: SelectField,
         lock: asyncio.Lock,
+        category: EntityCategory | None = None,
     ):
         """Init entity."""
         super().__init__(coordinator)
@@ -94,6 +99,7 @@ class BluettiSelect(CoordinatorEntity, SelectEntity):
         self._attr_translation_key = field.name
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
+        self._attr_entity_category = category
 
     @property
     def available(self) -> bool:
