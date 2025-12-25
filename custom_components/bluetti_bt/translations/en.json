@@ -89,6 +89,12 @@
       "total_battery_percent": {
         "name": "Battery SOC"
       },
+      "soc_range_end": {
+        "name": "SOC high"
+      },
+      "soc_range_start": {
+        "name": "SOC low"
+      },
       "dc_input_current": {
         "name": "DC Input Current"
       },

@@ -61,7 +61,7 @@ FIELD_STATE_CLASS: Dict[FieldName, SensorStateClass] = {
 }
 
 
-def get_state_class(field: FieldName) -> str:
+def get_state_class(field: FieldName) -> str | None:
     state_class = FIELD_STATE_CLASS.get(field)
 
     if state_class is None:

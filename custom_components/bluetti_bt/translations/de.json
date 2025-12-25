@@ -89,6 +89,12 @@
       "total_battery_percent": {
         "name": "Batterie Ladestand"
       },
+      "soc_range_end": {
+        "name": "SOC hoch"
+      },
+      "soc_range_start": {
+        "name": "SOC niedrig"
+      },
       "dc_input_current": {
         "name": "DC Eingang Stromstärke"
       },

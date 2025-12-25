@@ -61,7 +61,7 @@ FIELD_DEVICE_CLASS: Dict[FieldName, SensorDeviceClass] = {
 }
 
 
-def get_device_class(field: FieldName) -> str:
+def get_device_class(field: FieldName) -> str | None:
     device_class = FIELD_DEVICE_CLASS.get(field)
 
     if device_class is None:
