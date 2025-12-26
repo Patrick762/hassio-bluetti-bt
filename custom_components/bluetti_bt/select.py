@@ -25,8 +25,6 @@ from .const import DATA_COORDINATOR, DATA_LOCK, DOMAIN
 from .coordinator import PollingCoordinator
 from .utils import mac_loggable, unique_id_logable
 
-_LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
@@ -37,12 +35,16 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
     lock = hass.data[DOMAIN][entry.entry_id][DATA_LOCK]
 
+    logger = logging.getLogger(
+        f"{__name__}.{mac_loggable(config.address).replace(':', '_')}"
+    )
+
     if config is None or not isinstance(coordinator, PollingCoordinator):
-        _LOGGER.error("No coordinator found")
+        logger.error("No coordinator found")
         return None
 
     # Generate device info
-    _LOGGER.info("Creating selects for device with address %s", config.address)
+    logger.info("Creating selects for device with address %s", config.address)
     device_info = dev_info(entry)
 
     # Add switches
@@ -62,6 +64,7 @@ async def async_setup_entry(
                 field,
                 lock,
                 category=category,
+                logger=logger,
             )
         )
 
@@ -74,20 +77,22 @@ class BluettiSelect(CoordinatorEntity, SelectEntity):
     def __init__(
         self,
         bluetti_device: BluettiDevice,
-        mac: str,
+        address: str,
         coordinator: PollingCoordinator,
         device_info: DeviceInfo,
         field: SelectField,
         lock: asyncio.Lock,
         category: EntityCategory | None = None,
+        logger: logging.Logger = logging.getLogger(),
     ):
         """Init entity."""
         super().__init__(coordinator)
         self.coordinator = coordinator
+        self._logger = logger
 
         e_name = f"{device_info.get('name')} {field.name}"
         self._bluetti_device = bluetti_device
-        self._mac = mac
+        self._address = address
         self._field = field
         self._response_key = field.name
         self._unavailable_counter = 5
@@ -132,15 +137,17 @@ class BluettiSelect(CoordinatorEntity, SelectEntity):
         """Handle updated data from the coordinator."""
 
         if self.coordinator.data is None:
-            _LOGGER.debug(
+            self._logger.debug(
                 "Data from coordinator is None",
             )
             self._set_unavailable("Data is None")
             return
 
-        _LOGGER.debug("Updating state of %s", unique_id_logable(self._attr_unique_id))
+        self._logger.debug(
+            "Updating state of %s", unique_id_logable(self._attr_unique_id)
+        )
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.debug(
+            self._logger.debug(
                 "Invalid data from coordinator (select.%s)",
                 unique_id_logable(self._attr_unique_id),
             )
@@ -153,7 +160,7 @@ class BluettiSelect(CoordinatorEntity, SelectEntity):
             return
 
         if not isinstance(response_data, self._field.e):
-            _LOGGER.warning(
+            self._logger.warning(
                 "Invalid response data type from coordinator (select.%s): %s",
                 unique_id_logable(self._attr_unique_id),
                 response_data,
@@ -167,8 +174,11 @@ class BluettiSelect(CoordinatorEntity, SelectEntity):
 
     async def async_select_option(self, option: str):
         """Set the entity to value."""
-        _LOGGER.debug(
-            "Set %s on %s to %s", self._response_key, mac_loggable(self._mac), option
+        self._logger.debug(
+            "Set %s on %s to %s",
+            self._response_key,
+            mac_loggable(self._address),
+            option,
         )
         await self.write_to_device(option)
 
@@ -176,7 +186,7 @@ class BluettiSelect(CoordinatorEntity, SelectEntity):
         """Write to device."""
 
         try:
-            device = await BleakScanner.find_device_by_address(self._mac, timeout=5)
+            device = await BleakScanner.find_device_by_address(self._address, timeout=5)
 
             if device is None:
                 return
@@ -201,7 +211,7 @@ class BluettiSelect(CoordinatorEntity, SelectEntity):
                 await asyncio.sleep(5)
 
         except TimeoutError:
-            _LOGGER.error("Timed out for device %s", mac_loggable(self._mac))
+            self._logger.error("Timed out for device %s", mac_loggable(self._address))
             return None
 
         await self.coordinator.async_request_refresh()

@@ -95,6 +95,15 @@
       "soc_range_start": {
         "name": "SOC low"
       },
+      "ctrl_eco_min_power_ac": {
+        "name": "Eco Minimum Power AC"
+      },
+      "ctrl_eco_min_power_dc": {
+        "name": "Eco Minimum Power DC"
+      },
+      "ctrl_split_phase_mode": {
+        "name": "Split Phase Mode"
+      },
       "dc_input_current": {
         "name": "DC Input Current"
       },
@@ -235,8 +244,11 @@
       "ctrl_eco": {
         "name": "ECO Mode"
       },
-      "ctrl_led_mode": {
-        "name": "LED Mode"
+      "ctrl_eco_ac": {
+        "name": "Eco Mode AC"
+      },
+      "ctrl_eco_dc": {
+        "name": "Eco Mode DC"
       },
       "ctrl_power_lifting": {
         "name": "Power Lifting"
@@ -249,11 +261,28 @@
       "ctrl_charging_mode": {
         "name": "Charging Mode"
       },
+      "ctrl_display_timeout": {
+        "name": "Display Timeout"
+      },
       "ctrl_eco_time_mode": {
         "name": "Eco Timer"
       },
+      "ctrl_eco_time_mode_ac": {
+        "name": "Eco Timer AC"
+      },
+      "ctrl_eco_time_mode_dc": {
+        "name": "Eco Timer DC"
+      },
       "ctrl_led_mode": {
         "name": "LED Mode"
+      },
+       "ctrl_ups_mode": {
+        "name": "UPS Mode"
+      }
+    },
+    "binary_sensor": {
+      "ctrl_split_phase": {
+        "name": "Split Phase"
       }
     }
   }

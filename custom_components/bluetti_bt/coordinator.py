@@ -9,9 +9,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from bluetti_bt_lib import build_device, DeviceReader, DeviceReaderConfig
 
+from .utils import mac_loggable
 from .types import FullDeviceConfig
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class PollingCoordinator(DataUpdateCoordinator):
@@ -26,7 +25,9 @@ class PollingCoordinator(DataUpdateCoordinator):
         """Initialize coordinator."""
         super().__init__(
             hass,
-            _LOGGER,
+            logging.getLogger(
+                f"{__name__}.{mac_loggable(config.address).replace(':', '_')}"
+            ),
             name="Bluetti polling coordinator",
             update_interval=timedelta(seconds=config.polling_interval),
         )

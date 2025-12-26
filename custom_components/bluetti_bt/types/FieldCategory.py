@@ -5,13 +5,23 @@ from bluetti_bt_lib import FieldName
 DIAGNOSTICS = [
     FieldName.VER_ARM,
     FieldName.VER_DSP,
+    FieldName.CTRL_ECO_MIN_POWER_AC,
+    FieldName.CTRL_ECO_MIN_POWER_DC,
 ]
 
 CONFIGS = [
+    FieldName.CTRL_DISPLAY_TIMEOUT,
     FieldName.CTRL_ECO,
+    FieldName.CTRL_ECO_AC,
+    FieldName.CTRL_ECO_DC,
     FieldName.CTRL_ECO_TIME_MODE,
+    FieldName.CTRL_ECO_TIME_MODE_AC,
+    FieldName.CTRL_ECO_TIME_MODE_DC,
     FieldName.CTRL_CHARGING_MODE,
     FieldName.CTRL_POWER_LIFTING,
+    FieldName.CTRL_SPLIT_PHASE,
+    FieldName.CTRL_SPLIT_PHASE_MODE,
+    FieldName.CTRL_UPS_MODE,
 ]
 
 

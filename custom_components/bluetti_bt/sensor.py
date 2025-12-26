@@ -16,10 +16,8 @@ from bluetti_bt_lib import build_device, FieldName, get_unit
 from . import device_info as dev_info, get_unique_id, FullDeviceConfig
 from .const import DATA_COORDINATOR, DOMAIN
 from .coordinator import PollingCoordinator
-from .utils import unique_id_logable
+from .utils import mac_loggable, unique_id_logable
 from .types import get_device_class, get_state_class, get_category
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -30,12 +28,16 @@ async def async_setup_entry(
     config = FullDeviceConfig.from_dict(entry.data)
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
 
+    logger = logging.getLogger(
+        f"{__name__}.{mac_loggable(config.address).replace(':', '_')}"
+    )
+
     if config is None or not isinstance(coordinator, PollingCoordinator):
-        _LOGGER.error("No coordinator found")
+        logger.error("No coordinator found")
         return None
 
     # Generate device info
-    _LOGGER.info("Creating sensors for device with address %s", config.address)
+    logger.info("Creating sensors for device with address %s", config.address)
     device_info = dev_info(entry)
 
     # Add sensors
@@ -66,6 +68,7 @@ async def async_setup_entry(
                     device_class=device_class,
                     state_class=state_class,
                     category=category,
+                    logger=logger,
                 )
             )
         else:
@@ -76,6 +79,7 @@ async def async_setup_entry(
                     field.address,
                     field.name,
                     category=category,
+                    logger=logger,
                 )
             )
 
@@ -96,10 +100,12 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         state_class: str | None = None,
         category: EntityCategory | None = None,
         options: list[str] | None = None,
+        logger: logging.Logger = logging.getLogger(),
     ):
         """Init sensor entity."""
         super().__init__(coordinator)
         self.coordinator = coordinator
+        self._logger = logger
 
         self._attr_has_entity_name = True
         e_name = f"{device_info.get('name')} {response_key}"
@@ -148,15 +154,17 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         """Handle updated data from the coordinator."""
 
         if self.coordinator.data is None:
-            _LOGGER.debug(
+            self._logger.debug(
                 "Data from coordinator is None",
             )
             self._set_unavailable("Data is None")
             return
 
-        _LOGGER.debug("Updating state of %s", unique_id_logable(self._attr_unique_id))
+        self._logger.debug(
+            "Updating state of %s", unique_id_logable(self._attr_unique_id)
+        )
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.warning(
+            self._logger.warning(
                 "Invalid data from coordinator (sensor.%s)",
                 unique_id_logable(self._attr_unique_id),
             )
@@ -165,7 +173,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
-            _LOGGER.debug("No data for available for (%s)", self._response_key)
+            self._logger.debug("No data for available for (%s)", self._response_key)
             self._set_unavailable("No data")
             return
 
@@ -177,7 +185,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             and not isinstance(response_data, Enum)
             and not isinstance(response_data, str)
         ):
-            _LOGGER.warning(
+            self._logger.warning(
                 "Invalid response data type from coordinator (sensor.%s): %s has type %s",
                 unique_id_logable(self._attr_unique_id),
                 response_data,

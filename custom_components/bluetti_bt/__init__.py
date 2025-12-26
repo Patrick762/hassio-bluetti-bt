@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.exceptions import ConfigEntryNotReady
 
+from .utils import mac_loggable
 from .const import (
     DATA_COORDINATOR,
     DATA_LOCK,
@@ -25,18 +26,21 @@ PLATFORMS: List[Platform] = [
     Platform.BINARY_SENSOR,
     Platform.SENSOR,
 ]
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bluetti Powerstation from a config entry."""
 
-    _LOGGER.debug("Init Bluetti BT Integration")
-
     config = FullDeviceConfig.from_dict(entry.data)
 
     if config is None:
         return False
+
+    logger = logging.getLogger(
+        f"{__name__}.{mac_loggable(config.address).replace(':', '_')}"
+    )
+
+    logger.debug("Init Bluetti BT Integration")
 
     if not bluetooth.async_address_present(hass, config.address):
         raise ConfigEntryNotReady("Bluetti device not present")
@@ -49,7 +53,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     lock = asyncio.Lock()
 
     # Create coordinator for polling
-    _LOGGER.debug("Creating coordinator")
+    logger.debug("Creating coordinator")
     coordinator = PollingCoordinator(
         hass,
         config,
@@ -59,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_COORDINATOR, coordinator)
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_LOCK, lock)
 
-    _LOGGER.debug("Creating entities")
+    logger.debug("Creating entities")
     platforms: list = PLATFORMS
     if not config.use_encryption:
         platforms.append(Platform.SWITCH)
@@ -68,7 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Setup platforms
     await hass.config_entries.async_forward_entry_setups(entry, platforms)
 
-    _LOGGER.debug("Setup done")
+    logger.debug("Setup done")
 
     return True
 

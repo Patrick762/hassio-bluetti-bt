@@ -16,9 +16,7 @@ from .types import FullDeviceConfig
 from . import device_info as dev_info, get_unique_id
 from .const import DATA_COORDINATOR, DOMAIN
 from .coordinator import PollingCoordinator
-from .utils import unique_id_logable
-
-_LOGGER = logging.getLogger(__name__)
+from .utils import mac_loggable, unique_id_logable
 
 
 async def async_setup_entry(
@@ -29,11 +27,15 @@ async def async_setup_entry(
     config = FullDeviceConfig.from_dict(entry.data)
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
 
+    logger = logging.getLogger(
+        f"{__name__}.{mac_loggable(config.address).replace(':', '_')}"
+    )
+
     if config is None or not isinstance(coordinator, PollingCoordinator):
         return None
 
     # Generate device info
-    _LOGGER.info("Creating binary_sensors for device with address %s", config.address)
+    logger.info("Creating binary_sensors for device with address %s", config.address)
     device_info = dev_info(entry)
 
     # Add sensors
@@ -48,6 +50,7 @@ async def async_setup_entry(
                 device_info,
                 field.address,
                 field.name,
+                logger=logger,
             )
         )
 
@@ -63,10 +66,12 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         device_info: DeviceInfo,
         address: int,
         response_key: str,
+        logger: logging.Logger = logging.getLogger(),
     ):
         """Init binary entity."""
         super().__init__(coordinator)
         self.coordinator = coordinator
+        self._logger = logger
 
         e_name = f"{device_info.get('name')} {response_key}"
         self._address = address
@@ -110,15 +115,17 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
         """Handle updated data from the coordinator."""
 
         if self.coordinator.data is None:
-            _LOGGER.debug(
+            self._logger.debug(
                 "Data from coordinator is None",
             )
             self._set_unavailable("Data is None")
             return
 
-        _LOGGER.debug("Updating state of %s", unique_id_logable(self._attr_unique_id))
+        self._logger.debug(
+            "Updating state of %s", unique_id_logable(self._attr_unique_id)
+        )
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.debug(
+            self._logger.debug(
                 "Invalid data from coordinator (binary_sensor.%s)",
                 unique_id_logable(self._attr_unique_id),
             )
@@ -131,7 +138,7 @@ class BluettiBinarySensor(CoordinatorEntity, BinarySensorEntity):
             return
 
         if not isinstance(response_data, bool):
-            _LOGGER.warning(
+            self._logger.warning(
                 "Invalid response data type from coordinator (binary_sensor.%s): %s",
                 unique_id_logable(self._attr_unique_id),
                 response_data,
