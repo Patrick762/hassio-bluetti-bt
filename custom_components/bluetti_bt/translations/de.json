@@ -250,6 +250,30 @@
       },
       "version_dsp": {
         "name": "DSP Version"
+      },
+      "pack_1_voltage": {
+        "name": "Pack 1 Spannung"
+      },
+      "pack_2_voltage": {
+        "name": "Pack 2 Spannung"
+      },
+      "pack_3_voltage": {
+        "name": "Pack 3 Spannung"
+      },
+      "pack_4_voltage": {
+        "name": "Pack 4 Spannung"
+      },
+      "pack_1_battery_soc": {
+        "name": "Pack 1 Ladestand"
+      },
+      "pack_2_battery_soc": {
+        "name": "Pack 2 Ladestand"
+      },
+      "pack_3_battery_soc": {
+        "name": "Pack 3 Ladestand"
+      },
+      "pack_4_battery_soc": {
+        "name": "Pack 4 Ladestand"
       }
     },
     "switch": {

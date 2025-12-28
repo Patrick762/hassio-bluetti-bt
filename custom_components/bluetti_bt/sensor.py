@@ -52,6 +52,9 @@ async def async_setup_entry(
     for field in sensor_fields:
         field_name = FieldName(field.name)
 
+        if field_name in [FieldName.PACK_CELL_VOLTAGES, FieldName.PACK_SELECTED]:
+            continue
+
         unit = get_unit(field_name)
         device_class = get_device_class(field_name)
         state_class = get_state_class(field_name)
@@ -82,6 +85,48 @@ async def async_setup_entry(
                     logger=logger,
                 )
             )
+
+    # Pack fields
+    for field in bluetti_device.pack_fields:
+        field_name = FieldName(field.name)
+
+        if field_name in [FieldName.PACK_CELL_VOLTAGES, FieldName.PACK_SELECTED]:
+            continue
+
+        unit = get_unit(field_name)
+        device_class = get_device_class(field_name)
+        state_class = get_state_class(field_name)
+        category = EntityCategory.DIAGNOSTIC
+
+        for num in range(1, bluetti_device.max_packs + 1):
+            name = f"pack_{num}_{field_name.value}"
+
+            if unit is not None:
+                sensors_to_add.append(
+                    BluettiSensor(
+                        coordinator,
+                        device_info,
+                        field.address,
+                        name,
+                        unit_of_measurement=unit,
+                        device_class=device_class,
+                        state_class=state_class,
+                        category=category,
+                        logger=logger,
+                    )
+                )
+            else:
+                sensors_to_add.append(
+                    BluettiSensor(
+                        coordinator,
+                        device_info,
+                        field.address,
+                        name,
+                        category=category,
+                        logger=logger,
+                    )
+                )
+            
 
     async_add_entities(sensors_to_add)
 
