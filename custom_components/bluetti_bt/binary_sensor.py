@@ -43,6 +43,10 @@ async def async_setup_entry(
 
     sensors_to_add = []
     bool_fields = bluetti_device.get_bool_fields()
+
+    if config.use_encryption:
+        bool_fields = bool_fields + bluetti_device.get_switch_fields()
+
     for field in bool_fields:
         sensors_to_add.append(
             BluettiBinarySensor(

@@ -104,6 +104,27 @@
       "ctrl_split_phase_mode": {
         "name": "Split Phase Mode"
       },
+      "ctrl_charging_mode": {
+        "name": "Charging Mode"
+      },
+      "ctrl_display_timeout": {
+        "name": "Display Timeout"
+      },
+      "ctrl_eco_time_mode": {
+        "name": "Eco Timer"
+      },
+      "ctrl_eco_time_mode_ac": {
+        "name": "Eco Timer AC"
+      },
+      "ctrl_eco_time_mode_dc": {
+        "name": "Eco Timer DC"
+      },
+      "ctrl_led_mode": {
+        "name": "LED Mode"
+      },
+       "ctrl_ups_mode": {
+        "name": "UPS Mode"
+      },
       "dc_input_current": {
         "name": "DC Input Current"
       },
@@ -281,6 +302,30 @@
       }
     },
     "binary_sensor": {
+      "ctrl_ac": {
+        "name": "AC Output"
+      },
+      "ctrl_charging_mode": {
+        "name": "Charging Mode"
+      },
+      "ctrl_dc": {
+        "name": "DC Output"
+      },
+      "ctrl_eco": {
+        "name": "ECO Mode"
+      },
+      "ctrl_eco_ac": {
+        "name": "Eco Mode AC"
+      },
+      "ctrl_eco_dc": {
+        "name": "Eco Mode DC"
+      },
+      "ctrl_power_lifting": {
+        "name": "Power Lifting"
+      },
+      "ctrl_power_off": {
+        "name": "Poweroff"
+      },
       "ctrl_split_phase": {
         "name": "Split Phase"
       }
