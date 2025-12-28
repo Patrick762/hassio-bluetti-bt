@@ -25,6 +25,8 @@ from .coordinator import PollingCoordinator
 PLATFORMS: List[Platform] = [
     Platform.BINARY_SENSOR,
     Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.SELECT,
 ]
 
 
@@ -64,13 +66,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id].setdefault(DATA_LOCK, lock)
 
     logger.debug("Creating entities")
-    platforms: list = PLATFORMS
-    if not config.use_encryption:
-        platforms.append(Platform.SWITCH)
-        platforms.append(Platform.SELECT)
-
     # Setup platforms
-    await hass.config_entries.async_forward_entry_setups(entry, platforms)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     logger.debug("Setup done")
 

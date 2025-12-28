@@ -197,7 +197,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         self._set_available()
 
         # Different for enum and numeric
-        if self._options is not None and isinstance(response_data, Enum):
+        if isinstance(response_data, Enum):
             # Enum
             self._attr_native_value = response_data.name
         else:

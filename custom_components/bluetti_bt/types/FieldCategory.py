@@ -22,7 +22,6 @@ CONFIGS = [
     FieldName.CTRL_ECO_TIME_MODE_DC,
     FieldName.CTRL_POWER_LIFTING,
     FieldName.CTRL_SPLIT_PHASE,
-    FieldName.CTRL_SPLIT_PHASE_MODE,
     FieldName.CTRL_UPS_MODE,
 ]
 
