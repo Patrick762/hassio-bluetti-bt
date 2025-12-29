@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from bluetti_bt_lib import build_device, FieldName, get_unit
 
 from . import device_info as dev_info, get_unique_id, FullDeviceConfig
-from .const import DATA_COORDINATOR, DOMAIN
+from .const import DATA_COORDINATOR, DOMAIN, MANUFACTURER
 from .coordinator import PollingCoordinator
 from .utils import mac_loggable, unique_id_logable
 from .types import get_device_class, get_state_class, get_category
@@ -99,7 +99,12 @@ async def async_setup_entry(
         category = EntityCategory.DIAGNOSTIC
 
         for num in range(1, bluetti_device.max_packs + 1):
-            name = f"pack_{num}_{field_name.value}"
+            main_name = dev_info(entry).get("name")
+            device_info = DeviceInfo(
+                identifiers={(DOMAIN, f"{config.address}_pack_{num}")},
+                name=f"{main_name} Battery Pack {num}",
+                manufacturer=MANUFACTURER,
+            )
 
             if unit is not None:
                 sensors_to_add.append(
@@ -107,11 +112,12 @@ async def async_setup_entry(
                         coordinator,
                         device_info,
                         field.address,
-                        name,
+                        field.name,
                         unit_of_measurement=unit,
                         device_class=device_class,
                         state_class=state_class,
                         category=category,
+                        pack_num=num,
                         logger=logger,
                     )
                 )
@@ -121,8 +127,9 @@ async def async_setup_entry(
                         coordinator,
                         device_info,
                         field.address,
-                        name,
+                        field.name,
                         category=category,
+                        pack_num=num,
                         logger=logger,
                     )
                 )
@@ -144,6 +151,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         state_class: str | None = None,
         category: EntityCategory | None = None,
         options: list[str] | None = None,
+        pack_num: int | None = None,
         logger: logging.Logger = logging.getLogger(),
     ):
         """Init sensor entity."""
@@ -154,11 +162,15 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         self._attr_has_entity_name = True
         e_name = f"{device_info.get('name')} {response_key}"
         self._address = address
-        self._response_key = response_key
+        self._response_key = (
+            f"pack_{pack_num}_{response_key}" if pack_num else response_key
+        )
         self._unavailable_counter = 0
 
         self._attr_device_info = device_info
-        self._attr_translation_key = response_key
+        self._attr_translation_key = (
+            f"pack_{pack_num}_{response_key}" if pack_num else response_key
+        )
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
         self._attr_native_unit_of_measurement = unit_of_measurement

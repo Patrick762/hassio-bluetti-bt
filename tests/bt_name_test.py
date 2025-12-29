@@ -36,5 +36,9 @@ class TestBTNames(unittest.TestCase):
             matchers.append(local_name)
 
         for name in self.device_names:
-            found = filter(lambda m: m.endswith("*") and name.startswith(m.strip("*")), matchers)
-            self.assertGreaterEqual(len(list(found)), 1, f"Missing BT matcher for device: {name}")
+            found = filter(
+                lambda m: m.endswith("*") and name.startswith(m.strip("*")), matchers
+            )
+            self.assertGreaterEqual(
+                len(list(found)), 1, f"Missing BT matcher for device: {name}"
+            )
