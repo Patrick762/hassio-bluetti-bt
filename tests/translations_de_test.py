@@ -29,9 +29,9 @@ class TestTranslationsDe(unittest.TestCase):
         self.switch_names = set()
 
         for device in devices:
-            for field in device.get_sensor_fields()+device.get_select_fields():
+            for field in device.get_sensor_fields() + device.get_select_fields():
                 self.sensor_names.add(field.name)
-            for field in device.get_bool_fields()+device.get_switch_fields():
+            for field in device.get_bool_fields() + device.get_switch_fields():
                 self.binary_sensor_names.add(field.name)
             for field in device.get_select_fields():
                 self.select_names.add(field.name)
