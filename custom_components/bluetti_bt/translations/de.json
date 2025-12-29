@@ -149,6 +149,12 @@
       "grid_frequency": {
         "name": "Netzfrequenz"
       },
+      "grid_frequency_max_value": {
+        "name": "Netzfrequenz Maximum"
+      },
+      "grid_frequency_min_value": {
+        "name": "Netzfrequenz Minimum"
+      },
       "grid_p1_current": {
         "name": "Netz Phase 1 Stromstärke"
       },
@@ -175,6 +181,12 @@
       },
       "grid_p3_voltage": {
         "name": "Netz Phase 3 Spannung"
+      },
+      "grid_voltage_max_value": {
+        "name": "Netzspannung Maximum"
+      },
+      "grid_voltage_min_value": {
+        "name": "Netzspannung Minimum"
       },
       "internal_ac_frequency": {
         "name": "Interne AC Frequenz"
@@ -248,8 +260,14 @@
       "version_arm": {
         "name": "ARM Version"
       },
+      "version_bms": {
+        "name": "BMS Version"
+      },
       "version_dsp": {
         "name": "DSP Version"
+      },
+      "wifi_name": {
+        "name": "WiFi Name"
       },
       "pack_1_voltage": {
         "name": "Pack 1 Spannung"
@@ -344,6 +362,9 @@
       "ctrl_eco_dc": {
         "name": "Eco Modus DC"
       },
+      "ctrl_generator": {
+        "name": "Generator Modus"
+      },
       "ctrl_power_lifting": {
         "name": "Power Lifting"
       },
@@ -352,6 +373,15 @@
       },
       "ctrl_split_phase": {
         "name": "Split Phase"
+      },
+      "ac_output_on": {
+        "name": "AC Ausgang"
+      },
+      "dc_output_on": {
+        "name": "DC Ausgang"
+      },
+      "power_lifting_on": {
+        "name": "Power Lifting"
       }
     }
   }

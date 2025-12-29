@@ -126,7 +126,6 @@ async def async_setup_entry(
                         logger=logger,
                     )
                 )
-            
 
     async_add_entities(sensors_to_add)
 
