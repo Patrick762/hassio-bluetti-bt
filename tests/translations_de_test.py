@@ -24,29 +24,22 @@ class TestTranslationsDe(unittest.TestCase):
             devices.append(device)
 
         self.sensor_names = set()
-        for device in devices:
-            for field in device.get_sensor_fields():
-                self.sensor_names.add(field.name)
-
         self.binary_sensor_names = set()
-        for device in devices:
-            for field in device.get_bool_fields():
-                self.binary_sensor_names.add(field.name)
-
         self.select_names = set()
+        self.switch_names = set()
+
         for device in devices:
+            for field in device.get_sensor_fields()+device.get_select_fields():
+                self.sensor_names.add(field.name)
+            for field in device.get_bool_fields()+device.get_switch_fields():
+                self.binary_sensor_names.add(field.name)
             for field in device.get_select_fields():
                 self.select_names.add(field.name)
-
-        self.switch_names = set()
-        for device in devices:
             for field in device.get_switch_fields():
                 self.switch_names.add(field.name)
 
     def test_sensor_translations(self):
         sensor_keys = sorted(self.t["entity"]["sensor"].keys())
-
-        self.assertGreaterEqual(len(sensor_keys), len(self.sensor_names))
 
         for sensor_name in self.sensor_names:
             self.assertIn(
@@ -58,8 +51,6 @@ class TestTranslationsDe(unittest.TestCase):
     def test_binary_sensor_translations(self):
         binary_sensor_keys = sorted(self.t["entity"]["binary_sensor"].keys())
 
-        self.assertGreaterEqual(len(binary_sensor_keys), len(self.binary_sensor_names))
-
         for sensor_name in self.binary_sensor_names:
             self.assertIn(
                 sensor_name,
@@ -70,8 +61,6 @@ class TestTranslationsDe(unittest.TestCase):
     def test_select_translations(self):
         select_keys = sorted(self.t["entity"]["select"].keys())
 
-        self.assertGreaterEqual(len(select_keys), len(self.select_names))
-
         for select_name in self.select_names:
             self.assertIn(
                 select_name,
@@ -81,8 +70,6 @@ class TestTranslationsDe(unittest.TestCase):
 
     def test_switch_translations(self):
         switch_keys = sorted(self.t["entity"]["switch"].keys())
-
-        self.assertGreaterEqual(len(switch_keys), len(self.switch_names))
 
         for switch_name in self.switch_names:
             self.assertIn(
