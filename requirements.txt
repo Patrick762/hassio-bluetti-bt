@@ -1,2 +1,2 @@
 homeassistant
-bluetti-bt-lib==0.1.4
+bluetti-bt-lib==0.1.5b1
