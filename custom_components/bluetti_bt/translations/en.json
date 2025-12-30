@@ -269,29 +269,14 @@
       "wifi_name": {
         "name": "WiFi Name"
       },
-      "pack_1_voltage": {
-        "name": "Pack 1 Voltage"
+      "pack_voltage": {
+        "name": "Voltage"
       },
-      "pack_2_voltage": {
-        "name": "Pack 2 Voltage"
+      "pack_battery_soc": {
+        "name": "SOC"
       },
-      "pack_3_voltage": {
-        "name": "Pack 3 Voltage"
-      },
-      "pack_4_voltage": {
-        "name": "Pack 4 Voltage"
-      },
-      "pack_1_battery_soc": {
-        "name": "Pack 1 SOC"
-      },
-      "pack_2_battery_soc": {
-        "name": "Pack 2 SOC"
-      },
-      "pack_3_battery_soc": {
-        "name": "Pack 3 SOC"
-      },
-      "pack_4_battery_soc": {
-        "name": "Pack 4 SOC"
+      "pack_cell_voltages": {
+        "name": "Voltage Cell {cell_num}"
       }
     },
     "switch": {

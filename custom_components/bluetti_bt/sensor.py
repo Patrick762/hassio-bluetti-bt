@@ -4,6 +4,7 @@ from __future__ import annotations
 from enum import Enum
 import logging
 from decimal import Decimal
+from typing import List
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -90,13 +91,13 @@ async def async_setup_entry(
     for field in bluetti_device.pack_fields:
         field_name = FieldName(field.name)
 
-        if field_name in [FieldName.PACK_CELL_VOLTAGES, FieldName.PACK_SELECTED]:
+        if field_name in [FieldName.PACK_SELECTED]:
             continue
 
         unit = get_unit(field_name)
         device_class = get_device_class(field_name)
         state_class = get_state_class(field_name)
-        category = EntityCategory.DIAGNOSTIC
+        category = get_category(field_name)
 
         for num in range(1, bluetti_device.max_packs + 1):
             main_name = dev_info(entry).get("name")
@@ -105,6 +106,26 @@ async def async_setup_entry(
                 name=f"{main_name} Battery Pack {num}",
                 manufacturer=MANUFACTURER,
             )
+
+            if field_name == FieldName.PACK_CELL_VOLTAGES:
+                # Special case: list of cell voltages
+                for cell_num in range(1, field.size + 1):
+                    sensors_to_add.append(
+                        BluettiSensor(
+                            coordinator,
+                            device_info,
+                            field.address,
+                            field.name,
+                            unit_of_measurement=unit,
+                            device_class=device_class,
+                            state_class=state_class,
+                            category=category,
+                            pack_num=num,
+                            cell_num=cell_num,
+                            logger=logger,
+                        )
+                    )
+                continue
 
             if unit is not None:
                 sensors_to_add.append(
@@ -152,15 +173,22 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         category: EntityCategory | None = None,
         options: list[str] | None = None,
         pack_num: int | None = None,
+        cell_num: int | None = None,
         logger: logging.Logger = logging.getLogger(),
     ):
         """Init sensor entity."""
         super().__init__(coordinator)
         self.coordinator = coordinator
+        self._pack_num = pack_num
+        self._cell_num = cell_num
         self._logger = logger
 
         self._attr_has_entity_name = True
         e_name = f"{device_info.get('name')} {response_key}"
+
+        if cell_num is not None:
+            e_name = f"{device_info.get('name')} {response_key} {cell_num}"
+
         self._address = address
         self._response_key = (
             f"pack_{pack_num}_{response_key}" if pack_num else response_key
@@ -169,8 +197,13 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
 
         self._attr_device_info = device_info
         self._attr_translation_key = (
-            f"pack_{pack_num}_{response_key}" if pack_num else response_key
+            f"pack_{response_key}" if pack_num else response_key
         )
+
+        if cell_num is not None:
+            self._attr_translation_key = f"pack_{response_key}"
+            self._attr_translation_placeholders = {"cell_num": cell_num}
+
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
         self._attr_native_unit_of_measurement = unit_of_measurement
@@ -216,9 +249,6 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             self._set_unavailable("Data is None")
             return
 
-        self._logger.debug(
-            "Updating state of %s", unique_id_logable(self._attr_unique_id)
-        )
         if not isinstance(self.coordinator.data, dict):
             self._logger.warning(
                 "Invalid data from coordinator (sensor.%s)",
@@ -226,6 +256,11 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             )
             self._set_unavailable("Invalid data")
             return
+
+        self._logger.debug(
+            "Coordinator data: %s",
+            self.coordinator.data,
+        )
 
         response_data = self.coordinator.data.get(self._response_key)
         if response_data is None:
@@ -240,6 +275,7 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             and not isinstance(response_data, Decimal)
             and not isinstance(response_data, Enum)
             and not isinstance(response_data, str)
+            and not isinstance(response_data, List)
         ):
             self._logger.warning(
                 "Invalid response data type from coordinator (sensor.%s): %s has type %s",
@@ -250,12 +286,18 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
             self._set_unavailable("Invalid data type")
             return
 
+        if isinstance(response_data, List) and len(response_data) < self._cell_num:
+            self._set_unavailable("Invalid list length")
+            return
+
         self._set_available()
 
         # Different for enum and numeric
         if isinstance(response_data, Enum):
             # Enum
             self._attr_native_value = response_data.name
+        elif isinstance(response_data, List):
+            self._attr_native_value = response_data[self._cell_num - 1]
         else:
             # Numeric
             self._attr_native_value = response_data
