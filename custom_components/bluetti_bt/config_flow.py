@@ -8,7 +8,6 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfoBleak,
-    async_discovered_service_info,
 )
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResult
@@ -63,9 +62,10 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle user input."""
 
+        # Handle click on "OK" button
         if user_input is not None:
-            address = user_input[CONF_ADDRESS]
-            discovery_info = self._discovered_devices[address]
+            discovery_info = self._discovery_info
+            address = discovery_info.address
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
             name = re.sub("[^A-Z0-9]+", "", discovery_info.name)
@@ -75,38 +75,32 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
             data = InitialDeviceConfig(
-                discovery_info.address,
+                address,
                 name,
                 manufacturer_data.dev_type,
                 manufacturer_data.use_encryption,
             )
 
+            optional = OptionalDeviceConfig.from_dict({})
+
             return self.async_create_entry(
                 title=name,
-                data=data.as_dict,
+                data={
+                    **data.as_dict,
+                    **optional.as_dict,
+                },
             )
 
-        if discovery := self._discovery_info:
-            self._discovered_devices[discovery.address] = discovery
-        else:
-            current_addresses = self._async_current_ids()
-            for discovery in async_discovered_service_info(self.hass):
-                address = discovery.address
-                if address in current_addresses or address in self._discovered_devices:
-                    continue
-                self._discovered_devices[discovery.address] = discovery
-
-        if not self._discovered_devices:
+        if not self._discovery_info:
             return self.async_abort(reason="no_unconfigured_devices")
 
+        # The input from this is not used, we use the discovered and known working address
         data_schema = vol.Schema(
             {
-                vol.Required(CONF_ADDRESS): vol.In(
-                    {
-                        service_info.address: service_info.name
-                        for service_info in self._discovered_devices.values()
-                    }
-                ),
+                vol.Required(
+                    CONF_ADDRESS,
+                    default=self._discovery_info.address,
+                ): str,
             }
         )
         return self.async_show_form(
@@ -115,20 +109,13 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     @staticmethod
-    def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
-    ) -> config_entries.OptionsFlow:
+    def async_get_options_flow(_) -> config_entries.OptionsFlow:
         """Create the options flow."""
-        return OptionsFlowHandler(config_entry)
+        return OptionsFlowHandler()
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        super().__init__()
-        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -154,7 +141,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 data=config.as_dict,
             )
 
-        defaults = OptionalDeviceConfig.from_dict({})
+        defaults = OptionalDeviceConfig.from_dict(self.config_entry.data)
 
         return self.async_show_form(
             step_id="init",
