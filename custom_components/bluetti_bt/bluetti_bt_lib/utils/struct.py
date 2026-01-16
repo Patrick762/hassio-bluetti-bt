@@ -68,7 +68,8 @@ class BoolField(DeviceField):
         super().__init__(name, address, 1)
 
     def parse(self, data: bytes) -> bool:
-        return struct.unpack("!H", data)[0] == 1
+        # Any non-zero value means ON (some devices use values like 3 for AC output)
+        return struct.unpack("!H", data)[0] != 0
 
 
 class EnumField(DeviceField):

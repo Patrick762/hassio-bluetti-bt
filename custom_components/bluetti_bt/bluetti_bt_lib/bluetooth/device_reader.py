@@ -271,7 +271,15 @@ class DeviceReader:
 
             # Make request
             _LOGGER.debug("Requesting %s", command)
-            await self.client.write_gatt_char(WRITE_UUID, bytes(command))
+            command_bytes = bytes(command)
+            
+            # Encrypt command if encryption is active and ready
+            if self.encrypted and self.encryption is not None and self.encryption.is_ready_for_commands:
+                key, iv = self.encryption.getKeyIv()
+                command_bytes = self.encryption.aes_encrypt(command_bytes, key, iv)
+                _LOGGER.debug("Sending encrypted command (%d bytes)", len(command_bytes))
+            
+            await self.client.write_gatt_char(WRITE_UUID, command_bytes)
 
             # Wait for response
             res = await asyncio.wait_for(self.notify_future, timeout=RESPONSE_TIMEOUT)
