@@ -130,7 +130,7 @@ class VersionField(DeviceField):
     def __init__(self, name: str, address: int):
         super().__init__(name, address, 2)
 
-    def parse(self, data: bytes) -> int:
+    def parse(self, data: bytes) -> Decimal:
         values = struct.unpack("!2H", data)
         return Decimal(values[0] + (values[1] << 16)) / 100
 
@@ -150,11 +150,11 @@ class DeviceStruct:
     def __init__(self):
         self.fields = []
 
-    def add_uint_field(self, name: str, address: int, range: Tuple[int, int] = None, multiplier: float = 1):
-        self.fields.append(UintField(name, address, range, multiplier))
+    def add_uint_field(self, name: str, address: int, valid_range: Optional[Tuple[int, int]] = None, multiplier: float = 1):
+        self.fields.append(UintField(name, address, valid_range, multiplier))
 
-    def add_int_field(self, name: str, address: int, range: Tuple[int, int] = None):
-        self.fields.append(IntField(name, address, range))
+    def add_int_field(self, name: str, address: int, valid_range: Optional[Tuple[int, int]] = None):
+        self.fields.append(IntField(name, address, valid_range))
 
     def add_bool_field(self, name: str, address: int):
         self.fields.append(BoolField(name, address))
@@ -163,9 +163,9 @@ class DeviceStruct:
         self.fields.append(EnumField(name, address, enum))
 
     def add_decimal_field(
-        self, name: str, address: int, scale: int, range: Tuple[int, int] = None, multiplier: float = 1
+        self, name: str, address: int, scale: int, valid_range: Optional[Tuple[int, int]] = None, multiplier: float = 1
     ):
-        self.fields.append(DecimalField(name, address, scale, range, multiplier))
+        self.fields.append(DecimalField(name, address, scale, valid_range, multiplier))
 
     def add_decimal_array_field(self, name: str, address: int, size: int, scale: int):
         self.fields.append(DecimalArrayField(name, address, size, scale))
