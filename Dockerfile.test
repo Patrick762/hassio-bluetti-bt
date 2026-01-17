@@ -1,0 +1,9 @@
+FROM python:3
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY tests ./tests
+COPY custom_components/bluetti_bt ./custom_components/bluetti_bt
+
+RUN python3 -m unittest discover -s tests -p "*.py"
