@@ -57,10 +57,15 @@ FIELD_STATE_CLASS: Dict[FieldName, SensorStateClass] = {
     FieldName.SM_P3_CURRENT: SensorStateClass.MEASUREMENT,
     FieldName.SM_P3_POWER: SensorStateClass.MEASUREMENT,
     FieldName.SM_P3_VOLTAGE: SensorStateClass.MEASUREMENT,
+    FieldName.TIME_REMAINING: SensorStateClass.MEASUREMENT,
+    # Battery packs
+    FieldName.PACK_BATTERY_SOC: SensorStateClass.MEASUREMENT,
+    FieldName.PACK_CELL_VOLTAGES: SensorStateClass.MEASUREMENT,
+    FieldName.PACK_VOLTAGE: SensorStateClass.MEASUREMENT,
 }
 
 
-def get_state_class(field: FieldName) -> str:
+def get_state_class(field: FieldName) -> str | None:
     state_class = FIELD_STATE_CLASS.get(field)
 
     if state_class is None:

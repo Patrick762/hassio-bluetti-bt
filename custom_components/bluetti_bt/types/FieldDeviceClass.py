@@ -57,10 +57,15 @@ FIELD_DEVICE_CLASS: Dict[FieldName, SensorDeviceClass] = {
     FieldName.SM_P3_CURRENT: SensorDeviceClass.CURRENT,
     FieldName.SM_P3_POWER: SensorDeviceClass.POWER,
     FieldName.SM_P3_VOLTAGE: SensorDeviceClass.VOLTAGE,
+    FieldName.TIME_REMAINING: SensorDeviceClass.DURATION,
+    # Battery packs
+    FieldName.PACK_BATTERY_SOC: SensorDeviceClass.BATTERY,
+    FieldName.PACK_CELL_VOLTAGES: SensorDeviceClass.VOLTAGE,
+    FieldName.PACK_VOLTAGE: SensorDeviceClass.VOLTAGE,
 }
 
 
-def get_device_class(field: FieldName) -> str:
+def get_device_class(field: FieldName) -> str | None:
     device_class = FIELD_DEVICE_CLASS.get(field)
 
     if device_class is None:

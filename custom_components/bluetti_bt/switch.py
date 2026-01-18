@@ -6,24 +6,29 @@ import logging
 import async_timeout
 from bleak import BleakScanner
 from bleak_retry_connector import BleakClientWithServiceCache, establish_connection
-from homeassistant.components.switch import SwitchEntity, SwitchDeviceClass
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
 
-from bluetti_bt_lib import build_device, BluettiDevice, DeviceWriter, DeviceField
+from bluetti_bt_lib import (
+    build_device,
+    BluettiDevice,
+    DeviceWriter,
+    DeviceField,
+    FieldName,
+)
 
-from .types import FullDeviceConfig
+from .types import FullDeviceConfig, get_category
 from . import device_info as dev_info, get_unique_id
 from .const import DATA_COORDINATOR, DATA_LOCK, DOMAIN
 from .coordinator import PollingCoordinator
 from .utils import mac_loggable, unique_id_logable
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -35,12 +40,20 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
     lock = hass.data[DOMAIN][entry.entry_id][DATA_LOCK]
 
+    logger = logging.getLogger(
+        f"{__name__}.{mac_loggable(config.address).replace(':', '_')}"
+    )
+
+    if config.use_encryption is True:
+        logger.info("Controls are disabled on encrypted devices")
+        return None
+
     if config is None or not isinstance(coordinator, PollingCoordinator):
-        _LOGGER.error("No coordinator found")
+        logger.error("No coordinator found")
         return None
 
     # Generate device info
-    _LOGGER.info("Creating switches for device with address %s", config.address)
+    logger.info("Creating switches for device with address %s", config.address)
     device_info = dev_info(entry)
 
     # Add switches
@@ -49,6 +62,8 @@ async def async_setup_entry(
     switches_to_add = []
     switch_fields = bluetti_device.get_switch_fields()
     for field in switch_fields:
+        category = get_category(FieldName(field.name))
+
         switches_to_add.append(
             BluettiSwitch(
                 bluetti_device,
@@ -57,6 +72,8 @@ async def async_setup_entry(
                 device_info,
                 field,
                 lock,
+                category=category,
+                logger=logger,
             )
         )
 
@@ -69,19 +86,22 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
     def __init__(
         self,
         bluetti_device: BluettiDevice,
-        mac: str,
+        address: str,
         coordinator: PollingCoordinator,
         device_info: DeviceInfo,
         field: DeviceField,
         lock: asyncio.Lock,
+        category: EntityCategory | None = None,
+        logger: logging.Logger = logging.getLogger(),
     ):
         """Init entity."""
         super().__init__(coordinator)
         self.coordinator = coordinator
+        self._logger = logger
 
         e_name = f"{device_info.get('name')} {field.name}"
         self._bluetti_device = bluetti_device
-        self._mac = mac
+        self._address = address
         self._field = field
         self._response_key = field.name
         self._unavailable_counter = 5
@@ -92,8 +112,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         self._attr_translation_key = field.name
         self._attr_available = False
         self._attr_unique_id = get_unique_id(e_name)
-
-        self._attr_device_class = SwitchDeviceClass.OUTLET
+        self._attr_entity_category = category
 
     @property
     def available(self) -> bool:
@@ -126,15 +145,17 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
         """Handle updated data from the coordinator."""
 
         if self.coordinator.data is None:
-            _LOGGER.debug(
+            self._logger.debug(
                 "Data from coordinator is None",
             )
             self._set_unavailable("Data is None")
             return
 
-        _LOGGER.debug("Updating state of %s", unique_id_logable(self._attr_unique_id))
+        self._logger.debug(
+            "Updating state of %s", unique_id_logable(self._attr_unique_id)
+        )
         if not isinstance(self.coordinator.data, dict):
-            _LOGGER.debug(
+            self._logger.debug(
                 "Invalid data from coordinator (switch.%s)",
                 unique_id_logable(self._attr_unique_id),
             )
@@ -147,7 +168,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
             return
 
         if not isinstance(response_data, bool):
-            _LOGGER.warning(
+            self._logger.warning(
                 "Invalid response data type from coordinator (switch.%s): %s",
                 unique_id_logable(self._attr_unique_id),
                 response_data,
@@ -161,19 +182,23 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
-        _LOGGER.debug("Turn on %s on %s", self._response_key, mac_loggable(self._mac))
+        self._logger.debug(
+            "Turn on %s on %s", self._response_key, mac_loggable(self._address)
+        )
         await self.write_to_device(True)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        _LOGGER.debug("Turn off %s on %s", self._response_key, mac_loggable(self._mac))
+        self._logger.debug(
+            "Turn off %s on %s", self._response_key, mac_loggable(self._address)
+        )
         await self.write_to_device(False)
 
     async def write_to_device(self, state: bool):
         """Write to device."""
 
         try:
-            device = await BleakScanner.find_device_by_address(self._mac, timeout=5)
+            device = await BleakScanner.find_device_by_address(self._address, timeout=5)
 
             if device is None:
                 return
@@ -198,7 +223,7 @@ class BluettiSwitch(CoordinatorEntity, SwitchEntity):
                 await asyncio.sleep(5)
 
         except TimeoutError:
-            _LOGGER.error("Timed out for device %s", mac_loggable(self._mac))
+            self._logger.error("Timed out for device %s", mac_loggable(self._address))
             return None
 
         await self.coordinator.async_request_refresh()

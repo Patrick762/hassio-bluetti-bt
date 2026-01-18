@@ -3,10 +3,12 @@
     "step": {
       "user": {
         "data": {
-          "address": "Gerät",
-          "type": "Modell (erforderlich bei PBOX Geräten)"
+          "address": "Gerät"
         }
       }
+    },
+    "abort": {
+      "no_unconfigured_devices": "Keine Geräte gefunden"
     }
   },
   "options": {
@@ -87,6 +89,42 @@
       "total_battery_percent": {
         "name": "Batterie Ladestand"
       },
+      "soc_range_end": {
+        "name": "SOC hoch"
+      },
+      "soc_range_start": {
+        "name": "SOC niedrig"
+      },
+      "ctrl_eco_min_power_ac": {
+        "name": "Eco Minimum Power AC"
+      },
+      "ctrl_eco_min_power_dc": {
+        "name": "Eco Minimum Power DC"
+      },
+      "ctrl_split_phase_mode": {
+        "name": "Split Phase Modus"
+      },
+      "ctrl_charging_mode": {
+        "name": "Lademodus"
+      },
+      "ctrl_display_timeout": {
+        "name": "Display Timeout"
+      },
+      "ctrl_eco_time_mode": {
+        "name": "Eco Timer"
+      },
+      "ctrl_eco_time_mode_ac": {
+        "name": "Eco Timer AC"
+      },
+      "ctrl_eco_time_mode_dc": {
+        "name": "Eco Timer DC"
+      },
+      "ctrl_led_mode": {
+        "name": "LED Modus"
+      },
+      "ctrl_ups_mode": {
+        "name": "UPS Modus"
+      },
       "dc_input_current": {
         "name": "DC Eingang Stromstärke"
       },
@@ -110,6 +148,12 @@
       },
       "grid_frequency": {
         "name": "Netzfrequenz"
+      },
+      "grid_frequency_max_value": {
+        "name": "Netzfrequenz Maximum"
+      },
+      "grid_frequency_min_value": {
+        "name": "Netzfrequenz Minimum"
       },
       "grid_p1_current": {
         "name": "Netz Phase 1 Stromstärke"
@@ -137,6 +181,12 @@
       },
       "grid_p3_voltage": {
         "name": "Netz Phase 3 Spannung"
+      },
+      "grid_voltage_max_value": {
+        "name": "Netzspannung Maximum"
+      },
+      "grid_voltage_min_value": {
+        "name": "Netzspannung Minimum"
       },
       "internal_ac_frequency": {
         "name": "Interne AC Frequenz"
@@ -203,6 +253,30 @@
       },
       "sm_p3_voltage": {
         "name": "Smartmeter Phase 3 Spannung"
+      },
+      "time_remaining": {
+        "name": "Verbleibende Zeit"
+      },
+      "version_arm": {
+        "name": "ARM Version"
+      },
+      "version_bms": {
+        "name": "BMS Version"
+      },
+      "version_dsp": {
+        "name": "DSP Version"
+      },
+      "wifi_name": {
+        "name": "WiFi Name"
+      },
+      "pack_voltage": {
+        "name": "Spannung"
+      },
+      "pack_battery_soc": {
+        "name": "Ladestand"
+      },
+      "pack_cell_voltages": {
+        "name": "Spannung Zelle {cell_num}"
       }
     },
     "switch": {
@@ -218,8 +292,11 @@
       "ctrl_eco": {
         "name": "ECO Modus"
       },
-      "ctrl_led_mode": {
-        "name": "LED Modus"
+      "ctrl_eco_ac": {
+        "name": "Eco Modus AC"
+      },
+      "ctrl_eco_dc": {
+        "name": "Eco Modus DC"
       },
       "ctrl_power_lifting": {
         "name": "Power Lifting"
@@ -232,11 +309,64 @@
       "ctrl_charging_mode": {
         "name": "Lademodus"
       },
+      "ctrl_display_timeout": {
+        "name": "Display Timeout"
+      },
       "ctrl_eco_time_mode": {
         "name": "Eco Timer"
       },
+      "ctrl_eco_time_mode_ac": {
+        "name": "Eco Timer AC"
+      },
+      "ctrl_eco_time_mode_dc": {
+        "name": "Eco Timer DC"
+      },
       "ctrl_led_mode": {
         "name": "LED Modus"
+      },
+      "ctrl_ups_mode": {
+        "name": "UPS Modus"
+      }
+    },
+    "binary_sensor": {
+      "ctrl_ac": {
+        "name": "AC Ausgang"
+      },
+      "ctrl_charging_mode": {
+        "name": "Lademodus"
+      },
+      "ctrl_dc": {
+        "name": "DC Ausgang"
+      },
+      "ctrl_eco": {
+        "name": "ECO Modus"
+      },
+      "ctrl_eco_ac": {
+        "name": "Eco Modus AC"
+      },
+      "ctrl_eco_dc": {
+        "name": "Eco Modus DC"
+      },
+      "ctrl_generator": {
+        "name": "Generator Modus"
+      },
+      "ctrl_power_lifting": {
+        "name": "Power Lifting"
+      },
+      "ctrl_power_off": {
+        "name": "Ausschalter"
+      },
+      "ctrl_split_phase": {
+        "name": "Split Phase"
+      },
+      "ac_output_on": {
+        "name": "AC Ausgang"
+      },
+      "dc_output_on": {
+        "name": "DC Ausgang"
+      },
+      "power_lifting_on": {
+        "name": "Power Lifting"
       }
     }
   }
