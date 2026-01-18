@@ -7,6 +7,7 @@ DIAGNOSTICS = [
     FieldName.DEVICE_TYPE,
     FieldName.VER_ARM,
     FieldName.VER_DSP,
+    FieldName.VER_BMS,
     FieldName.PACK_CELL_VOLTAGES,
 ]
 
