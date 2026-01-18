@@ -1,0 +1,114 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "address": "Dispositivo",
+          "type": "Modelo (obrigatório para dispositivos PBOX)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "polling_interval": "Intervalo de consulta em segundos (reinicialização necessária)",
+          "polling_timeout": "Tempo limite de consulta em segundos (reinicialização necessária)",
+          "max_retries": "Quantidade máxima de tentativas de conexão (reinicialização necessária)"
+        }
+      }
+    },
+    "abort": {
+      "invalid_interval": "Intervalo de consulta inválido. Use 5 segundos ou mais",
+      "invalid_timeout": "Tempo limite de consulta inválido. Use 1 segundo ou mais",
+      "invalid_retries": "Número máximo de tentativas inválido. Use 1 ou mais"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "ac_input_current": { "name": "Corrente de entrada CA" },
+      "ac_input_frequency": { "name": "Frequência de entrada CA" },
+      "ac_input_power": { "name": "Potência de entrada CA" },
+      "ac_input_voltage": { "name": "Tensão de entrada CA" },
+      "ac_output_frequency": { "name": "Frequência de saída CA" },
+      "ac_output_mode": { "name": "Modo de saída CA" },
+      "ac_output_on": { "name": "Saída CA ligada" },
+      "ac_output_current": { "name": "Corrente de saída CA" },
+      "ac_output_power": { "name": "Potência de saída CA" },
+      "ac_output_voltage": { "name": "Tensão de saída CA" },
+
+      "ac_p1_current": { "name": "Corrente CA Fase 1" },
+      "ac_p1_power": { "name": "Potência CA Fase 1" },
+      "ac_p1_voltage": { "name": "Tensão CA Fase 1" },
+      "ac_p2_current": { "name": "Corrente CA Fase 2" },
+      "ac_p2_power": { "name": "Potência CA Fase 2" },
+      "ac_p2_voltage": { "name": "Tensão CA Fase 2" },
+      "ac_p3_current": { "name": "Corrente CA Fase 3" },
+      "ac_p3_power": { "name": "Potência CA Fase 3" },
+      "ac_p3_voltage": { "name": "Tensão CA Fase 3" },
+
+      "total_battery_percent": { "name": "Carga da bateria (SOC)" },
+
+      "dc_input_current": { "name": "Corrente de entrada CC" },
+      "dc_input_power": { "name": "Potência de entrada CC" },
+      "dc_input_voltage": { "name": "Tensão de entrada CC" },
+      "dc_output_on": { "name": "Saída CC ligada" },
+      "dc_output_power": { "name": "Potência de saída CC" },
+
+      "device_type": { "name": "Tipo de dispositivo" },
+      "device_sn": { "name": "Número de série" },
+
+      "grid_frequency": { "name": "Frequência da rede" },
+      "grid_p1_current": { "name": "Corrente da rede Fase 1" },
+      "grid_p1_power": { "name": "Potência da rede Fase 1" },
+      "grid_p1_voltage": { "name": "Tensão da rede Fase 1" },
+      "grid_p2_current": { "name": "Corrente da rede Fase 2" },
+      "grid_p2_power": { "name": "Potência da rede Fase 2" },
+      "grid_p2_voltage": { "name": "Tensão da rede Fase 2" },
+      "grid_p3_current": { "name": "Corrente da rede Fase 3" },
+      "grid_p3_power": { "name": "Potência da rede Fase 3" },
+      "grid_p3_voltage": { "name": "Tensão da rede Fase 3" },
+
+      "internal_ac_frequency": { "name": "Frequência CA interna" },
+      "internal_ac_voltage": { "name": "Tensão CA interna" },
+      "internal_dc_input_current": { "name": "Corrente de entrada CC interna" },
+      "internal_dc_input_power": { "name": "Potência de entrada CC interna" },
+      "internal_dc_input_voltage": { "name": "Tensão de entrada CC interna" },
+
+      "power_generation": { "name": "Energia gerada" },
+      "power_lifting_on": { "name": "Power Lifting ligado" },
+
+      "pv_s1_current": { "name": "Corrente do string FV 1" },
+      "pv_s1_power": { "name": "Potência do string FV 1" },
+      "pv_s1_voltage": { "name": "Tensão do string FV 1" },
+      "pv_s2_current": { "name": "Corrente do string FV 2" },
+      "pv_s2_power": { "name": "Potência do string FV 2" },
+      "pv_s2_voltage": { "name": "Tensão do string FV 2" },
+
+      "sm_p1_current": { "name": "Corrente do medidor inteligente Fase 1" },
+      "sm_p1_power": { "name": "Potência do medidor inteligente Fase 1" },
+      "sm_p1_voltage": { "name": "Tensão do medidor inteligente Fase 1" },
+      "sm_p2_current": { "name": "Corrente do medidor inteligente Fase 2" },
+      "sm_p2_power": { "name": "Potência do medidor inteligente Fase 2" },
+      "sm_p2_voltage": { "name": "Tensão do medidor inteligente Fase 2" },
+      "sm_p3_current": { "name": "Corrente do medidor inteligente Fase 3" },
+      "sm_p3_power": { "name": "Potência do medidor inteligente Fase 3" },
+      "sm_p3_voltage": { "name": "Tensão do medidor inteligente Fase 3" }
+    },
+    "switch": {
+      "ctrl_ac": { "name": "Saída CA" },
+      "ctrl_charging_mode": { "name": "Modo de carregamento" },
+      "ctrl_dc": { "name": "Saída CC" },
+      "ctrl_eco": { "name": "Modo ECO" },
+      "ctrl_led_mode": { "name": "Modo do LED" },
+      "ctrl_power_lifting": { "name": "Power Lifting" },
+      "ctrl_power_off": { "name": "Desligar" }
+    },
+    "select": {
+      "ctrl_charging_mode": { "name": "Modo de carregamento" },
+      "ctrl_eco_time_mode": { "name": "Temporizador ECO" },
+      "ctrl_led_mode": { "name": "Modo do LED" }
+    }
+  }
+}
