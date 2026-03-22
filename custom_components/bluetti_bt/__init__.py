@@ -24,6 +24,7 @@ from .coordinator import PollingCoordinator
 
 PLATFORMS: List[Platform] = [
     Platform.BINARY_SENSOR,
+    Platform.NUMBER,
     Platform.SENSOR,
     Platform.SWITCH,
     Platform.SELECT,

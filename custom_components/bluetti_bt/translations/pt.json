@@ -212,6 +212,28 @@
       },
       "ctrl_power_off": {
         "name": "Poweroff"
+      },
+      "ctrl_charge_from_grid": {
+        "name": "Carregar da Rede"
+      }
+    },
+    "number": {
+      "soc_range_start": {
+        "name": "SOC Min"
+      },
+      "soc_range_end": {
+        "name": "SOC Max"
+      }
+    },
+    "select": {
+      "ctrl_working_mode": {
+        "name": "Modo de Operação",
+        "state": {
+          "CUSTOM": "Personalizado",
+          "SELF_CONSUMPTION": "Autoconsumo",
+          "BACKUP": "Backup",
+          "TIME_OF_USE": "Horário"
+        }
       }
     }
   }

@@ -25,6 +25,10 @@ CONFIGS = [
     FieldName.CTRL_POWER_LIFTING,
     FieldName.CTRL_SPLIT_PHASE,
     FieldName.CTRL_UPS_MODE,
+    FieldName.CTRL_WORKING_MODE,
+    FieldName.CTRL_CHARGE_FROM_GRID,
+    FieldName.BATTERY_SOC_RANGE_START,
+    FieldName.BATTERY_SOC_RANGE_END,
 ]
 
 

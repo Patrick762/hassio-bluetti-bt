@@ -303,6 +303,17 @@
       },
       "ctrl_power_off": {
         "name": "Ausschalter"
+      },
+      "ctrl_charge_from_grid": {
+        "name": "Vom Netz laden"
+      }
+    },
+    "number": {
+      "soc_range_start": {
+        "name": "SOC Min"
+      },
+      "soc_range_end": {
+        "name": "SOC Max"
       }
     },
     "select": {
@@ -326,6 +337,15 @@
       },
       "ctrl_ups_mode": {
         "name": "UPS Modus"
+      },
+      "ctrl_working_mode": {
+        "name": "Betriebsmodus",
+        "state": {
+          "CUSTOM": "Benutzerdefiniert",
+          "SELF_CONSUMPTION": "Eigenverbrauch",
+          "BACKUP": "Backup",
+          "TIME_OF_USE": "Zeitbasiert"
+        }
       }
     },
     "binary_sensor": {
