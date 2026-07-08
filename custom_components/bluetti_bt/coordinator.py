@@ -7,7 +7,7 @@ import logging
 from homeassistant.components import bluetooth
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from bluetti_bt_lib import build_device, DeviceReader, DeviceReaderConfig
+from bluetti_bt_lib import build_device, DeviceConnection, DeviceReader, DeviceReaderConfig
 
 from .utils import mac_loggable
 from .types import FullDeviceConfig
@@ -21,7 +21,9 @@ class PollingCoordinator(DataUpdateCoordinator):
         hass: HomeAssistant,
         config: FullDeviceConfig,
         lock: asyncio.Lock,
-    ):
+        write_pending: asyncio.Event,
+        connection: DeviceConnection,
+    ) -> None:
         """Initialize coordinator."""
         super().__init__(
             hass,
@@ -33,6 +35,7 @@ class PollingCoordinator(DataUpdateCoordinator):
         )
 
         self.config = config
+        self.write_pending = write_pending
 
         # Create client
         self.logger.info("Creating client for %s", config.name)
@@ -50,16 +53,19 @@ class PollingCoordinator(DataUpdateCoordinator):
             DeviceReaderConfig(
                 config.polling_timeout,
                 config.use_encryption,
+                keep_alive_seconds=config.polling_interval // 2,
             ),
             lock,
+            connection=connection,
         )
 
     async def _async_update_data(self):
-        """Fetch data from API endpoint.
+        """Fetch data from API endpoint."""
 
-        This is the place to pre-process the data to lookup tables
-        so entities can quickly look up their data.
-        """
+        # Skip read cycle if a write is in progress
+        if self.write_pending.is_set():
+            self.logger.debug("Write in progress, skipping read cycle")
+            return self.data
 
         # Check if device is connected
         if (
