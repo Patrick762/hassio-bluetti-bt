@@ -1,7 +1,6 @@
 """Bluetti Bluetooth Config Flow"""
 
 from __future__ import annotations
-import re
 import logging
 from typing import Any
 import voluptuous as vol
@@ -15,6 +14,7 @@ from bluetti_bt_lib import recognize_device
 
 from .types import InitialDeviceConfig, ManufacturerData, OptionalDeviceConfig
 from .const import DOMAIN
+from .utils import sanitize_device_name
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             address = discovery_info.address
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
-            name = re.sub("[^A-Z0-9]+", "", discovery_info.name)
+            name = sanitize_device_name(discovery_info.name)
 
             manufacturer_data = ManufacturerData.from_dict(
                 discovery_info.manufacturer_data
