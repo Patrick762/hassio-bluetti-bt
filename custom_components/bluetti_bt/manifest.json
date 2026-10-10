@@ -2,6 +2,7 @@
     "domain": "bluetti_bt",
     "name": "Bluetti BT",
     "bluetooth": [
+        { "manufacturer_id": 19522, "connectable": true },
         { "local_name": "AC1*" },
         { "local_name": "AC2*" },
         { "local_name": "AC3*" },
