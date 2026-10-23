@@ -89,6 +89,12 @@
       "total_battery_percent": {
         "name": "Batterie Ladestand"
       },
+      "battery_soh": {
+        "name": "Batterie Gesundheitszustand"
+      },
+      "battery_temperature": {
+        "name": "Batterietemperatur"
+      },
       "soc_range_end": {
         "name": "SOC hoch"
       },

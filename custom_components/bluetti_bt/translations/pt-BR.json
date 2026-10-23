@@ -49,6 +49,8 @@
       "ac_p3_voltage": { "name": "Tensão CA Fase 3" },
 
       "total_battery_percent": { "name": "Carga da bateria (SOC)" },
+      "battery_soh": { "name": "Saúde da bateria (SOH)" },
+      "battery_temperature": { "name": "Temperatura da bateria" },
 
       "dc_input_current": { "name": "Corrente de entrada CC" },
       "dc_input_power": { "name": "Potência de entrada CC" },

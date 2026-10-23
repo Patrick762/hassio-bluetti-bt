@@ -22,6 +22,7 @@ FIELD_DEVICE_CLASS: Dict[FieldName, SensorDeviceClass] = {
     FieldName.AC_P3_POWER: SensorDeviceClass.POWER,
     FieldName.AC_P3_VOLTAGE: SensorDeviceClass.VOLTAGE,
     FieldName.BATTERY_SOC: SensorDeviceClass.BATTERY,
+    FieldName.BATTERY_TEMPERATURE: SensorDeviceClass.TEMPERATURE,
     FieldName.DC_INPUT_CURRENT: SensorDeviceClass.CURRENT,
     FieldName.DC_INPUT_POWER: SensorDeviceClass.POWER,
     FieldName.DC_INPUT_VOLTAGE: SensorDeviceClass.VOLTAGE,

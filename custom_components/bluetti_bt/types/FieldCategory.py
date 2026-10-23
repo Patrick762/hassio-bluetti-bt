@@ -9,6 +9,8 @@ DIAGNOSTICS = [
     FieldName.VER_DSP,
     FieldName.VER_BMS,
     FieldName.PACK_CELL_VOLTAGES,
+    FieldName.BATTERY_SOH,
+    FieldName.BATTERY_TEMPERATURE,
 ]
 
 CONFIGS = [
