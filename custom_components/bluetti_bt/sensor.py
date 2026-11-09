@@ -12,11 +12,11 @@ from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from bluetti_bt_lib import build_device, FieldName, get_unit
+from bluetti_bt_lib import FieldName, get_unit
 
 from . import device_info as dev_info, get_unique_id, FullDeviceConfig
 from .const import DATA_COORDINATOR, DOMAIN, MANUFACTURER
-from .coordinator import PollingCoordinator
+from .coordinator import PollingCoordinator, build_device
 from .utils import mac_loggable, unique_id_logable
 from .types import get_device_class, get_state_class, get_category
 
@@ -86,6 +86,38 @@ async def async_setup_entry(
                     logger=logger,
                 )
             )
+
+    primary_pack_labels = {
+        FieldName.PACK_BATTERY_SOC: "Percent",
+        FieldName.PACK_VOLTAGE: "Voltage",
+    }
+
+    if type(bluetti_device).__name__ == "AC200M":
+        for field in bluetti_device.pack_fields:
+            field_name = FieldName(field.name)
+            legacy_name = primary_pack_labels.get(field_name)
+            if legacy_name is None:
+                continue
+
+            for pack_num in range(1, bluetti_device.max_packs + 1):
+                sensors_to_add.append(
+                    BluettiSensor(
+                        coordinator,
+                        device_info,
+                        field.address,
+                        field.name,
+                        unit_of_measurement=get_unit(field_name),
+                        device_class=get_device_class(field_name),
+                        state_class=get_state_class(field_name),
+                        category=get_category(field_name),
+                        pack_num=pack_num,
+                        primary_pack_name=f"Battery Pack {pack_num} {legacy_name}",
+                        unique_id=get_unique_id(
+                            f"{config.name} Battery Pack {pack_num} {legacy_name}"
+                        ),
+                        logger=logger,
+                    )
+                )
 
     # Pack fields
     for field in bluetti_device.pack_fields:
@@ -174,6 +206,8 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         options: list[str] | None = None,
         pack_num: int | None = None,
         cell_num: int | None = None,
+        primary_pack_name: str | None = None,
+        unique_id: str | None = None,
         logger: logging.Logger = logging.getLogger(),
     ):
         """Init sensor entity."""
@@ -196,16 +230,17 @@ class BluettiSensor(CoordinatorEntity, SensorEntity):
         self._unavailable_counter = 0
 
         self._attr_device_info = device_info
-        self._attr_translation_key = (
-            f"pack_{response_key}" if pack_num else response_key
-        )
+        self._attr_translation_key = f"pack_{response_key}" if pack_num else response_key
 
-        if cell_num is not None:
+        if primary_pack_name is not None:
+            self._attr_translation_key = None
+            self._attr_name = primary_pack_name
+        elif cell_num is not None:
             self._attr_translation_key = f"pack_{response_key}"
             self._attr_translation_placeholders = {"cell_num": cell_num}
 
         self._attr_available = False
-        self._attr_unique_id = get_unique_id(e_name)
+        self._attr_unique_id = unique_id or get_unique_id(e_name)
         self._attr_native_unit_of_measurement = unit_of_measurement
         self._attr_device_class = device_class
         self._attr_state_class = state_class

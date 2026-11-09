@@ -7,10 +7,39 @@ import logging
 from homeassistant.components import bluetooth
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from bluetti_bt_lib import build_device, DeviceReader, DeviceReaderConfig
+from bluetti_bt_lib import (
+    DeviceReader,
+    DeviceReaderConfig,
+    FieldName,
+    build_device as library_build_device,
+)
+from bluetti_bt_lib.fields import DecimalArrayField, DecimalField, UIntField
+from bluetti_bt_lib.registers import ReadableRegisters, WriteableRegister
 
 from .utils import mac_loggable
 from .types import FullDeviceConfig
+
+
+def build_device(name: str):
+    """Build a device and add the verified AC200M battery pack fields."""
+    device = library_build_device(name)
+
+    if device is None or type(device).__name__ != "AC200M":
+        return device
+
+    device.pack_fields = [
+        UIntField(FieldName.PACK_SELECTED, 96),
+        DecimalField(FieldName.PACK_VOLTAGE, 98, 2),
+        UIntField(FieldName.PACK_BATTERY_SOC, 99),
+        DecimalArrayField(FieldName.PACK_CELL_VOLTAGES, 105, 16, 2),
+    ]
+    device.max_packs = 2
+    device.get_pack_selector = lambda pack: WriteableRegister(3006, pack)
+    device.pack_polling_registers = [
+        ReadableRegisters(field.address, field.size) for field in device.pack_fields
+    ]
+
+    return device
 
 
 class PollingCoordinator(DataUpdateCoordinator):
