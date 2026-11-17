@@ -86,6 +86,27 @@
       "ac_p3_voltage": {
         "name": "AC Phase 3 Voltage"
       },
+      "grid_export_power": {
+        "name": "Grid Export"
+      },
+      "ctrl_grid_max_import_power": {
+        "name": "Grid Max Import Power"
+      },
+      "ctrl_grid_max_export_power": {
+        "name": "Grid Max Export Power"
+      },
+      "house_load_power": {
+        "name": "House Load"
+      },
+      "total_grid_feed": {
+        "name": "Grid Feed"
+      },
+      "total_grid_consumption": {
+        "name": "Total Grid Consumption"
+      },
+      "total_load_consumption": {
+        "name": "Total Consumption"
+      },
       "total_battery_percent": {
         "name": "Battery SOC"
       },
@@ -227,6 +248,15 @@
       "pv_s2_voltage": {
         "name": "PV String 2 Voltage"
       },
+      "pv_s3_current": {
+        "name": "PV String 3 Current"
+      },
+      "pv_s3_power": {
+        "name": "PV String 3 Power"
+      },
+      "pv_s3_voltage": {
+        "name": "PV String 3 Voltage"
+      },
       "sm_p1_current": {
         "name": "Smartmeter Phase 1 Current"
       },
@@ -282,6 +312,12 @@
     "switch": {
       "ctrl_ac": {
         "name": "AC Output"
+      },
+      "ctrl_working_mode": {
+        "name": "Working Mode"
+      },
+      "ctrl_charge_from_grid": {
+         "name": "Charge From Grid"
       },
       "ctrl_charging_mode": {
         "name": "Charging Mode"
