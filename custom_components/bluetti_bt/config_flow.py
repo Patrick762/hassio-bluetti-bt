@@ -47,6 +47,12 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         if recognized is None:
+            # The manifest matchers are broader than the supported device list
+            # (e.g. AC2*, PBOX*), so only offer manual setup for names that
+            # map to a device type the library supports.
+            if build_device(discovery_info.name or "") is None:
+                return self.async_abort(reason="Device type not supported")
+
             # Recognition can fail even for supported devices, e.g. when the
             # encryption handshake does not finish within the library's fixed
             # timeout over an ESPHome Bluetooth proxy. Let the user confirm the
