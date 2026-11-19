@@ -5,10 +5,26 @@
         "data": {
           "address": "Gerät"
         }
+      },
+      "manual": {
+        "title": "Bluetti-Gerät einrichten",
+        "description": "Gib die Gerätedaten ein. Das ist nötig, wenn das Gerät nicht automatisch erkannt werden konnte (zum Beispiel verschlüsselte Geräte wie die Elite 10 hinter einem ESPHome-Bluetooth-Proxy). Die Adresse ist die Bluetooth-MAC-Adresse wie in Home Assistant angezeigt, Typ und Seriennummer sind die Teile des Bluetooth-Namens (z.B. EL10 und 2548114365217 für EL102548114365217).",
+        "data": {
+          "address": "Bluetooth-MAC-Adresse",
+          "type": "Gerätetyp",
+          "serial": "Seriennummer",
+          "use_encryption": "Gerät verwendet Verschlüsselung"
+        }
       }
     },
     "abort": {
-      "no_unconfigured_devices": "Keine Geräte gefunden"
+      "no_unconfigured_devices": "Keine Geräte gefunden",
+      "already_configured": "Gerät ist bereits eingerichtet"
+    },
+    "error": {
+      "invalid_address": "Ungültige MAC-Adresse. Verwende das Format AA:BB:CC:DD:EE:FF",
+      "invalid_serial": "Ungültige Seriennummer. Verwende nur Ziffern",
+      "unsupported_type": "Gerätetyp wird nicht unterstützt"
     }
   },
   "options": {

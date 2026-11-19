@@ -6,7 +6,25 @@
           "address": "Dispositivo",
           "type": "Modelo (obrigatório para dispositivos PBOX)"
         }
+      },
+      "manual": {
+        "title": "Configurar dispositivo Bluetti",
+        "description": "Informe os dados do dispositivo. Isso é necessário quando o dispositivo não pôde ser identificado automaticamente (por exemplo, dispositivos criptografados como o Elite 10 através de um proxy Bluetooth ESPHome). O endereço é o endereço MAC Bluetooth exibido no Home Assistant; o modelo e o número de série são as partes do nome Bluetooth (ex.: EL10 e 2548114365217 para EL102548114365217).",
+        "data": {
+          "address": "Endereço MAC Bluetooth",
+          "type": "Modelo",
+          "serial": "Número de série",
+          "use_encryption": "O dispositivo usa criptografia"
+        }
       }
+    },
+    "error": {
+      "invalid_address": "Endereço MAC inválido. Use o formato AA:BB:CC:DD:EE:FF",
+      "invalid_serial": "Número de série inválido. Use apenas dígitos",
+      "unsupported_type": "Modelo de dispositivo não suportado"
+    },
+    "abort": {
+      "already_configured": "O dispositivo já está configurado"
     }
   },
   "options": {

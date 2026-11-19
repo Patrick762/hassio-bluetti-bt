@@ -5,10 +5,26 @@
         "data": {
           "address": "Device"
         }
+      },
+      "manual": {
+        "title": "Set up Bluetti device",
+        "description": "Enter the device details. This is needed when the device could not be identified automatically (for example encrypted devices such as the Elite 10 behind an ESPHome Bluetooth proxy). The address is the Bluetooth MAC address as shown in Home Assistant, the type and serial number are the parts of the Bluetooth name (e.g. EL10 and 2548114365217 for EL102548114365217).",
+        "data": {
+          "address": "Bluetooth MAC address",
+          "type": "Device type",
+          "serial": "Serial number",
+          "use_encryption": "Device uses encryption"
+        }
       }
     },
     "abort": {
-      "no_unconfigured_devices": "No devices found"
+      "no_unconfigured_devices": "No devices found",
+      "already_configured": "Device is already configured"
+    },
+    "error": {
+      "invalid_address": "Invalid MAC address. Use the format AA:BB:CC:DD:EE:FF",
+      "invalid_serial": "Invalid serial number. Use digits only",
+      "unsupported_type": "Device type not supported"
     }
   },
   "options": {
@@ -122,7 +138,7 @@
       "ctrl_led_mode": {
         "name": "LED Mode"
       },
-       "ctrl_ups_mode": {
+      "ctrl_ups_mode": {
         "name": "UPS Mode"
       },
       "dc_input_current": {
@@ -324,7 +340,7 @@
       "ctrl_led_mode": {
         "name": "LED Mode"
       },
-       "ctrl_ups_mode": {
+      "ctrl_ups_mode": {
         "name": "UPS Mode"
       }
     },
