@@ -11,12 +11,19 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResult
-from bluetti_bt_lib import recognize_device
+from bluetti_bt_lib import build_device, recognize_device
+from bluetti_bt_lib.devices import DEVICES, DEVICE_NAME_RE
 
 from .types import InitialDeviceConfig, ManufacturerData, OptionalDeviceConfig
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+
+CONF_TYPE = "type"
+CONF_SERIAL = "serial"
+CONF_USE_ENCRYPTION = "use_encryption"
+
+MAC_RE = re.compile(r"^([0-9A-F]{2}:){5}[0-9A-F]{2}$")
 
 
 class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -40,7 +47,17 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         if recognized is None:
-            return self.async_abort(reason="Device type not supported")
+            # Recognition can fail even for supported devices, e.g. when the
+            # encryption handshake does not finish within the library's fixed
+            # timeout over an ESPHome Bluetooth proxy. Let the user confirm the
+            # device details manually instead of aborting.
+            _LOGGER.warning(
+                "Could not identify device %s automatically, asking for manual setup",
+                discovery_info.name,
+            )
+            self._discovery_info = discovery_info
+            self.context["title_placeholders"] = {"name": discovery_info.name}
+            return await self.async_step_manual()
 
         _LOGGER.info(
             "Device identified as %s with iot module version %s (using encryption: %s)",
@@ -92,7 +109,7 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         if not self._discovery_info:
-            return self.async_abort(reason="no_unconfigured_devices")
+            return await self.async_step_manual()
 
         # The input from this is not used, we use the discovered and known working address
         data_schema = vol.Schema(
@@ -107,6 +124,79 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=data_schema,
         )
+
+    async def async_step_manual(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Set up a device by entering its details manually."""
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            address = user_input[CONF_ADDRESS].strip().upper()
+            dev_type = user_input[CONF_TYPE]
+            serial = re.sub(r"\s+", "", user_input[CONF_SERIAL])
+            use_encryption = user_input[CONF_USE_ENCRYPTION]
+            name = dev_type + serial
+
+            if MAC_RE.match(address) is None:
+                errors[CONF_ADDRESS] = "invalid_address"
+            elif not serial.isdigit():
+                errors[CONF_SERIAL] = "invalid_serial"
+            elif build_device(name) is None:
+                errors[CONF_TYPE] = "unsupported_type"
+            else:
+                await self.async_set_unique_id(address, raise_on_progress=False)
+                self._abort_if_unique_id_configured()
+
+                data = InitialDeviceConfig(address, name, dev_type, use_encryption)
+                optional = OptionalDeviceConfig.from_dict({})
+
+                return self.async_create_entry(
+                    title=name,
+                    data={
+                        **data.as_dict,
+                        **optional.as_dict,
+                    },
+                )
+
+        defaults = user_input or self._manual_defaults()
+
+        data_schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_ADDRESS, default=defaults.get(CONF_ADDRESS, "")
+                ): str,
+                vol.Required(
+                    CONF_TYPE, default=defaults.get(CONF_TYPE, vol.UNDEFINED)
+                ): vol.In(sorted(DEVICES.keys())),
+                vol.Required(
+                    CONF_SERIAL, default=defaults.get(CONF_SERIAL, "")
+                ): str,
+                vol.Required(
+                    CONF_USE_ENCRYPTION,
+                    default=defaults.get(CONF_USE_ENCRYPTION, False),
+                ): bool,
+            }
+        )
+        return self.async_show_form(
+            step_id="manual",
+            data_schema=data_schema,
+            errors=errors,
+        )
+
+    def _manual_defaults(self) -> dict[str, Any]:
+        """Prefill the manual form from the bluetooth discovery, if any."""
+        if self._discovery_info is None:
+            return {}
+
+        defaults: dict[str, Any] = {CONF_ADDRESS: self._discovery_info.address}
+
+        match = DEVICE_NAME_RE.match(self._discovery_info.name or "")
+        if match is not None and match[1] in DEVICES:
+            defaults[CONF_TYPE] = match[1]
+            defaults[CONF_SERIAL] = match[2]
+
+        return defaults
 
     @staticmethod
     def async_get_options_flow(_) -> config_entries.OptionsFlow:
